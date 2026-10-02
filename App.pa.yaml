@@ -1,0 +1,111 @@
+App:
+  Properties:
+    Formulas: |-
+      =// ---------- Current user and roles (same UserRoles list as the Support Request app) ----------
+      fxCurrentUserEmail = Lower(Trim(User().Email));
+      fxCurrentUserName = User().FullName;
+      fxMyRoles = Distinct(ForAll(Filter(UserRoles, UserEmail = fxCurrentUserEmail && IsActive = true), {R: Trim(ThisRecord.Role.Value)}), R);
+      fxHasRole(roleName: Text): Boolean = roleName in fxMyRoles.Value;
+      fxIsDeveloper = fxHasRole("Developer");
+      fxIsAdministrator = fxHasRole("Administrator");
+      // Inventory access (decision 2026-10-02): AV Technician -> AV, IT Technician -> IT, Inventory Manager and Developer -> both.
+      // Administrator can view everything but change nothing. The Inventory - Action flow enforces the same rules.
+      fxIsInvManager = fxIsDeveloper || fxHasRole("Inventory Manager");
+      fxInvDeptRoles = Table({Dept: "AV", Role: "AV Technician"}, {Dept: "IT", Role: "IT Technician"});
+      fxMyDepts = Filter(fxInvDeptRoles, fxIsInvManager || fxHasRole(Role));
+      fxCanManage(dept: Text): Boolean = dept in fxMyDepts.Dept;
+      fxIsInvStaff = !IsEmpty(fxMyDepts);
+      fxCanViewInventory = fxIsInvStaff || fxIsAdministrator;
+      fxDefaultDept = If(CountRows(fxMyDepts) = 1, First(fxMyDepts).Dept, "All");
+      fxDeptFilters = Table({Key: "All", Label: "All"}, {Key: "AV", Label: "AV"}, {Key: "IT", Label: "IT"});
+
+      // ---------- Inventory constants (match the Inventory - Action flow Config) ----------
+      fxInvActionVersion = "InventoryAction-v1";
+      // DAF Form 1297 (Temporary Issue Receipt) statement; electronic acknowledgement accepted locally (2026-10-02).
+      fxCustodyAck = {
+          version: "DAF1297-20260323",
+          text: "I acknowledge receipt of and responsibility IAW DAFI 23-111 for the items described below and will return them by the return date indicated."
+      };
+      fxAssetStatuses = ["Available", "Issued", "In Repair", "Lost", "Retired"];
+      fxSettableStatuses = ["Available", "In Repair", "Lost", "Retired"];
+      fxAssetKinds = ["Tracked Asset", "Loaner Pool"];
+      fxConditions = ["Good", "Fair", "Damaged"];
+      fxStatusColor(status: Text): Color = Switch(status, "Available", RGBA(16, 110, 16, 1), "Issued", RGBA(15, 76, 129, 1), "In Repair", RGBA(131, 82, 0, 1), "Lost", RGBA(164, 38, 44, 1), RGBA(97, 97, 97, 1));
+      fxStatusFill(status: Text): Color = Switch(status, "Available", RGBA(223, 246, 221, 1), "Issued", RGBA(230, 240, 250, 1), "In Repair", RGBA(255, 244, 206, 1), "Lost", RGBA(253, 231, 233, 1), RGBA(237, 239, 242, 1));
+      // Catalog items the Inventory app tracks (same rule as the Support Request inventory handoff).
+      fxInvCatalog = Sort(Filter(EquipmentCatalog, IsActive = true && InventoryType.Value in ["Tracked Asset", "Loaner Pool"]), Title);
+
+      // How a person's name shows on screen: "LAST, FIRST M JR RANK USAF ORG" becomes "RANK First Last Jr".
+      // Finds the service (USAF, USSF, ...); the word before it is the rank (or two words such as "Lt Col").
+      // Middle initials and the organization are dropped. Any name that does not fit the pattern is shown in full.
+      // Stored values and searches keep the full display name. Test it on Developer Tools > Name format test.
+      fxPersonName(name: Text): Text = With(
+          {
+              n: Trim(name),
+              services: ["USAF", "USSF", "USA", "USN", "USMC", "USCG"],
+              twoWordRanks: ["2d Lt", "2nd Lt", "1st Lt", "Lt Col", "Brig Gen", "Maj Gen", "Lt Gen"],
+              suffixes: ["JR", "SR", "II", "III", "IV"]
+          },
+          With(
+              {c: Find(", ", n)},
+              If(
+                  IsBlank(c) || c < 2,
+                  n,
+                  With(
+                      {last: Left(n, c - 1), t: Split(Mid(n, c + 2), " ")},
+                      With(
+                          {s: First(Filter(ForAll(Sequence(CountRows(t)), {i: Value, w: Index(t, Value).Value}), w in services)).i},
+                          If(
+                              IsBlank(s) || s < 3,
+                              n,
+                              With(
+                                  {twoWord: s >= 4 && (Index(t, s - 2).Value & " " & Index(t, s - 1).Value) in twoWordRanks},
+                                  With(
+                                      {
+                                          rank: If(twoWord, Index(t, s - 2).Value & " " & Index(t, s - 1).Value, Index(t, s - 1).Value),
+                                          parts: FirstN(t, s - If(twoWord, 3, 2))
+                                      },
+                                      With(
+                                          {suffix: If(CountRows(parts) >= 2 && Last(parts).Value in suffixes, Last(parts).Value, "")},
+                                          With(
+                                              {given: If(suffix = "", parts, FirstN(parts, CountRows(parts) - 1))},
+                                              With(
+                                                  {given2: If(CountRows(given) >= 2 && Len(Last(given).Value) = 1, FirstN(given, CountRows(given) - 1), given)},
+                                                  Trim(
+                                                      rank & " " & Proper(Concat(given2, Value, " ")) & " " & Proper(last) &
+                                                      If(suffix = "", "", " " & If(Upper(suffix) in ["JR", "SR"], Proper(suffix), Upper(suffix)))
+                                                  )
+                                              )
+                                          )
+                                      )
+                                  )
+                              )
+                          )
+                      )
+                  )
+              )
+          )
+      );
+      // Short relative time, for example "5 min ago", "3 h ago", "2 d ago".
+      fxTimeAgo(when: DateTime): Text = With(
+          {m: DateDiff(when, Now(), TimeUnit.Minutes)},
+          If(m < 1, "just now", m < 60, m & " min ago", m < 1440, RoundDown(m / 60, 0) & " h ago", RoundDown(m / 1440, 0) & " d ago")
+      );
+
+      // ---------- Navigation ----------
+      fxInvNav = Table(
+          {Id: "home", Label: "Home", Icon: "Home", Target: scrInvHome, IsAllowed: true},
+          {Id: "assets", Label: "Assets", Icon: "Box", Target: scrInvAssets, IsAllowed: fxCanViewInventory}
+      );
+      fxInvVisibleNav = Filter(fxInvNav, IsAllowed);
+
+      // ---------- InventoryAction-v1 payloads ----------
+      fxInvAssetPayload(action: Text, assetId: Number, tag: Text, serial: Text, make: Text, model: Text, catalogItemId: Number, department: Text, kind: Text, condition: Text, homeLocation: Text, purchaseDate: Text, warrantyEnd: Text, notes: Text): Text = JSON(
+          {
+              actionVersion: fxInvActionVersion, action: action, assetId: assetId,
+              asset: {tag: tag, serial: serial, make: make, model: model, catalogItemId: catalogItemId, department: department, kind: kind, condition: condition, homeLocation: homeLocation, purchaseDate: purchaseDate, warrantyEnd: warrantyEnd, notes: notes}
+          }
+      );
+      fxInvStatusPayload(assetId: Number, status: Text, note: Text): Text = JSON({actionVersion: fxInvActionVersion, action: "AssetStatus", assetId: assetId, status: status, note: note});
+    StartScreen: =scrInvHome
+    Theme: =PowerAppsTheme

@@ -1,0 +1,866 @@
+Screens:
+  scrInvHome:
+    Properties:
+      Fill: =RGBA(245, 246, 248, 1)
+      LoadingSpinnerColor: =RGBA(15, 76, 129, 1)
+      OnVisible: |-
+        =UpdateContext({locHomeDept: Coalesce(locHomeDept, fxDefaultDept)});
+        If((IsBlank(gblInvLoadedAt) || DateDiff(gblInvLoadedAt, Now(), TimeUnit.Minutes) >= 2), Select(btnInvHomeReload))
+    Children:
+      - conInvHomeRoot:
+          Control: GroupContainer
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Fill: =RGBA(245, 246, 248, 1)
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutDirection: =LayoutDirection.Vertical
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            Width: =Parent.Width
+          Children:
+            - conInvHomeHeader:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(15, 76, 129, 1)
+                  FillPortions: =0
+                  Height: =56
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =12
+                  LayoutMinHeight: =56
+                  LayoutMinWidth: =0
+                  PaddingLeft: =8
+                  PaddingRight: =16
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                Children:
+                  - btnInvHomeNavToggle:
+                      Control: ModernButton
+                      Properties:
+                        AccessibleLabel: =If(varNavCollapsed, "Expand navigation", "Collapse navigation")
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(255, 255, 255, 1)
+                        Height: =40
+                        Icon: ="Navigation"
+                        Layout: =ButtonLayout.IconOnly
+                        LayoutMinWidth: =40
+                        OnSelect: =Set(varNavCollapsed, !varNavCollapsed)
+                        Text: =If(varNavCollapsed, "Expand navigation", "Collapse navigation")
+                        Tooltip: =If(varNavCollapsed, "Expand navigation", "Collapse navigation")
+                        Width: =40
+                  - txtInvHomeAppTitle:
+                      Control: ModernText
+                      Properties:
+                        AccessibleLabel: ="Inventory"
+                        Color: =RGBA(255, 255, 255, 1)
+                        FillPortions: =1
+                        FontWeight: =FontWeight.Semibold
+                        Height: =40
+                        LayoutMinWidth: =120
+                        PaddingBottom: =0
+                        PaddingLeft: =0
+                        PaddingTop: =0
+                        Size: =18
+                        Text: ="Inventory"
+                        Wrap: =false
+                  - txtInvHomeUserName:
+                      Control: ModernText
+                      Properties:
+                        AccessibleLabel: ="Signed in as " & User().FullName
+                        Align: =Align.Right
+                        Color: =RGBA(255, 255, 255, 1)
+                        Height: =40
+                        LayoutMinWidth: =0
+                        PaddingBottom: =0
+                        PaddingLeft: =0
+                        PaddingTop: =0
+                        Size: =14
+                        Text: =User().FullName
+                        Visible: =App.Width >= 640
+                        Width: =240
+                        Wrap: =false
+            - conInvHomeBody:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutMinHeight: =0
+                  LayoutMinWidth: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                Children:
+                  - conInvHomeNav:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        FillPortions: =0
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutMinHeight: =0
+                        LayoutMinWidth: =0
+                        PaddingBottom: =8
+                        PaddingLeft: =8
+                        PaddingRight: =8
+                        PaddingTop: =8
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        Width: =If(varNavCollapsed, 56, 240)
+                      Children:
+                        - galInvHomeNav:
+                            Control: Gallery
+                            Variant: Vertical
+                            Properties:
+                              AccessibleLabel: ="Main navigation"
+                              FillPortions: =0
+                              Height: =CountRows(fxInvVisibleNav) * 46
+                              Items: =fxInvVisibleNav
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              ShowScrollbar: =false
+                              TabIndex: =0
+                              TemplatePadding: =2
+                              TemplateSize: =44
+                            Children:
+                              - conInvHomeNavRow:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    Fill: =If(ThisItem.Id = "home", RGBA(230, 240, 250, 1), RGBA(0, 0, 0, 0))
+                                    Height: =Parent.TemplateHeight
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    RadiusBottomLeft: =6
+                                    RadiusBottomRight: =6
+                                    RadiusTopLeft: =6
+                                    RadiusTopRight: =6
+                                    Width: =Parent.TemplateWidth
+                                  Children:
+                                    - btnInvHomeNavItem:
+                                        Control: ModernButton
+                                        Properties:
+                                          AccessibleLabel: =ThisItem.Label
+                                          Align: =If(varNavCollapsed, Align.Center, Align.Left)
+                                          Appearance: =ButtonAppearance.Subtle
+                                          Color: =If(ThisItem.Id = "home", RGBA(15, 76, 129, 1), RGBA(36, 36, 36, 1))
+                                          FillPortions: =1
+                                          FontWeight: =If(ThisItem.Id = "home", FontWeight.Semibold, FontWeight.Normal)
+                                          Height: =40
+                                          Icon: =ThisItem.Icon
+                                          IconStyle: =If(ThisItem.Id = "home", IconStyle.Filled, IconStyle.Outline)
+                                          Layout: =If(varNavCollapsed, ButtonLayout.IconOnly, ButtonLayout.IconBefore)
+                                          LayoutMinWidth: =40
+                                          OnSelect: =Navigate(ThisItem.Target, ScreenTransition.None)
+                                          Text: =ThisItem.Label
+                                          Tooltip: =ThisItem.Label
+                  - conInvHomeMain:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =16
+                        LayoutMinHeight: =0
+                        LayoutMinWidth: =0
+                        LayoutOverflowY: =LayoutOverflow.Scroll
+                        PaddingBottom: =24
+                        PaddingLeft: =If(App.Width >= 800, 32, 16)
+                        PaddingRight: =If(App.Width >= 800, 32, 16)
+                        PaddingTop: =16
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                      Children:
+                        - btnInvHomeReload:
+                            Control: ModernButton
+                            Properties:
+                              AccessibleLabel: ="Reload inventory data"
+                              Height: =36
+                              LayoutMinWidth: =0
+                              OnSelect: |-
+                                =// Inventory data for all screens (whole lists; fine at the current volume).
+                                Set(gblInvLoading, true);
+                                Refresh(InventoryAssets);
+                                Refresh(InventoryCheckouts);
+                                Refresh(InventoryReservations);
+                                Refresh(InventoryReceipts);
+                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, AssetStatus.Value, Kind, AssetKind.Value));
+                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, CheckoutStatus.Value = "Active" || CheckoutStatus.Value = "Awaiting Acknowledgement" || CheckoutStatus.Value = "Return Required"), Status, CheckoutStatus.Value));
+                                Set(gblInvReserved, Filter(InventoryReservations, ReservationStatus.Value = "Reserved"));
+                                Set(gblInvLines, Filter(RequestEquipment, NeedsInventoryAction = true));
+                                Set(gblInvMyReceipts, Filter(InventoryReceipts, RecipientEmail = fxCurrentUserEmail && ReceiptStatus.Value = "Awaiting Acknowledgement"));
+                                Set(gblInvLoadedAt, Now());
+                                Set(gblInvLoading, false)
+                              Text: ="Reload"
+                              Visible: =false
+                              Width: =10
+                        - conInvHomePageHeader:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =64
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =8
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                            Children:
+                              - conInvHomeTitles:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    Height: =64
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutJustifyContent: =LayoutJustifyContent.Center
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvHomePageTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(36, 36, 36, 1)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =36
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =24
+                                          Text: ="Inventory"
+                                          Wrap: =false
+                                    - txtInvHomePageSubtitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =13
+                                          Text: =If(fxCanViewInventory, "Equipment on hand, what is out, and what needs attention.", "Equipment issued to you.")
+                                          Wrap: =false
+                              - txtInvHomeUpdated:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Align: =Align.Right
+                                    Color: =RGBA(97, 97, 97, 1)
+                                    Height: =20
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =12
+                                    Text: =If(gblInvLoading, "Loading…", If(IsBlank(gblInvLoadedAt), "", "Updated " & Text(gblInvLoadedAt, "h:mm AM/PM")))
+                                    Visible: =App.Width >= 900
+                                    Width: =120
+                                    Wrap: =false
+                              - btnInvHomeRefresh:
+                                  Control: ModernButton
+                                  Properties:
+                                    AccessibleLabel: ="Refresh"
+                                    Appearance: =ButtonAppearance.Secondary
+                                    DisplayMode: =If(gblInvLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                                    Height: =36
+                                    Icon: ="ArrowClockwise"
+                                    LayoutMinWidth: =0
+                                    OnSelect: =Select(btnInvHomeReload)
+                                    Text: ="Refresh"
+                                    Width: =120
+                        - conInvHomeMyAck:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              BorderColor: =RGBA(92, 45, 145, 1)
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(243, 238, 250, 1)
+                              FillPortions: =0
+                              Height: =64
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =12
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              PaddingLeft: =16
+                              PaddingRight: =16
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                              Visible: =!IsEmpty(gblInvMyReceipts)
+                            Children:
+                              - txtInvHomeMyAck:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(92, 45, 145, 1)
+                                    FillPortions: =1
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =40
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =14
+                                    Text: |-
+                                      ="You have " & CountRows(gblInvMyReceipts) & If(CountRows(gblInvMyReceipts) = 1, " equipment receipt", " equipment receipts") & " to acknowledge: " & Concat(gblInvMyReceipts, Title, ", ")
+                        - txtInvHomeNotStaff:
+                            Control: ModernText
+                            Properties:
+                              AccessibleLabel: =Self.Text
+                              Color: =RGBA(97, 97, 97, 1)
+                              Height: =24
+                              LayoutMinWidth: =0
+                              PaddingBottom: =0
+                              PaddingLeft: =0
+                              PaddingTop: =0
+                              Size: =14
+                              Text: ="Nothing is waiting for you. Equipment issued to you will appear here for you to acknowledge."
+                              Visible: =!fxCanViewInventory && IsEmpty(gblInvMyReceipts)
+                              Wrap: =false
+                        - conInvHomeFilters:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =36
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =8
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              Visible: =fxCanViewInventory
+                            Children:
+                              - txtInvHomeDeptLbl:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(97, 97, 97, 1)
+                                    Height: =20
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =12
+                                    Text: ="Department"
+                                    Width: =90
+                                    Wrap: =false
+                              - galInvHomeDept:
+                                  Control: Gallery
+                                  Variant: Vertical
+                                  Properties:
+                                    AccessibleLabel: ="galInvHomeDept"
+                                    FillPortions: =0
+                                    Height: =36
+                                    Items: =fxDeptFilters
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    ShowScrollbar: =false
+                                    TabIndex: =0
+                                    TemplatePadding: =2
+                                    TemplateSize: =110
+                                    Width: =Self.AllItemsCount * 114
+                                  Children:
+                                    - btnInvHomeDept:
+                                        Control: ModernButton
+                                        Properties:
+                                          AccessibleLabel: =ThisItem.Label
+                                          Appearance: =If(locHomeDept = ThisItem.Key, ButtonAppearance.Primary, ButtonAppearance.Secondary)
+                                          OnSelect: |-
+                                            =UpdateContext({locHomeDept: ThisItem.Key})
+                                          Text: =ThisItem.Label
+                                          Width: =Parent.TemplateWidth - 4
+                        - galInvHomeCards:
+                            Control: Gallery
+                            Variant: Vertical
+                            Properties:
+                              AccessibleLabel: ="Inventory summary"
+                              FillPortions: =0
+                              Height: =RoundUp(6 / If(App.Width >= 1350, 6, App.Width >= 900, 3, 2), 0) * 112
+                              Items: |-
+                                =With(
+                                    {ids: Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID},
+                                    Table(
+                                        {Key: "Available", Label: "Available", Count: CountRows(Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept) && Status = "Available")), Hint: "Ready to reserve or issue", Accent: RGBA(16, 110, 16, 1)},
+                                        {Key: "Issued", Label: "Issued", Count: CountRows(Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept) && Status = "Issued")), Hint: "Out with someone now", Accent: RGBA(15, 76, 129, 1)},
+                                        {Key: "Ack", Label: "Awaiting acknowledgement", Count: CountRows(Filter(gblInvOpenCheckouts, Status = "Awaiting Acknowledgement" && AssetId in ids)), Hint: "Issued, not yet acknowledged", Accent: RGBA(92, 45, 145, 1)},
+                                        {Key: "Overdue", Label: "Overdue", Count: CountRows(Filter(gblInvOpenCheckouts, Status <> "Awaiting Acknowledgement" && !IsBlank(DueDate) && DueDate < Today() && AssetId in ids)), Hint: "Past the return date", Accent: RGBA(164, 38, 44, 1)},
+                                        {Key: "Reserved", Label: "Reserved, next 7 days", Count: CountRows(Filter(gblInvReserved, StartDate <= DateAdd(Today(), 7, TimeUnit.Days) && EndDate >= Today() && AssetId in ids)), Hint: "Held for request items", Accent: RGBA(131, 82, 0, 1)},
+                                        {Key: "Repair", Label: "In repair", Count: CountRows(Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept) && Status = "In Repair")), Hint: "Not available to issue", Accent: RGBA(97, 97, 97, 1)}
+                                    )
+                                )
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              ShowScrollbar: =false
+                              TabIndex: =0
+                              TemplatePadding: =6
+                              TemplateSize: =104
+                              Visible: =fxCanViewInventory
+                              WrapCount: =If(App.Width >= 1350, 6, App.Width >= 900, 3, 2)
+                            Children:
+                              - conInvHomeCard:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    BorderColor: =RGBA(225, 228, 232, 1)
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                    Fill: =RGBA(255, 255, 255, 1)
+                                    Height: =Parent.TemplateHeight
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =12
+                                    RadiusBottomLeft: =8
+                                    RadiusBottomRight: =8
+                                    RadiusTopLeft: =8
+                                    RadiusTopRight: =8
+                                    Width: =Parent.TemplateWidth
+                                  Children:
+                                    - conInvHomeCardAccent:
+                                        Control: GroupContainer
+                                        Variant: ManualLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Fill: =ThisItem.Accent
+                                          FillPortions: =0
+                                          LayoutMinWidth: =0
+                                          RadiusBottomLeft: =8
+                                          RadiusBottomRight: =0
+                                          RadiusTopLeft: =8
+                                          RadiusTopRight: =0
+                                          Width: =4
+                                    - conInvHomeCardText:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutJustifyContent: =LayoutJustifyContent.Center
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =0
+                                        Children:
+                                          - txtInvHomeCardLabel:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(36, 36, 36, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =20
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =13
+                                                Text: =ThisItem.Label
+                                                Wrap: =false
+                                          - txtInvHomeCardCount:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =ThisItem.Label & ", " & ThisItem.Count
+                                                Color: =ThisItem.Accent
+                                                FontWeight: =FontWeight.Bold
+                                                Height: =38
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =26
+                                                Text: =Text(ThisItem.Count)
+                                                Wrap: =false
+                                          - txtInvHomeCardHint:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(97, 97, 97, 1)
+                                                Height: =20
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =12
+                                                Text: =ThisItem.Hint
+                                                Wrap: =false
+                        - conInvHomeLists:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =If(App.Width >= 1250, Max(conInvHomeLines.Height, conInvHomeDue.Height), conInvHomeLines.Height + 16 + conInvHomeDue.Height)
+                              LayoutDirection: =If(App.Width >= 1250, LayoutDirection.Horizontal, LayoutDirection.Vertical)
+                              LayoutGap: =16
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              Visible: =fxCanViewInventory
+                            Children:
+                              - conInvHomeLines:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.Semilight
+                                    Fill: =RGBA(255, 255, 255, 1)
+                                    FillPortions: =0
+                                    Height: =20 + 48 + 12 + Max(galInvHomeLines.Height, If(galInvHomeLines.AllItemsCount = 0, 24, 0)) + 24
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =12
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =24
+                                    PaddingLeft: =24
+                                    PaddingRight: =24
+                                    PaddingTop: =20
+                                    RadiusBottomLeft: =8
+                                    RadiusBottomRight: =8
+                                    RadiusTopLeft: =8
+                                    RadiusTopRight: =8
+                                  Children:
+                                    - conInvHomeLinesHead:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =48
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =2
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =0
+                                        Children:
+                                          - txtInvHomeLinesTitle:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(36, 36, 36, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =26
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =16
+                                                Text: ="Request items to handle"
+                                          - txtInvHomeLinesDesc:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(97, 97, 97, 1)
+                                                Height: =20
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =12
+                                                Text: ="Approved Support Request items that need equipment reserved or issued."
+                                                Wrap: =false
+                                    - txtInvHomeLinesEmpty:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =24
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =13
+                                          Text: =If(gblInvLoading, "Loading…", "Nothing waiting. Approved items that need equipment appear here.")
+                                          Visible: =galInvHomeLines.AllItemsCount = 0
+                                          Wrap: =false
+                                    - galInvHomeLines:
+                                        Control: Gallery
+                                        Variant: Vertical
+                                        Properties:
+                                          AccessibleLabel: ="Request items to handle"
+                                          FillPortions: =0
+                                          Height: =Min(Self.AllItemsCount, 8) * 60
+                                          Items: |-
+                                            =SortByColumns(
+                                                Filter(
+                                                    gblInvLines,
+                                                    LineStatus.Value in ["Approved", "Fulfillment Pending"] &&
+                                                    (locHomeDept = "All" || locHomeDept in Coalesce(DepartmentRoute.Value, ""))
+                                                ),
+                                                "Title"
+                                            )
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =0
+                                          ShowScrollbar: =false
+                                          TabIndex: =0
+                                          TemplatePadding: =0
+                                          TemplateSize: =60
+                                        Children:
+                                          - conInvHomeLineRow:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                Height: =Parent.TemplateHeight - 4
+                                                LayoutAlignItems: =LayoutAlignItems.Center
+                                                LayoutDirection: =LayoutDirection.Horizontal
+                                                LayoutGap: =12
+                                                Width: =Parent.TemplateWidth
+                                              Children:
+                                                - conInvHomeLineText:
+                                                    Control: GroupContainer
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      DropShadow: =DropShadow.None
+                                                      Height: =48
+                                                      LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                      LayoutDirection: =LayoutDirection.Vertical
+                                                      LayoutGap: =2
+                                                      LayoutJustifyContent: =LayoutJustifyContent.Center
+                                                      LayoutMinHeight: =0
+                                                      LayoutMinWidth: =0
+                                                    Children:
+                                                      - txtInvHomeLineItem:
+                                                          Control: ModernText
+                                                          Properties:
+                                                            AccessibleLabel: =Self.Text
+                                                            Color: =RGBA(36, 36, 36, 1)
+                                                            FontWeight: =FontWeight.Semibold
+                                                            Height: =20
+                                                            LayoutMinWidth: =0
+                                                            PaddingBottom: =0
+                                                            PaddingLeft: =0
+                                                            PaddingTop: =0
+                                                            Size: =13
+                                                            Text: =Coalesce(ThisItem.EquipmentNameSnapshot, "Item") & "  ·  " & Text(Coalesce(ThisItem.QuantityApproved, ThisItem.QuantityRequested, 1)) & " needed"
+                                                            Wrap: =false
+                                                      - txtInvHomeLineReq:
+                                                          Control: ModernText
+                                                          Properties:
+                                                            AccessibleLabel: =Self.Text
+                                                            Color: =RGBA(97, 97, 97, 1)
+                                                            Height: =20
+                                                            LayoutMinWidth: =0
+                                                            PaddingBottom: =0
+                                                            PaddingLeft: =0
+                                                            PaddingTop: =0
+                                                            Size: =12
+                                                            Text: =First(Split(ThisItem.Title, " - ")).Value & "   ·   " & Coalesce(ThisItem.DepartmentRoute.Value, "") & "   ·   Reserved " & Coalesce(ThisItem.ReservedQuantity, 0) & ", issued " & Coalesce(ThisItem.QuantityFulfilled, 0)
+                                                            Wrap: =false
+                                                - txtInvHomeLineStatus:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Align: =Align.Center
+                                                      AlignInContainer: =AlignInContainer.Center
+                                                      Color: =If(Coalesce(ThisItem.ReservedQuantity, 0) = 0, RGBA(131, 82, 0, 1), RGBA(15, 76, 129, 1))
+                                                      Fill: =If(Coalesce(ThisItem.ReservedQuantity, 0) = 0, RGBA(255, 244, 206, 1), RGBA(230, 240, 250, 1))
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =24
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      RadiusBottomLeft: =12
+                                                      RadiusBottomRight: =12
+                                                      RadiusTopLeft: =12
+                                                      RadiusTopRight: =12
+                                                      Size: =12
+                                                      Text: =If(Coalesce(ThisItem.ReservedQuantity, 0) = 0, "To reserve", "In progress")
+                                                      Width: =110
+                                                      Wrap: =false
+                              - conInvHomeDue:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.Semilight
+                                    Fill: =RGBA(255, 255, 255, 1)
+                                    FillPortions: =0
+                                    Height: =20 + 48 + 12 + Max(galInvHomeDue.Height, If(galInvHomeDue.AllItemsCount = 0, 24, 0)) + 24
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =12
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =24
+                                    PaddingLeft: =24
+                                    PaddingRight: =24
+                                    PaddingTop: =20
+                                    RadiusBottomLeft: =8
+                                    RadiusBottomRight: =8
+                                    RadiusTopLeft: =8
+                                    RadiusTopRight: =8
+                                  Children:
+                                    - conInvHomeDueHead:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =48
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =2
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =0
+                                        Children:
+                                          - txtInvHomeDueTitle:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(36, 36, 36, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =26
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =16
+                                                Text: ="Due back"
+                                          - txtInvHomeDueDesc:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(97, 97, 97, 1)
+                                                Height: =20
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =12
+                                                Text: ="Overdue loans and loans due in the next 7 days."
+                                                Wrap: =false
+                                    - txtInvHomeDueEmpty:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =24
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =13
+                                          Text: =If(gblInvLoading, "Loading…", "Nothing is due back this week.")
+                                          Visible: =galInvHomeDue.AllItemsCount = 0
+                                          Wrap: =false
+                                    - galInvHomeDue:
+                                        Control: Gallery
+                                        Variant: Vertical
+                                        Properties:
+                                          AccessibleLabel: ="Due back"
+                                          FillPortions: =0
+                                          Height: =Min(Self.AllItemsCount, 8) * 60
+                                          Items: |-
+                                            =SortByColumns(
+                                                Filter(
+                                                    gblInvOpenCheckouts,
+                                                    Status <> "Awaiting Acknowledgement" && !IsBlank(DueDate) && DueDate <= DateAdd(Today(), 7, TimeUnit.Days) &&
+                                                    AssetId in Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID
+                                                ),
+                                                "DueDate"
+                                            )
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =0
+                                          ShowScrollbar: =false
+                                          TabIndex: =0
+                                          TemplatePadding: =0
+                                          TemplateSize: =60
+                                        Children:
+                                          - conInvHomeDueRow:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                Height: =Parent.TemplateHeight - 4
+                                                LayoutAlignItems: =LayoutAlignItems.Center
+                                                LayoutDirection: =LayoutDirection.Horizontal
+                                                LayoutGap: =12
+                                                Width: =Parent.TemplateWidth
+                                              Children:
+                                                - conInvHomeDueText:
+                                                    Control: GroupContainer
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      DropShadow: =DropShadow.None
+                                                      Height: =48
+                                                      LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                      LayoutDirection: =LayoutDirection.Vertical
+                                                      LayoutGap: =2
+                                                      LayoutJustifyContent: =LayoutJustifyContent.Center
+                                                      LayoutMinHeight: =0
+                                                      LayoutMinWidth: =0
+                                                    Children:
+                                                      - txtInvHomeDueAsset:
+                                                          Control: ModernText
+                                                          Properties:
+                                                            AccessibleLabel: =Self.Text
+                                                            Color: =RGBA(36, 36, 36, 1)
+                                                            FontWeight: =FontWeight.Semibold
+                                                            Height: =20
+                                                            LayoutMinWidth: =0
+                                                            PaddingBottom: =0
+                                                            PaddingLeft: =0
+                                                            PaddingTop: =0
+                                                            Size: =13
+                                                            Text: =ThisItem.AssetTagSnapshot & "  ·  " & fxPersonName(ThisItem.RecipientName)
+                                                            Wrap: =false
+                                                      - txtInvHomeDueInfo:
+                                                          Control: ModernText
+                                                          Properties:
+                                                            AccessibleLabel: =Self.Text
+                                                            Color: =RGBA(97, 97, 97, 1)
+                                                            Height: =20
+                                                            LayoutMinWidth: =0
+                                                            PaddingBottom: =0
+                                                            PaddingLeft: =0
+                                                            PaddingTop: =0
+                                                            Size: =12
+                                                            Text: =Coalesce(ThisItem.ReceiptNumber, ThisItem.Title) & If(IsBlank(ThisItem.RequestNumber), "", "   ·   " & ThisItem.RequestNumber)
+                                                            Wrap: =false
+                                                - txtInvHomeDueWhen:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Align: =Align.Center
+                                                      AlignInContainer: =AlignInContainer.Center
+                                                      Color: =If(ThisItem.DueDate < Today(), RGBA(164, 38, 44, 1), RGBA(97, 97, 97, 1))
+                                                      Fill: =If(ThisItem.DueDate < Today(), RGBA(253, 231, 233, 1), RGBA(237, 239, 242, 1))
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =24
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      RadiusBottomLeft: =12
+                                                      RadiusBottomRight: =12
+                                                      RadiusTopLeft: =12
+                                                      RadiusTopRight: =12
+                                                      Size: =12
+                                                      Text: =If(ThisItem.DueDate < Today(), "Overdue " & Text(ThisItem.DueDate, "mmm d"), "Due " & Text(ThisItem.DueDate, "mmm d"))
+                                                      Width: =130
+                                                      Wrap: =false
