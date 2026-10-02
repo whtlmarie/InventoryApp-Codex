@@ -3,3 +3,4 @@ EditorState:
     - scrInvHome
     - scrInvAssets
     - scrInvAsset
+    - scrInvCheckout

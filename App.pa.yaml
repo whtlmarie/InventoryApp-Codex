@@ -95,7 +95,8 @@ App:
       // ---------- Navigation ----------
       fxInvNav = Table(
           {Id: "home", Label: "Home", Icon: "Home", Target: scrInvHome, IsAllowed: true},
-          {Id: "assets", Label: "Assets", Icon: "Box", Target: scrInvAssets, IsAllowed: fxCanViewInventory}
+          {Id: "assets", Label: "Assets", Icon: "Box", Target: scrInvAssets, IsAllowed: fxCanViewInventory},
+          {Id: "checkout", Label: "Checkout", Icon: "Send", Target: scrInvCheckout, IsAllowed: fxIsInvStaff}
       );
       fxInvVisibleNav = Filter(fxInvNav, IsAllowed);
 
@@ -107,5 +108,18 @@ App:
           }
       );
       fxInvStatusPayload(assetId: Number, status: Text, note: Text): Text = JSON({actionVersion: fxInvActionVersion, action: "AssetStatus", assetId: assetId, status: status, note: note});
+      // One handover = one receipt: StartReceipt, then Issue per item, then FinishReceipt.
+      fxInvStartReceiptPayload(email: Text, name: Text, claims: Text, dutyPhone: Text, orgAccountNo: Text, returnDate: Text, checkoutType: Text, department: Text): Text = JSON(
+          {
+              actionVersion: fxInvActionVersion, action: "StartReceipt",
+              recipient: {email: email, name: name, claims: claims}, dutyPhone: dutyPhone, orgAccountNo: orgAccountNo,
+              returnDate: returnDate, checkoutType: checkoutType, department: department, requestId: 0
+          }
+      );
+      fxInvIssuePayload(receiptId: Number, assetId: Number, reservationId: Number): Text = JSON({actionVersion: fxInvActionVersion, action: "Issue", receiptId: receiptId, assetId: assetId, reservationId: reservationId});
+      fxInvFinishPayload(receiptId: Number): Text = JSON({actionVersion: fxInvActionVersion, action: "FinishReceipt", receiptId: receiptId});
+    OnStart: |-
+      =// Org account number remembered per department for the session (Checkout).
+      Set(gblInvOrgAcct, FirstN(Table({Dept: "", Acct: ""}), 0))
     StartScreen: =scrInvHome
     Theme: =PowerAppsTheme
