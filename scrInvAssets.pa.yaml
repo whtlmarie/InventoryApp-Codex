@@ -437,7 +437,7 @@ Screens:
                             Properties:
                               DropShadow: =DropShadow.None
                               FillPortions: =0
-                              Height: =If(App.Width >= 1100, 40, 88)
+                              Height: =If(App.Width >= 1500, 40, App.Width >= 900, 88, 184)
                               LayoutAlignItems: =LayoutAlignItems.Center
                               LayoutDirection: =LayoutDirection.Horizontal
                               LayoutGap: =12
@@ -496,6 +496,108 @@ Screens:
                                     Placeholder: ="Search tag, serial, make, model, item or holder"
                                     Type: =TextInputType.Search
                                     Width: =360
+                              - chkInvAstNoCat:
+                                  Control: ModernCheckbox
+                                  Properties:
+                                    AccessibleLabel: ="Only assets without a catalog item"
+                                    Height: =36
+                                    Label: ="Without a catalog item"
+                                    LayoutMinWidth: =0
+                                    Width: =210
+                              - btnInvAstSelAll:
+                                  Control: ModernButton
+                                  Properties:
+                                    AccessibleLabel: ="Select every asset shown"
+                                    Appearance: =ButtonAppearance.Secondary
+                                    Height: =36
+                                    Icon: ="Checkmark"
+                                    LayoutMinWidth: =0
+                                    OnSelect: |-
+                                      =ClearCollect(colInvAstSel, ForAll(FirstN(galInvAstList.AllItems, 50), {ID: ID}))
+                                    Text: ="Select shown"
+                                    Visible: =fxIsInvStaff
+                                    Width: =150
+                        - conInvAstBulk:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              BorderColor: =RGBA(15, 76, 129, 1)
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(246, 249, 253, 1)
+                              FillPortions: =0
+                              Height: =If(App.Width >= 900, 60, 112)
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =12
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              LayoutWrap: =true
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              RadiusBottomLeft: =6
+                              RadiusBottomRight: =6
+                              RadiusTopLeft: =6
+                              RadiusTopRight: =6
+                              Visible: =fxIsInvStaff && !IsEmpty(colInvAstSel)
+                            Children:
+                              - txtInvAstBulkCount:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(36, 36, 36, 1)
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =20
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =13
+                                    Text: =CountRows(colInvAstSel) & " selected" & If(CountRows(colInvAstSel) > 50, " (50 at a time)", "")
+                                    Width: =170
+                                    Wrap: =false
+                              - drpInvAstBulkCat:
+                                  Control: ModernDropdown
+                                  Properties:
+                                    AccessibleLabel: ="Catalog item for the selected assets"
+                                    Appearance: =Appearance.Outline
+                                    Height: =36
+                                    ItemDisplayText: =ThisItem.Title
+                                    Items: =fxInvCatalog
+                                    LayoutMinWidth: =0
+                                    Width: =300
+                              - btnInvAstBulkGo:
+                                  Control: ModernButton
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    DisplayMode: =If(locBusy || IsBlank(drpInvAstBulkCat.Selected) || CountRows(colInvAstSel) > 50, DisplayMode.Disabled, DisplayMode.Edit)
+                                    Height: =36
+                                    Icon: ="Link"
+                                    LayoutMinWidth: =0
+                                    OnSelect: |-
+                                      =UpdateContext({locBusy: true});
+                                      IfError(
+                                          With(
+                                              {raw: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "AssetSetCatalog", assetIds: ForAll(colInvAstSel, {Value: ID}), catalogItemId: drpInvAstBulkCat.Selected.ID})).response)},
+                                              Notify(Text(raw.message), If(Text(raw.status) = "Success", NotificationType.Success, NotificationType.Error))
+                                          ),
+                                          Notify("The inventory service could not be reached. Try again.", NotificationType.Error)
+                                      );
+                                      UpdateContext({locBusy: false});
+                                      Clear(colInvAstSel);
+                                      Select(btnInvAstReload)
+                                    Text: ="Set catalog item"
+                                    Width: =170
+                              - btnInvAstBulkClear:
+                                  Control: ModernButton
+                                  Properties:
+                                    AccessibleLabel: ="Clear the selection"
+                                    Appearance: =ButtonAppearance.Subtle
+                                    Height: =36
+                                    LayoutMinWidth: =0
+                                    OnSelect: =Clear(colInvAstSel)
+                                    Text: ="Clear"
+                                    Width: =90
                         - conInvAstList:
                             Control: GroupContainer
                             Variant: AutoLayout
@@ -584,6 +686,7 @@ Screens:
                                               gblInvAssets,
                                               (locAstDept = "All" || Dept = locAstDept) &&
                                               ((locAstStatus = "All" && Status <> "Disposed") || Status = locAstStatus) &&
+                                              (!chkInvAstNoCat.Checked || Coalesce(CatalogItemId, 0) = 0) &&
                                               (IsBlank(Trim(txtInvAstSearch.Text)) || Trim(txtInvAstSearch.Text) in Title || Trim(txtInvAstSearch.Text) in SerialNumber || Trim(txtInvAstSearch.Text) in Make || Trim(txtInvAstSearch.Text) in Model ||
                                                   Trim(txtInvAstSearch.Text) in CatalogNameSnapshot || Trim(txtInvAstSearch.Text) in CurrentHolderName)
                                           ),
@@ -615,6 +718,18 @@ Screens:
                                           RadiusTopRight: =6
                                           Width: =Parent.TemplateWidth
                                         Children:
+                                          - chkInvAstPick:
+                                              Control: ModernCheckbox
+                                              Properties:
+                                                AccessibleLabel: ="Select " & ThisItem.Title
+                                                Default: =ThisItem.ID in colInvAstSel.ID
+                                                Label: =""
+                                                LayoutMinWidth: =0
+                                                OnCheck: |-
+                                                  =If(!(ThisItem.ID in colInvAstSel.ID), Collect(colInvAstSel, {ID: ThisItem.ID}))
+                                                OnUncheck: =RemoveIf(colInvAstSel, ID = ThisItem.ID)
+                                                Visible: =fxIsInvStaff
+                                                Width: =32
                                           - txtInvAstTag:
                                               Control: ModernText
                                               Properties:
