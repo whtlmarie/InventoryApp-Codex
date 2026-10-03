@@ -1161,7 +1161,7 @@ Screens:
                                                       AlignInContainer: =AlignInContainer.End
                                                       DisplayMode: =If(locBusy || IsEmpty(attInvAsdFile.Attachments), DisplayMode.Disabled, DisplayMode.Edit)
                                                       Height: =36
-                                                      Icon: ="ArrowUpload"
+                                                      Icon: ="Upload"
                                                       LayoutMinWidth: =0
                                                       OnSelect: |-
                                                         =UpdateContext({locBusy: true});

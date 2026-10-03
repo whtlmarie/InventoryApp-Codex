@@ -746,7 +746,7 @@ Screens:
                                           AccessibleLabel: ="Import the ready rows"
                                           DisplayMode: =If(locBusy || IsEmpty(Filter(colInvImp, IsBlank(Issue) && IsBlank(Result))), DisplayMode.Disabled, DisplayMode.Edit)
                                           Height: =36
-                                          Icon: ="ArrowUpload"
+                                          Icon: ="Upload"
                                           LayoutMinWidth: =0
                                           OnSelect: |-
                                             =UpdateContext({locBusy: true});

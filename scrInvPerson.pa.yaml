@@ -1533,7 +1533,7 @@ Screens:
                                                 AccessibleLabel: ="Upload the signed PDF"
                                                 DisplayMode: =If(locBusy || IsEmpty(attInvPerCac.Attachments), DisplayMode.Disabled, DisplayMode.Edit)
                                                 Height: =36
-                                                Icon: ="ArrowUpload"
+                                                Icon: ="Upload"
                                                 LayoutMinWidth: =0
                                                 OnSelect: |-
                                                   =UpdateContext({locBusy: true});
@@ -1673,7 +1673,7 @@ Screens:
                                                 AccessibleLabel: ="Upload the CAC-signed PDF for " & ThisItem.Title
                                                 Appearance: =ButtonAppearance.Subtle
                                                 Height: =36
-                                                Icon: ="ArrowUpload"
+                                                Icon: ="Upload"
                                                 LayoutMinWidth: =0
                                                 OnSelect: |-
                                                   =UpdateContext({locPerRcpt: ThisItem})
