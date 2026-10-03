@@ -1062,6 +1062,13 @@ Screens:
                                                       MaxAttachments: =1
                                                       NoAttachmentsText: ="No file attached."
                                                       Width: =Parent.Width
+                                                - imgInvAsdFileBlob:
+                                                    Control: Image
+                                                    Properties:
+                                                      Height: =1
+                                                      Image: =First(attInvAsdFile.Attachments).Value
+                                                      Visible: =false
+                                                      Width: =1
                                                 - conInvAsdFileRow:
                                                     Control: GroupContainer
                                                     Variant: AutoLayout
@@ -1160,7 +1167,7 @@ Screens:
                                                         =UpdateContext({locBusy: true});
                                                         IfError(
                                                             With(
-                                                                {raw: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "AssetFile", assetId: gblInvAssetId, kind: drpInvAsdFileKind.Selected.Value, note: Trim(txtInvAsdFileNote.Text), file: {name: First(attInvAsdFile.Attachments).Name, content: With({j: JSON(First(attInvAsdFile.Attachments).Value, JSONFormat.IncludeBinaryData)}, Mid(j, 2, Len(j) - 2))}})).response)},
+                                                                {raw: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "AssetFile", assetId: gblInvAssetId, kind: drpInvAsdFileKind.Selected.Value, note: Trim(txtInvAsdFileNote.Text), file: {name: First(attInvAsdFile.Attachments).Name, content: With({j: JSON(imgInvAsdFileBlob.Image, JSONFormat.IncludeBinaryData)}, Mid(j, 2, Len(j) - 2))}})).response)},
                                                                 UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message), Id: Value(raw.id)}})
                                                             ),
                                                             UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again.", Id: 0}})

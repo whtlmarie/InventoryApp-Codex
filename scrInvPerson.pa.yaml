@@ -1495,6 +1495,13 @@ Screens:
                                           MaxAttachments: =1
                                           NoAttachmentsText: ="No file attached."
                                           Width: =Parent.Width
+                                    - imgInvPerCacBlob:
+                                        Control: Image
+                                        Properties:
+                                          Height: =1
+                                          Image: =First(attInvPerCac.Attachments).Value
+                                          Visible: =false
+                                          Width: =1
                                     - conInvPerUpBtns:
                                         Control: GroupContainer
                                         Variant: AutoLayout
@@ -1531,7 +1538,7 @@ Screens:
                                                 OnSelect: |-
                                                   =UpdateContext({locBusy: true});
                                                   IfError(
-                                                      With({raw: ParseJSON('Inventory-Action'.Run(fxInvCacUploadPayload(locPerRcpt.ID, First(attInvPerCac.Attachments).Name, With({j: JSON(First(attInvPerCac.Attachments).Value, JSONFormat.IncludeBinaryData)}, Mid(j, 2, Len(j) - 2)))).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
+                                                      With({raw: ParseJSON('Inventory-Action'.Run(fxInvCacUploadPayload(locPerRcpt.ID, First(attInvPerCac.Attachments).Name, With({j: JSON(imgInvPerCacBlob.Image, JSONFormat.IncludeBinaryData)}, Mid(j, 2, Len(j) - 2)))).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
                                                       UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
                                                   );
                                                   UpdateContext({locBusy: false});
