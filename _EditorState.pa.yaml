@@ -11,3 +11,4 @@ EditorState:
     - scrInvHq
     - scrInvLocations
     - scrInvImport
+    - scrInvRequests

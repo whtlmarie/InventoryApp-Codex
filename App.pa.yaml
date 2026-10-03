@@ -100,6 +100,7 @@ App:
       fxInvNav = Table(
           {Id: "home", Label: "Home", Icon: "Home", Target: scrInvHome, IsAllowed: true},
           {Id: "assets", Label: "Assets", Icon: "Laptop", Target: scrInvAssets, IsAllowed: fxCanViewInventory},
+          {Id: "requests", Label: "Request items", Icon: "Calendar", Target: scrInvRequests, IsAllowed: fxIsInvStaff},
           {Id: "checkout", Label: "Checkout", Icon: "Send", Target: scrInvCheckout, IsAllowed: fxIsInvStaff},
           {Id: "returns", Label: "Returns", Icon: "ArrowUndo", Target: scrInvReturns, IsAllowed: fxIsInvStaff},
           {Id: "person", Label: "People", Icon: "Person", Target: scrInvPerson, IsAllowed: fxCanViewInventory},
