@@ -99,11 +99,11 @@ App:
       // ---------- Navigation ----------
       fxInvNav = Table(
           {Id: "home", Label: "Home", Icon: "Home", Target: scrInvHome, IsAllowed: true},
-          {Id: "assets", Label: "Assets", Icon: "Box", Target: scrInvAssets, IsAllowed: fxCanViewInventory},
+          {Id: "assets", Label: "Assets", Icon: "Laptop", Target: scrInvAssets, IsAllowed: fxCanViewInventory},
           {Id: "checkout", Label: "Checkout", Icon: "Send", Target: scrInvCheckout, IsAllowed: fxIsInvStaff},
           {Id: "returns", Label: "Returns", Icon: "ArrowUndo", Target: scrInvReturns, IsAllowed: fxIsInvStaff},
           {Id: "person", Label: "People", Icon: "Person", Target: scrInvPerson, IsAllowed: fxCanViewInventory},
-          {Id: "count", Label: "Inventory count", Icon: "ClipboardTaskListLtr", Target: scrInvCount, IsAllowed: fxCanViewInventory},
+          {Id: "count", Label: "Inventory count", Icon: "Note", Target: scrInvCount, IsAllowed: fxCanViewInventory},
           {Id: "locations", Label: "Locations", Icon: "Location", Target: scrInvLocations, IsAllowed: fxCanViewInventory}
       );
       fxInvVisibleNav = Filter(fxInvNav, IsAllowed);

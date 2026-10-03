@@ -2010,14 +2010,20 @@ Screens:
                                                                   PaddingTop: =0
                                                                   Size: =13
                                                                   Text: ="Witness / approver (required)"
-                                                            - txtInvAsdDispWit:
-                                                                Control: ModernTextInput
+                                                            - cmbInvAsdDispWit:
+                                                                Control: ModernCombobox
                                                                 Properties:
                                                                   AccessibleLabel: ="Witness or approving official"
                                                                   AlignInContainer: =AlignInContainer.Stretch
                                                                   Appearance: =Appearance.Outline
+                                                                  DelayOutput: =true
                                                                   Height: =36
+                                                                  InputTextPlaceholder: ="Search by name or email"
+                                                                  ItemDisplayText: =ThisItem.DisplayName & "  (" & ThisItem.Mail & ")"
+                                                                  Items: |-
+                                                                    =If(Len(Trim(cmbInvAsdDispWit.SearchText)) >= 2, Filter(Office365Users.SearchUserV2({searchTerm: Trim(cmbInvAsdDispWit.SearchText), top: 15, isSearchTermRequired: true}).value, AccountEnabled && !IsBlank(Mail)))
                                                                   LayoutMinWidth: =0
+                                                                  SelectMultiple: =false
                                                                   Width: =Parent.Width
                                                 - conInvAsdDispR3:
                                                     Control: GroupContainer
@@ -2142,15 +2148,21 @@ Screens:
                                                                   PaddingTop: =0
                                                                   Size: =13
                                                                   Text: ="Sanitized by"
-                                                            - txtInvAsdSanBy:
-                                                                Control: ModernTextInput
+                                                            - cmbInvAsdSanBy:
+                                                                Control: ModernCombobox
                                                                 Properties:
                                                                   AccessibleLabel: ="Who sanitized the media"
                                                                   AlignInContainer: =AlignInContainer.Stretch
                                                                   Appearance: =Appearance.Outline
+                                                                  DelayOutput: =true
                                                                   DisplayMode: =If(drpInvAsdSan.Selected.Value = "Not applicable", DisplayMode.Disabled, DisplayMode.Edit)
                                                                   Height: =36
+                                                                  InputTextPlaceholder: ="Search by name or email"
+                                                                  ItemDisplayText: =ThisItem.DisplayName & "  (" & ThisItem.Mail & ")"
+                                                                  Items: |-
+                                                                    =If(Len(Trim(cmbInvAsdSanBy.SearchText)) >= 2, Filter(Office365Users.SearchUserV2({searchTerm: Trim(cmbInvAsdSanBy.SearchText), top: 15, isSearchTermRequired: true}).value, AccountEnabled && !IsBlank(Mail)))
                                                                   LayoutMinWidth: =0
+                                                                  SelectMultiple: =false
                                                                   Width: =Parent.Width
                                                       - conInvAsdFDispNote:
                                                           Control: GroupContainer
@@ -2228,7 +2240,7 @@ Screens:
                                                           Control: ModernButton
                                                           Properties:
                                                             AccessibleLabel: ="Record the disposition"
-                                                            DisplayMode: =If(locBusy || IsBlank(drpInvAsdDispMethod.Selected) || IsBlank(Trim(txtInvAsdDispWit.Text)) || (drpInvAsdSan.Selected.Value <> "Not applicable" && IsBlank(Trim(txtInvAsdSanBy.Text))), DisplayMode.Disabled, DisplayMode.Edit)
+                                                            DisplayMode: =If(locBusy || IsBlank(drpInvAsdDispMethod.Selected) || IsBlank(cmbInvAsdDispWit.Selected) || (drpInvAsdSan.Selected.Value <> "Not applicable" && IsBlank(cmbInvAsdSanBy.Selected)), DisplayMode.Disabled, DisplayMode.Edit)
                                                             Height: =36
                                                             Icon: ="Delete"
                                                             LayoutMinWidth: =0
@@ -2236,7 +2248,7 @@ Screens:
                                                               =UpdateContext({locBusy: true});
                                                               IfError(
                                                                   With(
-                                                                      {raw: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "Dispose", assetId: gblInvAssetId, method: drpInvAsdDispMethod.Selected.Value, date: Text(dteInvAsdDispDate.SelectedDate, "yyyy-mm-dd"), ref: Trim(txtInvAsdDispRef.Text), witness: Trim(txtInvAsdDispWit.Text), sanitization: {method: drpInvAsdSan.Selected.Value, date: If(drpInvAsdSan.Selected.Value = "Not applicable", "", Text(dteInvAsdSanDate.SelectedDate, "yyyy-mm-dd")), by: Trim(txtInvAsdSanBy.Text)}, note: Trim(txtInvAsdDispNote.Text)})).response)},
+                                                                      {raw: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "Dispose", assetId: gblInvAssetId, method: drpInvAsdDispMethod.Selected.Value, date: Text(dteInvAsdDispDate.SelectedDate, "yyyy-mm-dd"), ref: Trim(txtInvAsdDispRef.Text), witness: {email: Lower(cmbInvAsdDispWit.Selected.Mail), name: cmbInvAsdDispWit.Selected.DisplayName}, sanitization: {method: drpInvAsdSan.Selected.Value, date: If(drpInvAsdSan.Selected.Value = "Not applicable", "", Text(dteInvAsdSanDate.SelectedDate, "yyyy-mm-dd")), by: {email: Lower(cmbInvAsdSanBy.Selected.Mail), name: cmbInvAsdSanBy.Selected.DisplayName}}, note: Trim(txtInvAsdDispNote.Text)})).response)},
                                                                       UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message), Id: Value(raw.id)}})
                                                                   ),
                                                                   UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again.", Id: 0}})
