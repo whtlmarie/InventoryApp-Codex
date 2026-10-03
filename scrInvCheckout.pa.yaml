@@ -964,23 +964,39 @@ Screens:
                                                                           If(
                                                                               !IsBlank(exact),
                                                                               UpdateContext({locScanMsg: "", locScanMatches: Blank()});
-                                                                              With({hit: exact}, If(
+                                                                              With({hit: exact}, With(
+                                                                  {
+                                                                      held: Filter(gblInvReserved, AssetId = hit.ID && EndDate >= Today() && (drpInvCoType.Selected.Value = "Long-term Assignment" || StartDate <= dteInvCoReturn.SelectedDate)),
+                                                                      soon: Filter(gblInvReserved, AssetId = hit.ID && !(drpInvCoType.Selected.Value = "Long-term Assignment") && StartDate > dteInvCoReturn.SelectedDate && StartDate <= DateAdd(dteInvCoReturn.SelectedDate, 7, TimeUnit.Days))
+                                                                  },
+                                                                  If(
                                                                   hit.ID in colInvCoItems.ID, UpdateContext({locScanMsg: hit.Title & " is already on this receipt."}),
                                                                   hit.Status <> "Available", UpdateContext({locScanMsg: hit.Title & " is " & hit.Status & " and can't be issued."}),
                                                                   hit.Dept <> drpInvCoDept.Selected.Value, UpdateContext({locScanMsg: hit.Title & " is " & hit.Dept & " equipment. This receipt is for " & drpInvCoDept.Selected.Value & "."}),
                                                                   !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only issue " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),
-                                                                  Collect(colInvCoItems, hit)
+                                                                  !IsEmpty(held), UpdateContext({locScanMsg: hit.Title & " is reserved for " & First(held).RequestNumber & " from " & Text(First(held).StartDate, "mmm d") & " to " & Text(First(held).EndDate, "mmm d") & ". Use another unit" & If(drpInvCoType.Selected.Value = "Long-term Assignment", ".", ", or set the return date before " & Text(First(held).StartDate, "mmm d") & ".")}),
+                                                                  Collect(colInvCoItems, hit);
+                                                                  If(!IsEmpty(soon), UpdateContext({locScanMsg: "Added " & hit.Title & ". Heads-up: it is reserved for " & First(soon).RequestNumber & " from " & Text(First(soon).StartDate, "mmm d") & ", so it must be back on time."}))
+                                                                  )
                                                               )),
                                                                               With(
                                                                                   {m: FirstN(SortByColumns(Filter(gblInvAssets, code in Lower(Title) || code in Lower(Coalesce(SerialNumber, ""))), "Title"), 6)},
                                                                                   If(
                                                                                       IsEmpty(m), UpdateContext({locScanMsg: "No asset tag or serial number contains " & Trim(Self.Text) & ".", locScanMatches: Blank()}),
-                                                                                      CountRows(m) = 1, UpdateContext({locScanMsg: "", locScanMatches: Blank()}); With({hit: First(m)}, If(
+                                                                                      CountRows(m) = 1, UpdateContext({locScanMsg: "", locScanMatches: Blank()}); With({hit: First(m)}, With(
+                                                                  {
+                                                                      held: Filter(gblInvReserved, AssetId = hit.ID && EndDate >= Today() && (drpInvCoType.Selected.Value = "Long-term Assignment" || StartDate <= dteInvCoReturn.SelectedDate)),
+                                                                      soon: Filter(gblInvReserved, AssetId = hit.ID && !(drpInvCoType.Selected.Value = "Long-term Assignment") && StartDate > dteInvCoReturn.SelectedDate && StartDate <= DateAdd(dteInvCoReturn.SelectedDate, 7, TimeUnit.Days))
+                                                                  },
+                                                                  If(
                                                                   hit.ID in colInvCoItems.ID, UpdateContext({locScanMsg: hit.Title & " is already on this receipt."}),
                                                                   hit.Status <> "Available", UpdateContext({locScanMsg: hit.Title & " is " & hit.Status & " and can't be issued."}),
                                                                   hit.Dept <> drpInvCoDept.Selected.Value, UpdateContext({locScanMsg: hit.Title & " is " & hit.Dept & " equipment. This receipt is for " & drpInvCoDept.Selected.Value & "."}),
                                                                   !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only issue " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),
-                                                                  Collect(colInvCoItems, hit)
+                                                                  !IsEmpty(held), UpdateContext({locScanMsg: hit.Title & " is reserved for " & First(held).RequestNumber & " from " & Text(First(held).StartDate, "mmm d") & " to " & Text(First(held).EndDate, "mmm d") & ". Use another unit" & If(drpInvCoType.Selected.Value = "Long-term Assignment", ".", ", or set the return date before " & Text(First(held).StartDate, "mmm d") & ".")}),
+                                                                  Collect(colInvCoItems, hit);
+                                                                  If(!IsEmpty(soon), UpdateContext({locScanMsg: "Added " & hit.Title & ". Heads-up: it is reserved for " & First(soon).RequestNumber & " from " & Text(First(soon).StartDate, "mmm d") & ", so it must be back on time."}))
+                                                                  )
                                                               )),
                                                                                       UpdateContext({locScanMsg: "", locScanMatches: m})
                                                                                   )
@@ -1019,12 +1035,20 @@ Screens:
                                                             Icon: ="ChevronRight"
                                                             Layout: =ButtonLayout.IconAfter
                                                             OnSelect: |-
-                                                              =UpdateContext({locScanMatches: Blank(), locScanMsg: ""}); With({hit: ThisItem}, If(
+                                                              =UpdateContext({locScanMatches: Blank(), locScanMsg: ""}); With({hit: ThisItem}, With(
+                                                                  {
+                                                                      held: Filter(gblInvReserved, AssetId = hit.ID && EndDate >= Today() && (drpInvCoType.Selected.Value = "Long-term Assignment" || StartDate <= dteInvCoReturn.SelectedDate)),
+                                                                      soon: Filter(gblInvReserved, AssetId = hit.ID && !(drpInvCoType.Selected.Value = "Long-term Assignment") && StartDate > dteInvCoReturn.SelectedDate && StartDate <= DateAdd(dteInvCoReturn.SelectedDate, 7, TimeUnit.Days))
+                                                                  },
+                                                                  If(
                                                                   hit.ID in colInvCoItems.ID, UpdateContext({locScanMsg: hit.Title & " is already on this receipt."}),
                                                                   hit.Status <> "Available", UpdateContext({locScanMsg: hit.Title & " is " & hit.Status & " and can't be issued."}),
                                                                   hit.Dept <> drpInvCoDept.Selected.Value, UpdateContext({locScanMsg: hit.Title & " is " & hit.Dept & " equipment. This receipt is for " & drpInvCoDept.Selected.Value & "."}),
                                                                   !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only issue " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),
-                                                                  Collect(colInvCoItems, hit)
+                                                                  !IsEmpty(held), UpdateContext({locScanMsg: hit.Title & " is reserved for " & First(held).RequestNumber & " from " & Text(First(held).StartDate, "mmm d") & " to " & Text(First(held).EndDate, "mmm d") & ". Use another unit" & If(drpInvCoType.Selected.Value = "Long-term Assignment", ".", ", or set the return date before " & Text(First(held).StartDate, "mmm d") & ".")}),
+                                                                  Collect(colInvCoItems, hit);
+                                                                  If(!IsEmpty(soon), UpdateContext({locScanMsg: "Added " & hit.Title & ". Heads-up: it is reserved for " & First(soon).RequestNumber & " from " & Text(First(soon).StartDate, "mmm d") & ", so it must be back on time."}))
+                                                                  )
                                                               ))
                                                             Text: =ThisItem.Title & "   ·   " & Coalesce(ThisItem.CatalogNameSnapshot, "Equipment") & "   ·   " & ThisItem.Status
                                                             Width: =Parent.TemplateWidth - 4
