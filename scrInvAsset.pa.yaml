@@ -350,6 +350,7 @@ Screens:
                               FillPortions: =0
                               Height: |-
                                 =With({r: If(locNew, 0, conInvAsdStatus.Height + 16 + conInvAsdRes.Height + 16 + conInvAsdHist.Height)}, If(App.Width >= 1250, Max(conInvAsdDetails.Height, r), conInvAsdDetails.Height + 16 + r))
+                              LayoutAlignItems: =If(App.Width >= 1250, LayoutAlignItems.Start, LayoutAlignItems.Stretch)
                               LayoutDirection: =If(App.Width >= 1250, LayoutDirection.Horizontal, LayoutDirection.Vertical)
                               LayoutGap: =16
                               LayoutMinHeight: =0
@@ -360,6 +361,7 @@ Screens:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
+                                    AlignInContainer: =AlignInContainer.SetByContainer
                                     DropShadow: =DropShadow.None
                                     FillPortions: =If(App.Width >= 1250, 3, 0)
                                     Height: =conInvAsdDetails.Height
@@ -452,7 +454,7 @@ Screens:
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutGap: =4
                                                       LayoutMinHeight: =0
-                                                      LayoutMinWidth: =200
+                                                      LayoutMinWidth: =160
                                                     Children:
                                                       - txtInvAsdFTagLbl:
                                                           Control: ModernText
@@ -471,12 +473,14 @@ Screens:
                                                           Control: ModernTextInput
                                                           Properties:
                                                             AccessibleLabel: ="Asset tag or serial number"
+                                                            AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
                                                             Default: =locAsset.Title
                                                             DisplayMode: =If(locEdit, DisplayMode.Edit, DisplayMode.View)
                                                             Height: =36
                                                             LayoutMinWidth: =0
                                                             Placeholder: ="Scan or type the label"
+                                                            Width: =Parent.Width
                                                 - conInvAsdFDept:
                                                     Control: GroupContainer
                                                     Variant: AutoLayout
@@ -487,7 +491,7 @@ Screens:
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutGap: =4
                                                       LayoutMinHeight: =0
-                                                      LayoutMinWidth: =200
+                                                      LayoutMinWidth: =160
                                                     Children:
                                                       - txtInvAsdFDeptLbl:
                                                           Control: ModernText
@@ -506,6 +510,7 @@ Screens:
                                                           Control: ModernDropdown
                                                           Properties:
                                                             AccessibleLabel: ="Department"
+                                                            AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
                                                             Default: |-
                                                               =LookUp(If(locEdit, ForAll(fxMyDepts, {Value: Dept}), Table({Value: "AV"}, {Value: "IT"})), Value = Coalesce(locAsset.Department.Value, fxDefaultDept))
@@ -515,6 +520,7 @@ Screens:
                                                             Items: |-
                                                               =If(locEdit, ForAll(fxMyDepts, {Value: Dept}), Table({Value: "AV"}, {Value: "IT"}))
                                                             LayoutMinWidth: =0
+                                                            Width: =Parent.Width
                                           - conInvAsdR2:
                                               Control: GroupContainer
                                               Variant: AutoLayout
@@ -537,7 +543,7 @@ Screens:
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutGap: =4
                                                       LayoutMinHeight: =0
-                                                      LayoutMinWidth: =200
+                                                      LayoutMinWidth: =160
                                                     Children:
                                                       - txtInvAsdFCatalogLbl:
                                                           Control: ModernText
@@ -556,6 +562,7 @@ Screens:
                                                           Control: ModernDropdown
                                                           Properties:
                                                             AccessibleLabel: ="Catalog item"
+                                                            AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
                                                             Default: =LookUp(fxInvCatalog, ID = locAsset.CatalogItemId)
                                                             DisplayMode: =If(locEdit, DisplayMode.Edit, DisplayMode.View)
@@ -563,6 +570,7 @@ Screens:
                                                             ItemDisplayText: =ThisItem.Title
                                                             Items: =Filter(fxInvCatalog, IsBlank(drpInvAsdDept.Selected.Value) || drpInvAsdDept.Selected.Value in Coalesce(DepartmentRoute.Value, ""))
                                                             LayoutMinWidth: =0
+                                                            Width: =Parent.Width
                                                 - conInvAsdFKind:
                                                     Control: GroupContainer
                                                     Variant: AutoLayout
@@ -573,7 +581,7 @@ Screens:
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutGap: =4
                                                       LayoutMinHeight: =0
-                                                      LayoutMinWidth: =200
+                                                      LayoutMinWidth: =160
                                                     Children:
                                                       - txtInvAsdFKindLbl:
                                                           Control: ModernText
@@ -592,6 +600,7 @@ Screens:
                                                           Control: ModernDropdown
                                                           Properties:
                                                             AccessibleLabel: ="Kind"
+                                                            AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
                                                             Default: =LookUp(fxAssetKinds, Value = Coalesce(locAsset.AssetKind.Value, If(IsBlank(drpInvAsdCatalog.Selected), "Loaner Pool", drpInvAsdCatalog.Selected.InventoryType.Value)))
                                                             DisplayMode: =If(locEdit, DisplayMode.Edit, DisplayMode.View)
@@ -599,6 +608,7 @@ Screens:
                                                             ItemDisplayText: =ThisItem.Value
                                                             Items: =fxAssetKinds
                                                             LayoutMinWidth: =0
+                                                            Width: =Parent.Width
                                           - conInvAsdR3:
                                               Control: GroupContainer
                                               Variant: AutoLayout
@@ -621,7 +631,7 @@ Screens:
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutGap: =4
                                                       LayoutMinHeight: =0
-                                                      LayoutMinWidth: =200
+                                                      LayoutMinWidth: =160
                                                     Children:
                                                       - txtInvAsdFMakeLbl:
                                                           Control: ModernText
@@ -640,11 +650,13 @@ Screens:
                                                           Control: ModernTextInput
                                                           Properties:
                                                             AccessibleLabel: ="Make"
+                                                            AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
                                                             Default: =locAsset.Make
                                                             DisplayMode: =If(locEdit, DisplayMode.Edit, DisplayMode.View)
                                                             Height: =36
                                                             LayoutMinWidth: =0
+                                                            Width: =Parent.Width
                                                 - conInvAsdFModel:
                                                     Control: GroupContainer
                                                     Variant: AutoLayout
@@ -655,7 +667,7 @@ Screens:
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutGap: =4
                                                       LayoutMinHeight: =0
-                                                      LayoutMinWidth: =200
+                                                      LayoutMinWidth: =160
                                                     Children:
                                                       - txtInvAsdFModelLbl:
                                                           Control: ModernText
@@ -674,11 +686,13 @@ Screens:
                                                           Control: ModernTextInput
                                                           Properties:
                                                             AccessibleLabel: ="Model"
+                                                            AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
                                                             Default: =locAsset.Model
                                                             DisplayMode: =If(locEdit, DisplayMode.Edit, DisplayMode.View)
                                                             Height: =36
                                                             LayoutMinWidth: =0
+                                                            Width: =Parent.Width
                                           - conInvAsdR4:
                                               Control: GroupContainer
                                               Variant: AutoLayout
@@ -701,7 +715,7 @@ Screens:
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutGap: =4
                                                       LayoutMinHeight: =0
-                                                      LayoutMinWidth: =200
+                                                      LayoutMinWidth: =160
                                                     Children:
                                                       - txtInvAsdFCondLbl:
                                                           Control: ModernText
@@ -720,6 +734,7 @@ Screens:
                                                           Control: ModernDropdown
                                                           Properties:
                                                             AccessibleLabel: ="Condition"
+                                                            AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
                                                             Default: =LookUp(fxConditions, Value = Coalesce(locAsset.Condition.Value, "Good"))
                                                             DisplayMode: =If(locEdit, DisplayMode.Edit, DisplayMode.View)
@@ -727,6 +742,7 @@ Screens:
                                                             ItemDisplayText: =ThisItem.Value
                                                             Items: =fxConditions
                                                             LayoutMinWidth: =0
+                                                            Width: =Parent.Width
                                                 - conInvAsdFHome:
                                                     Control: GroupContainer
                                                     Variant: AutoLayout
@@ -737,7 +753,7 @@ Screens:
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutGap: =4
                                                       LayoutMinHeight: =0
-                                                      LayoutMinWidth: =200
+                                                      LayoutMinWidth: =160
                                                     Children:
                                                       - txtInvAsdFHomeLbl:
                                                           Control: ModernText
@@ -756,12 +772,14 @@ Screens:
                                                           Control: ModernTextInput
                                                           Properties:
                                                             AccessibleLabel: ="Home location"
+                                                            AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
                                                             Default: =locAsset.HomeLocation
                                                             DisplayMode: =If(locEdit, DisplayMode.Edit, DisplayMode.View)
                                                             Height: =36
                                                             LayoutMinWidth: =0
                                                             Placeholder: ="Room or cabinet"
+                                                            Width: =Parent.Width
                                           - conInvAsdR5:
                                               Control: GroupContainer
                                               Variant: AutoLayout
@@ -784,7 +802,7 @@ Screens:
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutGap: =4
                                                       LayoutMinHeight: =0
-                                                      LayoutMinWidth: =200
+                                                      LayoutMinWidth: =160
                                                     Children:
                                                       - txtInvAsdFPurchaseLbl:
                                                           Control: ModernText
@@ -803,11 +821,13 @@ Screens:
                                                           Control: ModernDatePicker
                                                           Properties:
                                                             AccessibleLabel: ="Purchase date"
+                                                            AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
                                                             DefaultDate: =locAsset.PurchaseDate
                                                             DisplayMode: =If(locEdit, DisplayMode.Edit, DisplayMode.View)
                                                             Height: =36
                                                             LayoutMinWidth: =0
+                                                            Width: =Parent.Width
                                                 - conInvAsdFWarranty:
                                                     Control: GroupContainer
                                                     Variant: AutoLayout
@@ -818,7 +838,7 @@ Screens:
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutGap: =4
                                                       LayoutMinHeight: =0
-                                                      LayoutMinWidth: =200
+                                                      LayoutMinWidth: =160
                                                     Children:
                                                       - txtInvAsdFWarrantyLbl:
                                                           Control: ModernText
@@ -837,11 +857,13 @@ Screens:
                                                           Control: ModernDatePicker
                                                           Properties:
                                                             AccessibleLabel: ="Warranty end"
+                                                            AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
                                                             DefaultDate: =locAsset.WarrantyEnd
                                                             DisplayMode: =If(locEdit, DisplayMode.Edit, DisplayMode.View)
                                                             Height: =36
                                                             LayoutMinWidth: =0
+                                                            Width: =Parent.Width
                                           - conInvAsdFNotes:
                                               Control: GroupContainer
                                               Variant: AutoLayout
@@ -956,6 +978,7 @@ Screens:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
+                                    AlignInContainer: =AlignInContainer.SetByContainer
                                     DropShadow: =DropShadow.None
                                     FillPortions: =If(App.Width >= 1250, 2, 0)
                                     Height: =If(locNew, 0, conInvAsdStatus.Height + 16 + conInvAsdRes.Height + 16 + conInvAsdHist.Height)
@@ -1086,7 +1109,7 @@ Screens:
                                                 LayoutDirection: =LayoutDirection.Vertical
                                                 LayoutGap: =4
                                                 LayoutMinHeight: =0
-                                                LayoutMinWidth: =200
+                                                LayoutMinWidth: =160
                                               Children:
                                                 - txtInvAsdFNewStatusLbl:
                                                     Control: ModernText
@@ -1105,6 +1128,7 @@ Screens:
                                                     Control: ModernDropdown
                                                     Properties:
                                                       AccessibleLabel: ="New status"
+                                                      AlignInContainer: =AlignInContainer.Stretch
                                                       Appearance: =Appearance.Outline
                                                       Default: =Blank()
                                                       DisplayMode: =If(fxCanManage(locAsset.Department.Value), DisplayMode.Edit, DisplayMode.Disabled)
@@ -1112,6 +1136,7 @@ Screens:
                                                       ItemDisplayText: =ThisItem.Value
                                                       Items: =Filter(fxSettableStatuses, Value <> locAsset.AssetStatus.Value && (locAsset.AssetStatus.Value <> "Issued" || Value = "Lost"))
                                                       LayoutMinWidth: =0
+                                                      Width: =Parent.Width
                                           - conInvAsdFStatusNote:
                                               Control: GroupContainer
                                               Variant: AutoLayout
@@ -1122,7 +1147,7 @@ Screens:
                                                 LayoutDirection: =LayoutDirection.Vertical
                                                 LayoutGap: =4
                                                 LayoutMinHeight: =0
-                                                LayoutMinWidth: =200
+                                                LayoutMinWidth: =160
                                               Children:
                                                 - txtInvAsdFStatusNoteLbl:
                                                     Control: ModernText
@@ -1141,11 +1166,13 @@ Screens:
                                                     Control: ModernTextInput
                                                     Properties:
                                                       AccessibleLabel: ="Reason for the change"
+                                                      AlignInContainer: =AlignInContainer.Stretch
                                                       Appearance: =Appearance.Outline
                                                       DisplayMode: =If(fxCanManage(locAsset.Department.Value), DisplayMode.Edit, DisplayMode.Disabled)
                                                       Height: =36
                                                       LayoutMinWidth: =0
                                                       Placeholder: ="Required unless setting Available"
+                                                      Width: =Parent.Width
                                           - btnInvAsdApplyStatus:
                                               Control: ModernButton
                                               Properties:

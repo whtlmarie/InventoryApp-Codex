@@ -335,8 +335,9 @@ Screens:
                             Properties:
                               DropShadow: =DropShadow.None
                               FillPortions: =0
-                              Height: =If(App.Width >= 1250, Max(conInvCoWho.Height + 16 + conInvCoWhen.Height, conInvCoItems.Height), conInvCoWho.Height + 16 + conInvCoWhen.Height + 16 + conInvCoItems.Height)
-                              LayoutDirection: =If(App.Width >= 1250, LayoutDirection.Horizontal, LayoutDirection.Vertical)
+                              Height: =If(App.Width >= 1500, Max(conInvCoWho.Height + 16 + conInvCoWhen.Height, conInvCoItems.Height), conInvCoWho.Height + 16 + conInvCoWhen.Height + 16 + conInvCoItems.Height)
+                              LayoutAlignItems: =If(App.Width >= 1500, LayoutAlignItems.Start, LayoutAlignItems.Stretch)
+                              LayoutDirection: =If(App.Width >= 1500, LayoutDirection.Horizontal, LayoutDirection.Vertical)
                               LayoutGap: =16
                               LayoutMinHeight: =0
                               LayoutMinWidth: =0
@@ -346,8 +347,9 @@ Screens:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
+                                    AlignInContainer: =AlignInContainer.SetByContainer
                                     DropShadow: =DropShadow.None
-                                    FillPortions: =If(App.Width >= 1250, 1, 0)
+                                    FillPortions: =If(App.Width >= 1500, 1, 0)
                                     Height: =conInvCoWho.Height + 16 + conInvCoWhen.Height
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutDirection: =LayoutDirection.Vertical
@@ -414,7 +416,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =12
-                                                      Text: ="They acknowledge the receipt by signing in to the Inventory app with this account."
+                                                      Text: ="They acknowledge by approval in Outlook or Teams."
                                                       Wrap: =false
                                           - conInvCoR1:
                                               Control: GroupContainer
@@ -438,7 +440,7 @@ Screens:
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutGap: =4
                                                       LayoutMinHeight: =0
-                                                      LayoutMinWidth: =220
+                                                      LayoutMinWidth: =160
                                                     Children:
                                                       - txtInvCoFPersonLbl:
                                                           Control: ModernText
@@ -457,6 +459,7 @@ Screens:
                                                           Control: ModernCombobox
                                                           Properties:
                                                             AccessibleLabel: ="Person receiving the equipment"
+                                                            AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
                                                             DelayOutput: =true
                                                             Height: =36
@@ -472,6 +475,7 @@ Screens:
                                                               )
                                                             LayoutMinWidth: =0
                                                             SelectMultiple: =false
+                                                            Width: =Parent.Width
                                                 - conInvCoFPhone:
                                                     Control: GroupContainer
                                                     Variant: AutoLayout
@@ -482,7 +486,7 @@ Screens:
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutGap: =4
                                                       LayoutMinHeight: =0
-                                                      LayoutMinWidth: =220
+                                                      LayoutMinWidth: =160
                                                     Children:
                                                       - txtInvCoFPhoneLbl:
                                                           Control: ModernText
@@ -501,11 +505,13 @@ Screens:
                                                           Control: ModernTextInput
                                                           Properties:
                                                             AccessibleLabel: ="Duty phone"
+                                                            AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
                                                             Default: =If(IsBlank(cmbInvCoPerson.Selected), "", Coalesce(First(cmbInvCoPerson.Selected.BusinessPhones).Value, cmbInvCoPerson.Selected.mobilePhone, ""))
                                                             Height: =36
                                                             LayoutMinWidth: =0
-                                                            Placeholder: ="From their profile; edit if needed"
+                                                            Placeholder: ="From their profile"
+                                                            Width: =Parent.Width
                                           - conInvCoR2:
                                               Control: GroupContainer
                                               Variant: AutoLayout
@@ -528,7 +534,7 @@ Screens:
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutGap: =4
                                                       LayoutMinHeight: =0
-                                                      LayoutMinWidth: =220
+                                                      LayoutMinWidth: =160
                                                     Children:
                                                       - txtInvCoFDeptLbl:
                                                           Control: ModernText
@@ -547,6 +553,7 @@ Screens:
                                                           Control: ModernDropdown
                                                           Properties:
                                                             AccessibleLabel: ="Department issuing the equipment"
+                                                            AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
                                                             Default: |-
                                                               =First(ForAll(fxMyDepts, {Value: Dept}))
@@ -557,6 +564,7 @@ Screens:
                                                             LayoutMinWidth: =0
                                                             OnChange: |-
                                                               =Clear(colInvCoItems); UpdateContext({locScanMsg: ""})
+                                                            Width: =Parent.Width
                                                 - conInvCoFAcct:
                                                     Control: GroupContainer
                                                     Variant: AutoLayout
@@ -567,7 +575,7 @@ Screens:
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutGap: =4
                                                       LayoutMinHeight: =0
-                                                      LayoutMinWidth: =220
+                                                      LayoutMinWidth: =160
                                                     Children:
                                                       - txtInvCoFAcctLbl:
                                                           Control: ModernText
@@ -653,7 +661,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =12
-                                                      Text: =If(drpInvCoType.Selected.Value = "Long-term Assignment", "Stays with the person until it is turned in. No return date.", "A temporary loan. The return date prints on the receipt.")
+                                                      Text: =If(drpInvCoType.Selected.Value = "Long-term Assignment", "Kept until turned in. No return date.", "Temporary loan. The return date prints on the receipt.")
                                                       Wrap: =false
                                           - conInvCoR3:
                                               Control: GroupContainer
@@ -677,7 +685,7 @@ Screens:
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutGap: =4
                                                       LayoutMinHeight: =0
-                                                      LayoutMinWidth: =220
+                                                      LayoutMinWidth: =160
                                                     Children:
                                                       - txtInvCoFTypeLbl:
                                                           Control: ModernText
@@ -696,6 +704,7 @@ Screens:
                                                           Control: ModernDropdown
                                                           Properties:
                                                             AccessibleLabel: ="Type of checkout"
+                                                            AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
                                                             Default: |-
                                                               ={Value: "Walk-up Loan"}
@@ -704,6 +713,7 @@ Screens:
                                                             Items: |-
                                                               =Table({Value: "Walk-up Loan"}, {Value: "Long-term Assignment"})
                                                             LayoutMinWidth: =0
+                                                            Width: =Parent.Width
                                                 - conInvCoFReturn:
                                                     Control: GroupContainer
                                                     Variant: AutoLayout
@@ -714,7 +724,7 @@ Screens:
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutGap: =4
                                                       LayoutMinHeight: =0
-                                                      LayoutMinWidth: =220
+                                                      LayoutMinWidth: =160
                                                     Children:
                                                       - txtInvCoFReturnLbl:
                                                           Control: ModernText
@@ -733,17 +743,20 @@ Screens:
                                                           Control: ModernDatePicker
                                                           Properties:
                                                             AccessibleLabel: ="Return date"
+                                                            AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
                                                             DefaultDate: =DateAdd(Today(), 7, TimeUnit.Days)
                                                             DisplayMode: =If(drpInvCoType.Selected.Value = "Long-term Assignment", DisplayMode.Disabled, DisplayMode.Edit)
                                                             Height: =36
                                                             LayoutMinWidth: =0
+                                                            Width: =Parent.Width
                               - conInvCoRight:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
+                                    AlignInContainer: =AlignInContainer.SetByContainer
                                     DropShadow: =DropShadow.None
-                                    FillPortions: =If(App.Width >= 1250, 1, 0)
+                                    FillPortions: =If(App.Width >= 1500, 1, 0)
                                     Height: =conInvCoItems.Height
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutDirection: =LayoutDirection.Vertical
@@ -810,7 +823,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =12
-                                                      Text: ="Scan each label. Items must be Available and from the department above."
+                                                      Text: ="Scan each label. Items must be Available and from this department."
                                                       Wrap: =false
                                           - conInvCoScan:
                                               Control: GroupContainer

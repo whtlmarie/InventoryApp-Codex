@@ -516,6 +516,7 @@ Screens:
                               DropShadow: =DropShadow.None
                               FillPortions: =0
                               Height: =If(App.Width >= 1250, Max(conInvHomeLines.Height, conInvHomeDue.Height), conInvHomeLines.Height + 16 + conInvHomeDue.Height)
+                              LayoutAlignItems: =If(App.Width >= 1250, LayoutAlignItems.Start, LayoutAlignItems.Stretch)
                               LayoutDirection: =If(App.Width >= 1250, LayoutDirection.Horizontal, LayoutDirection.Vertical)
                               LayoutGap: =16
                               LayoutMinHeight: =0
@@ -526,6 +527,7 @@ Screens:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
+                                    AlignInContainer: =AlignInContainer.SetByContainer
                                     DropShadow: =DropShadow.Semilight
                                     Fill: =RGBA(255, 255, 255, 1)
                                     FillPortions: =If(App.Width >= 1250, 1, 0)
@@ -697,6 +699,7 @@ Screens:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
+                                    AlignInContainer: =AlignInContainer.SetByContainer
                                     DropShadow: =DropShadow.Semilight
                                     Fill: =RGBA(255, 255, 255, 1)
                                     FillPortions: =If(App.Width >= 1250, 1, 0)
