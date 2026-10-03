@@ -581,17 +581,19 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =13
-                                                            Text: ="Org account no. (optional)"
+                                                            Text: ="Orgn acct no."
                                                       - txtInvCoAcct:
-                                                          Control: ModernTextInput
+                                                          Control: ModernText
                                                           Properties:
-                                                            AccessibleLabel: ="Organization account number"
-                                                            Appearance: =Appearance.Outline
-                                                            Default: =LookUp(gblInvOrgAcct, Dept = drpInvCoDept.Selected.Value).Acct
+                                                            AccessibleLabel: ="Organization account number, " & Self.Text
+                                                            Color: =RGBA(36, 36, 36, 1)
                                                             Height: =36
                                                             LayoutMinWidth: =0
-                                                            OnChange: |-
-                                                              =Set(gblInvOrgAcct, Table(Filter(gblInvOrgAcct, Dept <> drpInvCoDept.Selected.Value), Table({Dept: drpInvCoDept.Selected.Value, Acct: Self.Text})))
+                                                            PaddingBottom: =0
+                                                            PaddingLeft: =0
+                                                            PaddingTop: =0
+                                                            Size: =14
+                                                            Text: =Switch(drpInvCoDept.Selected.Value, "IT", "TSOS", "AV", "TSAV", "")
                                     - conInvCoWhen:
                                         Control: GroupContainer
                                         Variant: AutoLayout
@@ -1058,7 +1060,7 @@ Screens:
                                           With(
                                               {start: ParseJSON('Inventory-Action'.Run(fxInvStartReceiptPayload(
                                                   Lower(cmbInvCoPerson.Selected.Mail), cmbInvCoPerson.Selected.DisplayName, "i:0#.f|membership|" & Lower(cmbInvCoPerson.Selected.UserPrincipalName),
-                                                  Trim(txtInvCoPhone.Text), Trim(txtInvCoAcct.Text),
+                                                  Trim(txtInvCoPhone.Text), txtInvCoAcct.Text,
                                                   If(drpInvCoType.Selected.Value = "Long-term Assignment", "", Text(dteInvCoReturn.SelectedDate, "yyyy-mm-dd")), drpInvCoType.Selected.Value, drpInvCoDept.Selected.Value
                                               )).response)},
                                               If(

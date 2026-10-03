@@ -118,8 +118,5 @@ App:
       );
       fxInvIssuePayload(receiptId: Number, assetId: Number, reservationId: Number): Text = JSON({actionVersion: fxInvActionVersion, action: "Issue", receiptId: receiptId, assetId: assetId, reservationId: reservationId});
       fxInvFinishPayload(receiptId: Number): Text = JSON({actionVersion: fxInvActionVersion, action: "FinishReceipt", receiptId: receiptId});
-    OnStart: |-
-      =// Org account number remembered per department for the session (Checkout).
-      Set(gblInvOrgAcct, FirstN(Table({Dept: "", Acct: ""}), 0))
     StartScreen: =scrInvHome
     Theme: =PowerAppsTheme

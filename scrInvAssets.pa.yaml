@@ -404,7 +404,7 @@ Screens:
                             Children:
                               - galInvAstDept:
                                   Control: Gallery
-                                  Variant: Vertical
+                                  Variant: Horizontal
                                   Properties:
                                     AccessibleLabel: ="galInvAstDept"
                                     FillPortions: =0

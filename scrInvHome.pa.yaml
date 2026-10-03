@@ -375,7 +375,7 @@ Screens:
                                     Wrap: =false
                               - galInvHomeDept:
                                   Control: Gallery
-                                  Variant: Vertical
+                                  Variant: Horizontal
                                   Properties:
                                     AccessibleLabel: ="galInvHomeDept"
                                     FillPortions: =0
@@ -528,7 +528,7 @@ Screens:
                                   Properties:
                                     DropShadow: =DropShadow.Semilight
                                     Fill: =RGBA(255, 255, 255, 1)
-                                    FillPortions: =0
+                                    FillPortions: =If(App.Width >= 1250, 1, 0)
                                     Height: =20 + 48 + 12 + Max(galInvHomeLines.Height, If(galInvHomeLines.AllItemsCount = 0, 24, 0)) + 24
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutDirection: =LayoutDirection.Vertical
@@ -699,7 +699,7 @@ Screens:
                                   Properties:
                                     DropShadow: =DropShadow.Semilight
                                     Fill: =RGBA(255, 255, 255, 1)
-                                    FillPortions: =0
+                                    FillPortions: =If(App.Width >= 1250, 1, 0)
                                     Height: =20 + 48 + 12 + Max(galInvHomeDue.Height, If(galInvHomeDue.AllItemsCount = 0, 24, 0)) + 24
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutDirection: =LayoutDirection.Vertical
