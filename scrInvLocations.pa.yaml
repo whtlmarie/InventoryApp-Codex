@@ -1,0 +1,777 @@
+Screens:
+  scrInvLocations:
+    Properties:
+      Fill: =RGBA(245, 246, 248, 1)
+      LoadingSpinnerColor: =RGBA(15, 76, 129, 1)
+      OnVisible: |-
+        =UpdateContext({locLocOpen: false, locLoc: Blank(), locBusy: false});
+        If(IsBlank(gblInvLoadedAt) || DateDiff(gblInvLoadedAt, Now(), TimeUnit.Minutes) >= 2, Select(btnInvLocReload))
+    Children:
+      - conInvLocRoot:
+          Control: GroupContainer
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Fill: =RGBA(245, 246, 248, 1)
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutDirection: =LayoutDirection.Vertical
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            Width: =Parent.Width
+          Children:
+            - conInvLocHeader:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(15, 76, 129, 1)
+                  FillPortions: =0
+                  Height: =56
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =12
+                  LayoutMinHeight: =56
+                  LayoutMinWidth: =0
+                  PaddingLeft: =8
+                  PaddingRight: =16
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                Children:
+                  - btnInvLocNavToggle:
+                      Control: ModernButton
+                      Properties:
+                        AccessibleLabel: =If(varNavCollapsed, "Expand navigation", "Collapse navigation")
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(255, 255, 255, 1)
+                        Height: =40
+                        Icon: ="Navigation"
+                        Layout: =ButtonLayout.IconOnly
+                        LayoutMinWidth: =40
+                        OnSelect: =Set(varNavCollapsed, !varNavCollapsed)
+                        Text: =If(varNavCollapsed, "Expand navigation", "Collapse navigation")
+                        Tooltip: =If(varNavCollapsed, "Expand navigation", "Collapse navigation")
+                        Width: =40
+                  - txtInvLocAppTitle:
+                      Control: ModernText
+                      Properties:
+                        AccessibleLabel: ="Inventory"
+                        Color: =RGBA(255, 255, 255, 1)
+                        FillPortions: =1
+                        FontWeight: =FontWeight.Semibold
+                        Height: =40
+                        LayoutMinWidth: =120
+                        PaddingBottom: =0
+                        PaddingLeft: =0
+                        PaddingTop: =0
+                        Size: =18
+                        Text: ="Inventory"
+                        Wrap: =false
+                  - txtInvLocUserName:
+                      Control: ModernText
+                      Properties:
+                        AccessibleLabel: ="Signed in as " & User().FullName
+                        Align: =Align.Right
+                        Color: =RGBA(255, 255, 255, 1)
+                        Height: =40
+                        LayoutMinWidth: =0
+                        PaddingBottom: =0
+                        PaddingLeft: =0
+                        PaddingTop: =0
+                        Size: =14
+                        Text: =User().FullName
+                        Visible: =App.Width >= 640
+                        Width: =240
+                        Wrap: =false
+            - conInvLocBody:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutMinHeight: =0
+                  LayoutMinWidth: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                Children:
+                  - conInvLocNav:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        FillPortions: =0
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutMinHeight: =0
+                        LayoutMinWidth: =0
+                        PaddingBottom: =8
+                        PaddingLeft: =8
+                        PaddingRight: =8
+                        PaddingTop: =8
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        Width: =If(varNavCollapsed, 56, 240)
+                      Children:
+                        - galInvLocNav:
+                            Control: Gallery
+                            Variant: Vertical
+                            Properties:
+                              AccessibleLabel: ="Main navigation"
+                              FillPortions: =0
+                              Height: =CountRows(fxInvVisibleNav) * 46
+                              Items: =fxInvVisibleNav
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              ShowScrollbar: =false
+                              TabIndex: =0
+                              TemplatePadding: =2
+                              TemplateSize: =44
+                            Children:
+                              - conInvLocNavRow:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    Fill: =If(ThisItem.Id = "locations", RGBA(230, 240, 250, 1), RGBA(0, 0, 0, 0))
+                                    Height: =Parent.TemplateHeight
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    RadiusBottomLeft: =6
+                                    RadiusBottomRight: =6
+                                    RadiusTopLeft: =6
+                                    RadiusTopRight: =6
+                                    Width: =Parent.TemplateWidth
+                                  Children:
+                                    - btnInvLocNavItem:
+                                        Control: ModernButton
+                                        Properties:
+                                          AccessibleLabel: =ThisItem.Label
+                                          Align: =If(varNavCollapsed, Align.Center, Align.Left)
+                                          Appearance: =ButtonAppearance.Subtle
+                                          Color: =If(ThisItem.Id = "locations", RGBA(15, 76, 129, 1), RGBA(36, 36, 36, 1))
+                                          FillPortions: =1
+                                          FontWeight: =If(ThisItem.Id = "locations", FontWeight.Semibold, FontWeight.Normal)
+                                          Height: =40
+                                          Icon: =ThisItem.Icon
+                                          IconStyle: =If(ThisItem.Id = "locations", IconStyle.Filled, IconStyle.Outline)
+                                          Layout: =If(varNavCollapsed, ButtonLayout.IconOnly, ButtonLayout.IconBefore)
+                                          LayoutMinWidth: =40
+                                          OnSelect: =Navigate(ThisItem.Target, ScreenTransition.None)
+                                          Text: =ThisItem.Label
+                                          Tooltip: =ThisItem.Label
+                  - conInvLocMain:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =16
+                        LayoutMinHeight: =0
+                        LayoutMinWidth: =0
+                        LayoutOverflowY: =LayoutOverflow.Scroll
+                        PaddingBottom: =24
+                        PaddingLeft: =If(App.Width >= 800, 32, 16)
+                        PaddingRight: =If(App.Width >= 800, 32, 16)
+                        PaddingTop: =16
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                      Children:
+                        - btnInvLocReload:
+                            Control: ModernButton
+                            Properties:
+                              AccessibleLabel: ="Reload inventory data"
+                              Height: =36
+                              LayoutMinWidth: =0
+                              OnSelect: |-
+                                =// Inventory data for all screens (whole lists; fine at the current volume).
+                                Set(gblInvLoading, true);
+                                Refresh(InventoryAssets);
+                                Refresh(InventoryCheckouts);
+                                Refresh(InventoryReservations);
+                                Refresh(InventoryReceipts);
+                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, AssetStatus.Value, Kind, AssetKind.Value));
+                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, CheckoutStatus.Value = "Active" || CheckoutStatus.Value = "Awaiting Acknowledgement" || CheckoutStatus.Value = "Return Required"), Status, CheckoutStatus.Value));
+                                Set(gblInvReserved, Filter(InventoryReservations, ReservationStatus.Value = "Reserved"));
+                                Set(gblInvLines, Filter(RequestEquipment, NeedsInventoryAction = true));
+                                Set(gblInvLoadedAt, Now());
+                                Set(gblInvLoading, false)
+                              Text: ="Reload"
+                              Visible: =false
+                              Width: =10
+                        - conInvLocPageHeader:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =64
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =8
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                            Children:
+                              - conInvLocTitles:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    Height: =64
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutJustifyContent: =LayoutJustifyContent.Center
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvLocPageTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(36, 36, 36, 1)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =36
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =24
+                                          Text: ="Locations"
+                                          Wrap: =false
+                                    - txtInvLocPageSubtitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =13
+                                          Text: ="Rooms, storage and cabinets where equipment lives."
+                                          Wrap: =false
+                              - btnInvLocAdd:
+                                  Control: ModernButton
+                                  Properties:
+                                    AccessibleLabel: ="Add a location"
+                                    Height: =36
+                                    Icon: ="Add"
+                                    LayoutMinWidth: =0
+                                    OnSelect: |-
+                                      =UpdateContext({locLoc: Blank(), locLocOpen: true})
+                                    Text: ="Add location"
+                                    Visible: =fxIsInvManager
+                                    Width: =150
+                              - txtInvLocUpdated:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Align: =Align.Right
+                                    Color: =RGBA(97, 97, 97, 1)
+                                    Height: =20
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =12
+                                    Text: =If(gblInvLoading, "Loading…", If(IsBlank(gblInvLoadedAt), "", "Updated " & Text(gblInvLoadedAt, "h:mm AM/PM")))
+                                    Visible: =App.Width >= 900
+                                    Width: =120
+                                    Wrap: =false
+                              - btnInvLocRefresh:
+                                  Control: ModernButton
+                                  Properties:
+                                    AccessibleLabel: ="Refresh"
+                                    Appearance: =ButtonAppearance.Secondary
+                                    DisplayMode: =If(gblInvLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                                    Height: =36
+                                    Icon: ="ArrowClockwise"
+                                    LayoutMinWidth: =0
+                                    OnSelect: =Select(btnInvLocReload)
+                                    Text: ="Refresh"
+                                    Width: =120
+                        - conInvLocEdit:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.Semilight
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FillPortions: =0
+                              Height: =20 + 48 + 12 + 2 * (If(App.Width >= 900, 60, 136) + 12) + 40 + 24
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =12
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              PaddingBottom: =24
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              PaddingTop: =20
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                              Visible: =locLocOpen && fxIsInvManager
+                            Children:
+                              - conInvLocEditHead:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =48
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvLocEditTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(36, 36, 36, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =26
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =16
+                                          Text: =If(IsBlank(locLoc), "Add a location", "Edit " & locLoc.Title)
+                                    - txtInvLocEditDesc:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: ="Renaming a location also updates every asset that uses it."
+                                          Wrap: =false
+                              - conInvLocR1:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =If(App.Width >= 900, 60, 136)
+                                    LayoutDirection: =If(App.Width >= 900, LayoutDirection.Horizontal, LayoutDirection.Vertical)
+                                    LayoutGap: =12
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - conInvLocFName:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =60
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =4
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =160
+                                        Children:
+                                          - txtInvLocFNameLbl:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(66, 66, 66, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =20
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =13
+                                                Text: ="Location name"
+                                          - txtInvLocName:
+                                              Control: ModernTextInput
+                                              Properties:
+                                                AccessibleLabel: ="Location name"
+                                                AlignInContainer: =AlignInContainer.Stretch
+                                                Appearance: =Appearance.Outline
+                                                Default: =locLoc.Title
+                                                Height: =36
+                                                LayoutMinWidth: =0
+                                                Placeholder: ="e.g. IT Maintenance Room"
+                                                Width: =Parent.Width
+                                    - conInvLocFHq:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =60
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =4
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =160
+                                        Children:
+                                          - txtInvLocFHqLbl:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(66, 66, 66, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =20
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =13
+                                                Text: ="HQ name (how the HQ list writes it)"
+                                          - txtInvLocHq:
+                                              Control: ModernTextInput
+                                              Properties:
+                                                AccessibleLabel: ="HQ name"
+                                                AlignInContainer: =AlignInContainer.Stretch
+                                                Appearance: =Appearance.Outline
+                                                Default: =locLoc.HqName
+                                                Height: =36
+                                                LayoutMinWidth: =0
+                                                Placeholder: ="e.g. RM 108"
+                                                Width: =Parent.Width
+                              - conInvLocR2:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =If(App.Width >= 900, 60, 136)
+                                    LayoutDirection: =If(App.Width >= 900, LayoutDirection.Horizontal, LayoutDirection.Vertical)
+                                    LayoutGap: =12
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - conInvLocFDept:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =60
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =4
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =160
+                                        Children:
+                                          - txtInvLocFDeptLbl:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(66, 66, 66, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =20
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =13
+                                                Text: ="Used by"
+                                          - drpInvLocDept:
+                                              Control: ModernDropdown
+                                              Properties:
+                                                AccessibleLabel: ="Department"
+                                                AlignInContainer: =AlignInContainer.Stretch
+                                                Appearance: =Appearance.Outline
+                                                Default: |-
+                                                  ={Value: Coalesce(locLoc.Department.Value, "Both")}
+                                                Height: =36
+                                                ItemDisplayText: =ThisItem.Value
+                                                Items: =["Both", "AV", "IT"]
+                                                LayoutMinWidth: =0
+                                                Width: =Parent.Width
+                                    - conInvLocFKind:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =60
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =4
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =160
+                                        Children:
+                                          - txtInvLocFKindLbl:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(66, 66, 66, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =20
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =13
+                                                Text: ="Kind"
+                                          - drpInvLocKind:
+                                              Control: ModernDropdown
+                                              Properties:
+                                                AccessibleLabel: ="Kind of location"
+                                                AlignInContainer: =AlignInContainer.Stretch
+                                                Appearance: =Appearance.Outline
+                                                Default: |-
+                                                  ={Value: Coalesce(locLoc.LocationKind.Value, "Room")}
+                                                Height: =36
+                                                ItemDisplayText: =ThisItem.Value
+                                                Items: =["Room", "Storage", "Cabinet", "Other"]
+                                                LayoutMinWidth: =0
+                                                Width: =Parent.Width
+                                    - conInvLocFActive:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =60
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutJustifyContent: =LayoutJustifyContent.End
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =160
+                                        Children:
+                                          - tglInvLocActive:
+                                              Control: ModernToggle
+                                              Properties:
+                                                AccessibleLabel: ="Active"
+                                                Default: =Coalesce(locLoc.IsActive, true)
+                                                Height: =36
+                                                Label: ="Active (offered in pick lists)"
+                                                LayoutMinWidth: =0
+                              - conInvLocBtns:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =40
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =8
+                                    LayoutJustifyContent: =LayoutJustifyContent.End
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - btnInvLocCancel:
+                                        Control: ModernButton
+                                        Properties:
+                                          AccessibleLabel: ="Cancel"
+                                          Appearance: =ButtonAppearance.Secondary
+                                          Height: =36
+                                          LayoutMinWidth: =0
+                                          OnSelect: |-
+                                            =UpdateContext({locLocOpen: false, locLoc: Blank()})
+                                          Text: ="Cancel"
+                                          Width: =110
+                                    - btnInvLocSave:
+                                        Control: ModernButton
+                                        Properties:
+                                          AccessibleLabel: ="Save location"
+                                          DisplayMode: =If(locBusy || IsBlank(Trim(txtInvLocName.Text)), DisplayMode.Disabled, DisplayMode.Edit)
+                                          Height: =36
+                                          LayoutMinWidth: =0
+                                          OnSelect: |-
+                                            =UpdateContext({locBusy: true});
+                                            IfError(
+                                                With(
+                                                    {raw: ParseJSON('Inventory-Action'.Run(JSON({
+                                                        actionVersion: fxInvActionVersion, action: "LocationSave", locationId: Coalesce(locLoc.ID, 0), name: Trim(txtInvLocName.Text),
+                                                        department: drpInvLocDept.Selected.Value, kind: drpInvLocKind.Selected.Value, hqName: Trim(txtInvLocHq.Text), isActive: tglInvLocActive.Checked, notes: ""
+                                                    })).response)},
+                                                    UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})
+                                                ),
+                                                UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
+                                            );
+                                            UpdateContext({locBusy: false});
+                                            Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
+                                            If(locResult.Status = "Success", UpdateContext({locLocOpen: false, locLoc: Blank()}); Refresh(InventoryLocations); Set(gblInvLoadedAt, Blank()))
+                                          Text: ="Save"
+                                          Width: =120
+                        - conInvLocList:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.Semilight
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FillPortions: =0
+                              Height: =20 + 48 + 12 + Max(24, galInvLocList.Height) + 24
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =12
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              PaddingBottom: =24
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              PaddingTop: =20
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                            Children:
+                              - conInvLocListHead:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =48
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvLocListTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(36, 36, 36, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =26
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =16
+                                          Text: ="Locations (" & CountRows(InventoryLocations) & ")"
+                                    - txtInvLocListDesc:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: ="Assets and counts pick from this list, so names are always spelled the same."
+                                          Wrap: =false
+                              - galInvLocList:
+                                  Control: Gallery
+                                  Variant: Vertical
+                                  Properties:
+                                    AccessibleLabel: ="Locations"
+                                    FillPortions: =0
+                                    Height: =Self.AllItemsCount * 56
+                                    Items: =Sort(InventoryLocations, Title)
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    ShowScrollbar: =false
+                                    TabIndex: =0
+                                    TemplatePadding: =0
+                                    TemplateSize: =56
+                                  Children:
+                                    - conInvLocRow:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          BorderColor: =RGBA(225, 228, 232, 1)
+                                          BorderThickness: =1
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight - 4
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =12
+                                          PaddingLeft: =12
+                                          PaddingRight: =6
+                                          RadiusBottomLeft: =6
+                                          RadiusBottomRight: =6
+                                          RadiusTopLeft: =6
+                                          RadiusTopRight: =6
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - conInvLocRowText:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                Height: =48
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutJustifyContent: =LayoutJustifyContent.Center
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                              Children:
+                                                - txtInvLocRowName:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =If(ThisItem.IsActive, RGBA(36, 36, 36, 1), RGBA(97, 97, 97, 1))
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =13
+                                                      Text: =ThisItem.Title
+                                                      Wrap: =false
+                                                - txtInvLocRowMeta:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(97, 97, 97, 1)
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =12
+                                                      Text: |-
+                                                        =ThisItem.LocationKind.Value & "  ·  " & If(ThisItem.Department.Value = "Both", "AV and IT", ThisItem.Department.Value) & If(IsBlank(ThisItem.HqName), "", "  ·  HQ: " & ThisItem.HqName) & "  ·  " & CountRows(Filter(gblInvAssets, HomeLocation = ThisItem.Title)) & " assets" & If(ThisItem.IsActive, "", "  ·  inactive")
+                                                      Wrap: =false
+                                          - btnInvLocRowEdit:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Edit " & ThisItem.Title
+                                                Appearance: =ButtonAppearance.Subtle
+                                                Height: =36
+                                                Icon: ="Edit"
+                                                Layout: =ButtonLayout.IconOnly
+                                                LayoutMinWidth: =36
+                                                OnSelect: |-
+                                                  =UpdateContext({locLoc: ThisItem, locLocOpen: true})
+                                                Text: ="Edit"
+                                                Visible: =fxIsInvManager
+                                                Width: =36
+                        - txtInvLocNoAccess:
+                            Control: ModernText
+                            Properties:
+                              AccessibleLabel: =Self.Text
+                              Color: =RGBA(164, 38, 44, 1)
+                              Fill: =RGBA(253, 231, 233, 1)
+                              Height: =48
+                              LayoutMinWidth: =0
+                              PaddingBottom: =0
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =0
+                              RadiusBottomLeft: =6
+                              RadiusBottomRight: =6
+                              RadiusTopLeft: =6
+                              RadiusTopRight: =6
+                              Size: =14
+                              Text: ="This screen is for AV and IT inventory staff."
+                              Visible: =!fxCanViewInventory

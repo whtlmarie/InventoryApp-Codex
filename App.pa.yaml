@@ -26,12 +26,16 @@ App:
           version: "DAF1297-20260323",
           text: "I acknowledge receipt of and responsibility IAW DAFI 23-111 for the items described below and will return them by the return date indicated."
       };
-      fxAssetStatuses = ["Available", "Issued", "In Repair", "Lost", "Retired"];
-      fxSettableStatuses = ["Available", "In Repair", "Lost", "Retired"];
+      fxAssetStatuses = ["Available", "Issued", "In Repair", "Pending Disposal", "Lost", "Retired", "Disposed"];
+      fxSettableStatuses = ["Available", "In Repair", "Pending Disposal", "Lost", "Retired"];
+      // Pick list for home locations and counts (InventoryLocations; managed on the Locations screen).
+      fxInvLocations = Sort(Filter(InventoryLocations, IsActive = true), Title);
+      fxDispositionMethods = ["Recycled", "Destroyed", "Turned in (DLA Disposition)", "Transferred to another unit"];
+      fxSanitizationMethods = ["Not applicable", "Wiped", "Degaussed", "Shredded / destroyed", "Drive removed"];
       fxAssetKinds = ["Tracked Asset", "Loaner Pool"];
       fxConditions = ["Good", "Fair", "Damaged"];
-      fxStatusColor(status: Text): Color = Switch(status, "Available", RGBA(16, 110, 16, 1), "Issued", RGBA(15, 76, 129, 1), "In Repair", RGBA(131, 82, 0, 1), "Lost", RGBA(164, 38, 44, 1), RGBA(97, 97, 97, 1));
-      fxStatusFill(status: Text): Color = Switch(status, "Available", RGBA(223, 246, 221, 1), "Issued", RGBA(230, 240, 250, 1), "In Repair", RGBA(255, 244, 206, 1), "Lost", RGBA(253, 231, 233, 1), RGBA(237, 239, 242, 1));
+      fxStatusColor(status: Text): Color = Switch(status, "Available", RGBA(16, 110, 16, 1), "Issued", RGBA(15, 76, 129, 1), "In Repair", RGBA(131, 82, 0, 1), "Pending Disposal", RGBA(92, 45, 145, 1), "Lost", RGBA(164, 38, 44, 1), RGBA(97, 97, 97, 1));
+      fxStatusFill(status: Text): Color = Switch(status, "Available", RGBA(223, 246, 221, 1), "Issued", RGBA(230, 240, 250, 1), "In Repair", RGBA(255, 244, 206, 1), "Pending Disposal", RGBA(243, 238, 250, 1), "Lost", RGBA(253, 231, 233, 1), RGBA(237, 239, 242, 1));
       // Catalog items the Inventory app tracks (same rule as the Support Request inventory handoff).
       fxInvCatalog = Sort(Filter(EquipmentCatalog, IsActive = true && InventoryType.Value in ["Tracked Asset", "Loaner Pool"]), Title);
 
@@ -99,7 +103,8 @@ App:
           {Id: "checkout", Label: "Checkout", Icon: "Send", Target: scrInvCheckout, IsAllowed: fxIsInvStaff},
           {Id: "returns", Label: "Returns", Icon: "ArrowUndo", Target: scrInvReturns, IsAllowed: fxIsInvStaff},
           {Id: "person", Label: "People", Icon: "Person", Target: scrInvPerson, IsAllowed: fxCanViewInventory},
-          {Id: "count", Label: "Inventory count", Icon: "ClipboardTaskListLtr", Target: scrInvCount, IsAllowed: fxCanViewInventory}
+          {Id: "count", Label: "Inventory count", Icon: "ClipboardTaskListLtr", Target: scrInvCount, IsAllowed: fxCanViewInventory},
+          {Id: "locations", Label: "Locations", Icon: "Location", Target: scrInvLocations, IsAllowed: fxCanViewInventory}
       );
       fxInvVisibleNav = Filter(fxInvNav, IsAllowed);
 

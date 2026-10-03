@@ -477,11 +477,11 @@ Screens:
                                     AccessibleLabel: ="Status"
                                     Appearance: =Appearance.Outline
                                     Default: |-
-                                      =LookUp(Table({Value: "All"}, {Value: "Available"}, {Value: "Issued"}, {Value: "In Repair"}, {Value: "Lost"}, {Value: "Retired"}), Value = locAstStatus)
+                                      =LookUp(Table({Value: "All"}, {Value: "Available"}, {Value: "Issued"}, {Value: "In Repair"}, {Value: "Pending Disposal"}, {Value: "Lost"}, {Value: "Retired"}, {Value: "Disposed"}), Value = locAstStatus)
                                     Height: =36
                                     ItemDisplayText: =ThisItem.Value
                                     Items: |-
-                                      =Table({Value: "All"}, {Value: "Available"}, {Value: "Issued"}, {Value: "In Repair"}, {Value: "Lost"}, {Value: "Retired"})
+                                      =Table({Value: "All"}, {Value: "Available"}, {Value: "Issued"}, {Value: "In Repair"}, {Value: "Pending Disposal"}, {Value: "Lost"}, {Value: "Retired"}, {Value: "Disposed"})
                                     LayoutMinWidth: =0
                                     OnChange: |-
                                       =UpdateContext({locAstStatus: Self.Selected.Value})
@@ -583,7 +583,7 @@ Screens:
                                           Filter(
                                               gblInvAssets,
                                               (locAstDept = "All" || Dept = locAstDept) &&
-                                              (locAstStatus = "All" || Status = locAstStatus) &&
+                                              ((locAstStatus = "All" && Status <> "Disposed") || Status = locAstStatus) &&
                                               (IsBlank(Trim(txtInvAstSearch.Text)) || Trim(txtInvAstSearch.Text) in Title || Trim(txtInvAstSearch.Text) in SerialNumber || Trim(txtInvAstSearch.Text) in Make || Trim(txtInvAstSearch.Text) in Model ||
                                                   Trim(txtInvAstSearch.Text) in CatalogNameSnapshot || Trim(txtInvAstSearch.Text) in CurrentHolderName)
                                           ),

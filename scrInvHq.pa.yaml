@@ -434,7 +434,7 @@ Screens:
                                           Height: =36
                                           LayoutMinWidth: =0
                                           OnSelect: |-
-                                            =Reset(txtInvHqPaste); Clear(colInvHqList); Clear(colInvHqOurs); Clear(colInvHqOnlyHq); Clear(colInvHqOnlyOurs); Clear(colInvHqDiff); UpdateContext({locHqDone: false})
+                                            =Reset(txtInvHqPaste); Clear(colInvHqList); Clear(colInvHqOurs); Clear(colInvHqOnlyHq); Clear(colInvHqOnlyOurs); Clear(colInvHqDiff); Clear(colInvHqMatch); UpdateContext({locHqDone: false})
                                           Text: ="Clear"
                                           Width: =110
                                     - btnInvHqGo:
@@ -488,7 +488,7 @@ Screens:
                                                                     )
                                                                 );
                                                                 ClearCollect(colInvHqOnlyHq, Filter(colInvHqList, !(Key in colInvHqOurs.Key)));
-                                                                ClearCollect(colInvHqOnlyOurs, Filter(colInvHqOurs, !(Key in colInvHqList.Key)));
+                                                                ClearCollect(colInvHqOnlyOurs, Filter(colInvHqOurs, !(Key in colInvHqList.Key) && Status <> "Disposed"));
                                                                 ClearCollect(
                                                                     colInvHqDiff,
                                                                     Filter(
@@ -502,7 +502,15 @@ Screens:
                                                                         ),
                                                                         (!IsBlank(Location) && Lower(Trim(Location)) <> Lower(Trim(OurLoc))) ||
                                                                         (!IsBlank(Model) && Lower(Trim(Model)) <> Lower(Trim(OurModel))) ||
-                                                                        Dept <> OurDept || OurStatus = "Lost"
+                                                                        Dept <> OurDept || OurStatus in ["Lost", "Disposed"]
+                                                                    )
+                                                                );
+                                                                ClearCollect(
+                                                                    colInvHqMatch,
+                                                                    AddColumns(
+                                                                        Filter(colInvHqList, Key in colInvHqOurs.Key && !(Key in colInvHqDiff.Key)),
+                                                                        OurId, With({kk: Key}, LookUp(colInvHqOurs, Key = kk).ID),
+                                                                        OurTag, With({kk: Key}, LookUp(colInvHqOurs, Key = kk).Title)
                                                                     )
                                                                 );
                                                                 UpdateContext({locHqDone: true, locHqWhen: Now()})
@@ -847,6 +855,225 @@ Screens:
                                                       Size: =11
                                                       Text: =ThisItem.Dept & "  ·  " & ThisItem.Status & If(IsBlank(ThisItem.HomeLocation), "", "  ·  " & ThisItem.HomeLocation) & "  ·  report to HQ"
                                                       Wrap: =false
+                        - conInvHqSince:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =44
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =12
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              Visible: =locHqDone
+                            Children:
+                              - txtInvHqSinceLbl:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(36, 36, 36, 1)
+                                    Height: =20
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =13
+                                    Text: ="Count as verified if seen in an inventory count since"
+                                    Width: =340
+                                    Wrap: =false
+                              - dteInvHqSince:
+                                  Control: ModernDatePicker
+                                  Properties:
+                                    AccessibleLabel: ="Audit start date"
+                                    Appearance: =Appearance.Outline
+                                    DefaultDate: =Date(Year(Today()), 1, 1)
+                                    Height: =36
+                                    LayoutMinWidth: =0
+                                    Width: =220
+                              - txtInvHqSinceSum:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(97, 97, 97, 1)
+                                    FillPortions: =1
+                                    Height: =36
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =12
+                                    Text: |-
+                                      =With({v: AddColumns(colInvHqMatch, A, LookUp(gblInvAssets, ID = OurId))}, CountRows(Filter(v, !IsBlank(A.LastVerifiedDate) && A.LastVerifiedDate >= dteInvHqSince.SelectedDate)) & " seen in a count, " & CountRows(Filter(v, (IsBlank(A.LastVerifiedDate) || A.LastVerifiedDate < dteInvHqSince.SelectedDate) && A.Status = "Issued" && LookUp(gblInvOpenCheckouts, AssetId = A.ID).Status = "Active")) & " out on a signed receipt, " & CountRows(Filter(v, (IsBlank(A.LastVerifiedDate) || A.LastVerifiedDate < dteInvHqSince.SelectedDate) && !(A.Status = "Issued" && LookUp(gblInvOpenCheckouts, AssetId = A.ID).Status = "Active"))) & " not yet verified")
+                        - conInvHqMatch:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.Semilight
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FillPortions: =0
+                              Height: =20 + 48 + 12 + Max(24, galInvHqMatch.Height) + 24
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =12
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              PaddingBottom: =24
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              PaddingTop: =20
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                              Visible: =locHqDone
+                            Children:
+                              - conInvHqMatchHead:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =48
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvHqMatchTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(36, 36, 36, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =26
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =16
+                                          Text: ="On both lists and matching (" & CountRows(colInvHqMatch) & ")"
+                                    - txtInvHqMatchDesc:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: =If(CountRows(colInvHqMatch) > 50, "Showing the first 50.", "")
+                                          Wrap: =false
+                              - txtInvHqMatchNone:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(97, 97, 97, 1)
+                                    Height: =24
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =12
+                                    Text: |-
+                                      ="None. 👍"
+                                    Visible: =IsEmpty(colInvHqMatch)
+                                    Wrap: =false
+                              - galInvHqMatch:
+                                  Control: Gallery
+                                  Variant: Vertical
+                                  Properties:
+                                    AccessibleLabel: ="On both lists and matching"
+                                    FillPortions: =0
+                                    Height: =Self.AllItemsCount * 48
+                                    Items: =FirstN(colInvHqMatch, 50)
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    ShowScrollbar: =false
+                                    TabIndex: =0
+                                    TemplatePadding: =0
+                                    TemplateSize: =48
+                                  Children:
+                                    - conInvHqMatchRow:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          BorderColor: =RGBA(225, 228, 232, 1)
+                                          BorderThickness: =1
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight - 4
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =10
+                                          PaddingLeft: =10
+                                          PaddingRight: =8
+                                          RadiusBottomLeft: =6
+                                          RadiusBottomRight: =6
+                                          RadiusTopLeft: =6
+                                          RadiusTopRight: =6
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - conInvHqMatchAccent:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                Fill: =RGBA(16, 110, 16, 1)
+                                                FillPortions: =0
+                                                Height: =28
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                                RadiusBottomLeft: =2
+                                                RadiusBottomRight: =2
+                                                RadiusTopLeft: =2
+                                                RadiusTopRight: =2
+                                                Width: =4
+                                          - conInvHqMatchText:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                Height: =42
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutJustifyContent: =LayoutJustifyContent.Center
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                              Children:
+                                                - txtInvHqMatchL1:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(36, 36, 36, 1)
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =12
+                                                      Text: =ThisItem.Serial & "  ·  " & ThisItem.Desc
+                                                      Wrap: =false
+                                                - txtInvHqMatchL2:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(97, 97, 97, 1)
+                                                      Height: =18
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =11
+                                                      Text: |-
+                                                        =With({a: LookUp(gblInvAssets, ID = ThisItem.OurId)}, If(!IsBlank(a.LastVerifiedDate) && a.LastVerifiedDate >= dteInvHqSince.SelectedDate, "✔ Seen in a count " & Text(a.LastVerifiedDate, "mmm d, yyyy") & " by " & fxPersonName(a.LastVerifiedBy), a.Status = "Issued" && LookUp(gblInvOpenCheckouts, AssetId = a.ID).Status = "Active", "✔ Out on a signed receipt with " & fxPersonName(a.CurrentHolderName), "Not yet verified: count it, or check who has it") & "  ·  " & Coalesce(a.HomeLocation, ""))
+                                                      Wrap: =false
                         - conInvHqDiff:
                             Control: GroupContainer
                             Variant: AutoLayout
@@ -1013,5 +1240,5 @@ Screens:
                                                       PaddingTop: =0
                                                       Size: =11
                                                       Text: |-
-                                                        =Concat(Filter(Table({T: "Location: HQ " & ThisItem.Location & ", ours " & Coalesce(ThisItem.OurLoc, "(none)"), On: !IsBlank(ThisItem.Location) && Lower(Trim(ThisItem.Location)) <> Lower(Trim(ThisItem.OurLoc))}, {T: "Model: HQ " & ThisItem.Model & ", ours " & Coalesce(ThisItem.OurModel, "(none)"), On: !IsBlank(ThisItem.Model) && Lower(Trim(ThisItem.Model)) <> Lower(Trim(ThisItem.OurModel))}, {T: "Account: HQ " & ThisItem.Custodian & ", ours " & ThisItem.OurDept, On: ThisItem.Dept <> ThisItem.OurDept}, {T: "Lost in our records", On: ThisItem.OurStatus = "Lost"}), On), T, "  ·  ")
+                                                        =Concat(Filter(Table({T: "Location: HQ " & ThisItem.Location & ", ours " & Coalesce(ThisItem.OurLoc, "(none)"), On: !IsBlank(ThisItem.Location) && Lower(Trim(ThisItem.Location)) <> Lower(Trim(ThisItem.OurLoc))}, {T: "Model: HQ " & ThisItem.Model & ", ours " & Coalesce(ThisItem.OurModel, "(none)"), On: !IsBlank(ThisItem.Model) && Lower(Trim(ThisItem.Model)) <> Lower(Trim(ThisItem.OurModel))}, {T: "Account: HQ " & ThisItem.Custodian & ", ours " & ThisItem.OurDept, On: ThisItem.Dept <> ThisItem.OurDept}, {T: "Lost in our records", On: ThisItem.OurStatus = "Lost"}, {T: "Disposed in our records: ask HQ to remove it", On: ThisItem.OurStatus = "Disposed"}), On), T, "  ·  ")
                                                       Wrap: =false
