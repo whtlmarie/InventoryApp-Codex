@@ -1251,21 +1251,20 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =12
-                                          Text: ="Upload the HQ Excel sheet to see what is on their list but not ours, ours but not theirs, and differences."
+                                          Text: |-
+                                            ="For the annual audit: paste the HQ list copied from Excel and compare it with ours."
                                           Wrap: =false
-                              - txtInvCntHqSoon:
-                                  Control: ModernText
+                              - btnInvCntHq:
+                                  Control: ModernButton
                                   Properties:
-                                    AccessibleLabel: =Self.Text
-                                    Color: =RGBA(97, 97, 97, 1)
-                                    Height: =40
+                                    AccessibleLabel: ="Open the HQ comparison"
+                                    AlignInContainer: =AlignInContainer.Start
+                                    Height: =36
+                                    Icon: ="ArrowSync"
                                     LayoutMinWidth: =0
-                                    PaddingBottom: =0
-                                    PaddingLeft: =0
-                                    PaddingTop: =0
-                                    Size: =12
-                                    Text: |-
-                                      ="Coming next: waiting for a sample of the HQ spreadsheet layout."
+                                    OnSelect: =Navigate(scrInvHq, ScreenTransition.None)
+                                    Text: ="Open HQ comparison"
+                                    Width: =200
                         - conInvCntRecent:
                             Control: GroupContainer
                             Variant: AutoLayout
