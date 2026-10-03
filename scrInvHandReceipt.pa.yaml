@@ -1,0 +1,884 @@
+Screens:
+  scrInvHandReceipt:
+    Properties:
+      Fill: =RGBA(255, 255, 255, 1)
+      OnVisible: |-
+        =UpdateContext({locPrinting: false, locPrintA: false, locPrintB: false})
+    Children:
+      - conInvHrRoot:
+          Control: GroupContainer
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Fill: =RGBA(245, 246, 248, 1)
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutDirection: =LayoutDirection.Vertical
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            Width: =Parent.Width
+          Children:
+            - conInvHrBar:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(15, 76, 129, 1)
+                  FillPortions: =0
+                  Height: =56
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =12
+                  LayoutMinHeight: =0
+                  LayoutMinWidth: =0
+                  PaddingLeft: =16
+                  PaddingRight: =16
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                  Visible: =!locPrinting
+                Children:
+                  - btnInvHrBack:
+                      Control: ModernButton
+                      Properties:
+                        AccessibleLabel: ="Back to People"
+                        Appearance: =ButtonAppearance.Secondary
+                        Height: =36
+                        Icon: ="ArrowLeft"
+                        LayoutMinWidth: =0
+                        OnSelect: =Navigate(scrInvPerson, ScreenTransition.None)
+                        Text: ="Back to People"
+                        Width: =170
+                  - txtInvHrBarTitle:
+                      Control: ModernText
+                      Properties:
+                        AccessibleLabel: =Self.Text
+                        Color: =RGBA(255, 255, 255, 1)
+                        FillPortions: =1
+                        FontWeight: =FontWeight.Semibold
+                        Height: =40
+                        LayoutMinWidth: =0
+                        PaddingBottom: =0
+                        PaddingLeft: =0
+                        PaddingTop: =0
+                        Size: =16
+                        Text: |-
+                          ="Hand receipt: " & Coalesce(gblInvPersonName, gblInvPersonEmail)
+                        Wrap: =false
+                  - btnInvHrPrint:
+                      Control: ModernButton
+                      Properties:
+                        AccessibleLabel: ="Print the hand receipt"
+                        Height: =36
+                        Icon: ="Print"
+                        LayoutMinWidth: =0
+                        OnSelect: |-
+                          =UpdateContext({locPrinting: true, locPrintA: true})
+                        Text: ="Print"
+                        Width: =120
+            - tmrInvHrA:
+                Control: Timer
+                Properties:
+                  Duration: =400
+                  Height: =1
+                  OnTimerEnd: |-
+                    =UpdateContext({locPrintA: false}); Print(); UpdateContext({locPrintB: true})
+                  Start: =locPrintA
+                  Visible: =false
+                  Width: =1
+            - tmrInvHrB:
+                Control: Timer
+                Properties:
+                  Duration: =1500
+                  Height: =1
+                  OnTimerEnd: |-
+                    =UpdateContext({locPrintB: false, locPrinting: false})
+                  Start: =locPrintB
+                  Visible: =false
+                  Width: =1
+            - conInvHrBody:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Fill: =If(locPrinting, RGBA(255, 255, 255, 1), RGBA(245, 246, 248, 1))
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutMinHeight: =0
+                  LayoutMinWidth: =0
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  PaddingBottom: =24
+                  PaddingTop: =24
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                Children:
+                  - conInvHrPaper:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =If(locPrinting, DropShadow.None, DropShadow.Semilight)
+                        Fill: =RGBA(255, 255, 255, 1)
+                        FillPortions: =0
+                        Height: =24 + 34 + 20 + 12 + 52 + 52 + 12 + 30 + galInvHrRows.Height + 28 + 56 + 12 + 40 + 24
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutMinHeight: =0
+                        LayoutMinWidth: =0
+                        PaddingBottom: =24
+                        PaddingLeft: =32
+                        PaddingRight: =32
+                        PaddingTop: =24
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        Width: =Min(Parent.Width - 32, 1100)
+                      Children:
+                        - txtInvHrTitle:
+                            Control: ModernText
+                            Properties:
+                              AccessibleLabel: =Self.Text
+                              Align: =Align.Center
+                              Color: =RGBA(0, 0, 0, 1)
+                              FontWeight: =FontWeight.Bold
+                              Height: =34
+                              LayoutMinWidth: =0
+                              PaddingBottom: =0
+                              PaddingLeft: =0
+                              PaddingTop: =0
+                              Size: =18
+                              Text: ="EQUIPMENT HAND RECEIPT"
+                        - txtInvHrSub:
+                            Control: ModernText
+                            Properties:
+                              AccessibleLabel: =Self.Text
+                              Align: =Align.Center
+                              Color: =RGBA(0, 0, 0, 1)
+                              Height: =20
+                              LayoutMinWidth: =0
+                              PaddingBottom: =0
+                              PaddingLeft: =0
+                              PaddingTop: =0
+                              Size: =10
+                              Text: ="Equipment currently issued to the person named below (summary of their DAF Form 1297 receipts)"
+                        - conInvHrGap1:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =12
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                        - conInvHrInfo1:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =52
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
+                            Children:
+                              - conInvHrCName:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =3
+                                    Height: =52
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    PaddingLeft: =8
+                                    PaddingRight: =8
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =0
+                                    RadiusBottomRight: =0
+                                    RadiusTopLeft: =0
+                                    RadiusTopRight: =0
+                                  Children:
+                                    - txtInvHrCNameL:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =16
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =9
+                                          Text: ="NAME, GRADE, ORGN"
+                                          Wrap: =false
+                                    - txtInvHrCNameV:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =24
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: =Coalesce(gblInvPersonName, gblInvPersonEmail)
+                                          Wrap: =false
+                              - conInvHrCEmail:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =2
+                                    Height: =52
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    PaddingLeft: =8
+                                    PaddingRight: =8
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =0
+                                    RadiusBottomRight: =0
+                                    RadiusTopLeft: =0
+                                    RadiusTopRight: =0
+                                  Children:
+                                    - txtInvHrCEmailL:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =16
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =9
+                                          Text: ="EMAIL"
+                                          Wrap: =false
+                                    - txtInvHrCEmailV:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =24
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: =gblInvPersonEmail
+                                          Wrap: =false
+                              - conInvHrCPhone:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                    Height: =52
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    PaddingLeft: =8
+                                    PaddingRight: =8
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =0
+                                    RadiusBottomRight: =0
+                                    RadiusTopLeft: =0
+                                    RadiusTopRight: =0
+                                  Children:
+                                    - txtInvHrCPhoneL:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =16
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =9
+                                          Text: ="DUTY PHONE"
+                                          Wrap: =false
+                                    - txtInvHrCPhoneV:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =24
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: =gblInvHandPhone
+                                          Wrap: =false
+                        - conInvHrInfo2:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =52
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
+                            Children:
+                              - conInvHrCDept:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =3
+                                    Height: =52
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    PaddingLeft: =8
+                                    PaddingRight: =8
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =0
+                                    RadiusBottomRight: =0
+                                    RadiusTopLeft: =0
+                                    RadiusTopRight: =0
+                                  Children:
+                                    - txtInvHrCDeptL:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =16
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =9
+                                          Text: ="ORGN ACCT NO."
+                                          Wrap: =false
+                                    - txtInvHrCDeptV:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =24
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: |-
+                                            =Concat(Distinct(ForAll(gblInvHandItems, {D: Switch(Dept, "IT", "TSOS", "AV", "TSAV", "")}), D), Value, ", ")
+                                          Wrap: =false
+                              - conInvHrCCount:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =2
+                                    Height: =52
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    PaddingLeft: =8
+                                    PaddingRight: =8
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =0
+                                    RadiusBottomRight: =0
+                                    RadiusTopLeft: =0
+                                    RadiusTopRight: =0
+                                  Children:
+                                    - txtInvHrCCountL:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =16
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =9
+                                          Text: ="ITEMS HELD"
+                                          Wrap: =false
+                                    - txtInvHrCCountV:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =24
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: =CountRows(gblInvHandItems) & "  (" & CountRows(Filter(gblInvHandItems, Kind = "Long-term Assignment")) & " long-term)"
+                                          Wrap: =false
+                              - conInvHrCDate:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                    Height: =52
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    PaddingLeft: =8
+                                    PaddingRight: =8
+                                    PaddingTop: =5
+                                    RadiusBottomLeft: =0
+                                    RadiusBottomRight: =0
+                                    RadiusTopLeft: =0
+                                    RadiusTopRight: =0
+                                  Children:
+                                    - txtInvHrCDateL:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =16
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =9
+                                          Text: ="DATE PRINTED"
+                                          Wrap: =false
+                                    - txtInvHrCDateV:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =24
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: =Text(Today(), "yyyymmdd")
+                                          Wrap: =false
+                        - conInvHrGap2:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =12
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                        - conInvHrHead:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(238, 238, 238, 1)
+                              FillPortions: =0
+                              Height: =30
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
+                            Children:
+                              - txtInvHrH0:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(0, 0, 0, 1)
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =Parent.Height
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =8
+                                    PaddingTop: =0
+                                    Size: =9
+                                    Text: ="STOCK NUMBER (ASSET TAG)"
+                                    Width: =Parent.Width * 0.18
+                                    Wrap: =false
+                              - txtInvHrH1:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(0, 0, 0, 1)
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =Parent.Height
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =8
+                                    PaddingTop: =0
+                                    Size: =9
+                                    Text: ="DESCRIPTION OF ITEM"
+                                    Width: =Parent.Width * 0.34
+                                    Wrap: =false
+                              - txtInvHrH2:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(0, 0, 0, 1)
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =Parent.Height
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =8
+                                    PaddingTop: =0
+                                    Size: =9
+                                    Text: ="RECEIPT"
+                                    Width: =Parent.Width * 0.15
+                                    Wrap: =false
+                              - txtInvHrH3:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(0, 0, 0, 1)
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =Parent.Height
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =8
+                                    PaddingTop: =0
+                                    Size: =9
+                                    Text: ="DATE ISSUED"
+                                    Width: =Parent.Width * 0.1
+                                    Wrap: =false
+                              - txtInvHrH4:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(0, 0, 0, 1)
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =Parent.Height
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =8
+                                    PaddingTop: =0
+                                    Size: =9
+                                    Text: ="RETURN DATE"
+                                    Width: =Parent.Width * 0.12
+                                    Wrap: =false
+                              - txtInvHrH5:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(0, 0, 0, 1)
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =Parent.Height
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =8
+                                    PaddingTop: =0
+                                    Size: =9
+                                    Text: ="STATUS"
+                                    Width: =Parent.Width * 0.11
+                                    Wrap: =false
+                        - galInvHrRows:
+                            Control: Gallery
+                            Variant: Vertical
+                            Properties:
+                              AccessibleLabel: ="Items held"
+                              FillPortions: =0
+                              Height: =Max(1, Self.AllItemsCount) * 30
+                              Items: =gblInvHandItems
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              ShowScrollbar: =false
+                              TabIndex: =0
+                              TemplatePadding: =0
+                              TemplateSize: =30
+                            Children:
+                              - conInvHrRow:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                    Height: =Parent.TemplateHeight
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    RadiusBottomLeft: =0
+                                    RadiusBottomRight: =0
+                                    RadiusTopLeft: =0
+                                    RadiusTopRight: =0
+                                    Width: =Parent.TemplateWidth
+                                  Children:
+                                    - txtInvHrR0:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =Parent.Height
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =8
+                                          PaddingTop: =0
+                                          Size: =11
+                                          Text: =ThisItem.AssetTagSnapshot
+                                          Width: =Parent.Width * 0.18
+                                          Wrap: =false
+                                    - txtInvHrR1:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =Parent.Height
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =8
+                                          PaddingTop: =0
+                                          Size: =11
+                                          Text: =ThisItem.Desc
+                                          Width: =Parent.Width * 0.34
+                                          Wrap: =false
+                                    - txtInvHrR2:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =Parent.Height
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =8
+                                          PaddingTop: =0
+                                          Size: =11
+                                          Text: =ThisItem.ReceiptNumber
+                                          Width: =Parent.Width * 0.15
+                                          Wrap: =false
+                                    - txtInvHrR3:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =Parent.Height
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =8
+                                          PaddingTop: =0
+                                          Size: =11
+                                          Text: =Text(ThisItem.IssuedDate, "yyyymmdd")
+                                          Width: =Parent.Width * 0.1
+                                          Wrap: =false
+                                    - txtInvHrR4:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =Parent.Height
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =8
+                                          PaddingTop: =0
+                                          Size: =11
+                                          Text: =If(IsBlank(ThisItem.DueDate), "Long-term", Text(ThisItem.DueDate, "yyyymmdd"))
+                                          Width: =Parent.Width * 0.12
+                                          Wrap: =false
+                                    - txtInvHrR5:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =Parent.Height
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =8
+                                          PaddingTop: =0
+                                          Size: =11
+                                          Text: =If(ThisItem.Status = "Active" && !IsBlank(ThisItem.DueDate) && ThisItem.DueDate < Today(), "Overdue", If(ThisItem.Status = "Awaiting Acknowledgement", "Not yet signed", ThisItem.Status))
+                                          Width: =Parent.Width * 0.11
+                                          Wrap: =false
+                        - conInvHrGap3:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =28
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                        - conInvHrSigs:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =56
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =48
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
+                            Children:
+                              - conInvHrSigA:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    Height: =56
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutJustifyContent: =LayoutJustifyContent.End
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - conInvHrSigALine:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          BorderThickness: =1
+                                          DropShadow: =DropShadow.None
+                                          Height: =1
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =0
+                                          RadiusBottomLeft: =0
+                                          RadiusBottomRight: =0
+                                          RadiusTopLeft: =0
+                                          RadiusTopRight: =0
+                                    - txtInvHrSigA:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =18
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =9
+                                          Text: ="CUSTODIAN SIGNATURE / DATE"
+                                          Wrap: =false
+                              - conInvHrSigB:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    Height: =56
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutJustifyContent: =LayoutJustifyContent.End
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - conInvHrSigBLine:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          BorderThickness: =1
+                                          DropShadow: =DropShadow.None
+                                          Height: =1
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =0
+                                          RadiusBottomLeft: =0
+                                          RadiusBottomRight: =0
+                                          RadiusTopLeft: =0
+                                          RadiusTopRight: =0
+                                    - txtInvHrSigB:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(0, 0, 0, 1)
+                                          Height: =18
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =9
+                                          Text: ="INVENTORY TECHNICIAN / DATE"
+                                          Wrap: =false
+                        - conInvHrGap4:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =12
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                        - conInvHrFoot:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =40
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
+                            Children:
+                              - txtInvHrFootL:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(0, 0, 0, 1)
+                                    FillPortions: =1
+                                    Height: =40
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =9
+                                    Text: ="Electronic record generated by the Inventory app. Printed " & Text(Now(), "yyyy-mm-dd hh:mm") & " by " & User().FullName & "."
+                              - txtInvHrFootR:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Align: =Align.Right
+                                    Color: =RGBA(0, 0, 0, 1)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =40
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =11
+                                    Text: ="HAND RECEIPT SUMMARY"
+                                    Width: =220

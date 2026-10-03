@@ -4,7 +4,7 @@ Screens:
       Fill: =RGBA(245, 246, 248, 1)
       LoadingSpinnerColor: =RGBA(15, 76, 129, 1)
       OnVisible: |-
-        =UpdateContext({locScanMsg: "", locBusy: false});
+        =UpdateContext({locScanMsg: "", locScanMatches: Blank(), locBusy: false});
         If(IsBlank(gblInvLoadedAt) || DateDiff(gblInvLoadedAt, Now(), TimeUnit.Minutes) >= 2, Select(btnInvCoReload))
     Children:
       - conInvCoRoot:
@@ -206,7 +206,6 @@ Screens:
                                 Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, CheckoutStatus.Value = "Active" || CheckoutStatus.Value = "Awaiting Acknowledgement" || CheckoutStatus.Value = "Return Required"), Status, CheckoutStatus.Value));
                                 Set(gblInvReserved, Filter(InventoryReservations, ReservationStatus.Value = "Reserved"));
                                 Set(gblInvLines, Filter(RequestEquipment, NeedsInventoryAction = true));
-                                Set(gblInvMyReceipts, Filter(InventoryReceipts, RecipientEmail = fxCurrentUserEmail && ReceiptStatus.Value = "Awaiting Acknowledgement"));
                                 Set(gblInvLoadedAt, Now());
                                 Set(gblInvLoading, false)
                               Text: ="Reload"
@@ -347,7 +346,6 @@ Screens:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
-                                    AlignInContainer: =AlignInContainer.SetByContainer
                                     DropShadow: =DropShadow.None
                                     FillPortions: =If(App.Width >= 1500, 1, 0)
                                     Height: =conInvCoWho.Height + 16 + conInvCoWhen.Height
@@ -609,7 +607,7 @@ Screens:
                                           DropShadow: =DropShadow.Semilight
                                           Fill: =RGBA(255, 255, 255, 1)
                                           FillPortions: =0
-                                          Height: =20 + 48 + 12 + If(App.Width >= 900, 60, 136) + 24
+                                          Height: =20 + 48 + 12 + 2 * (If(App.Width >= 900, 60, 136) + 12) + 24
                                           LayoutAlignItems: =LayoutAlignItems.Stretch
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutGap: =12
@@ -750,11 +748,85 @@ Screens:
                                                             Height: =36
                                                             LayoutMinWidth: =0
                                                             Width: =Parent.Width
+                                          - conInvCoR4:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                FillPortions: =0
+                                                Height: =If(App.Width >= 900, 60, 136)
+                                                LayoutDirection: =If(App.Width >= 900, LayoutDirection.Horizontal, LayoutDirection.Vertical)
+                                                LayoutGap: =16
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                              Children:
+                                                - conInvCoFSign:
+                                                    Control: GroupContainer
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      DropShadow: =DropShadow.None
+                                                      Height: =60
+                                                      LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                      LayoutDirection: =LayoutDirection.Vertical
+                                                      LayoutGap: =4
+                                                      LayoutMinHeight: =0
+                                                      LayoutMinWidth: =160
+                                                    Children:
+                                                      - txtInvCoFSignLbl:
+                                                          Control: ModernText
+                                                          Properties:
+                                                            AccessibleLabel: =Self.Text
+                                                            Color: =RGBA(66, 66, 66, 1)
+                                                            FontWeight: =FontWeight.Semibold
+                                                            Height: =20
+                                                            LayoutMinWidth: =0
+                                                            PaddingBottom: =0
+                                                            PaddingLeft: =0
+                                                            PaddingTop: =0
+                                                            Size: =13
+                                                            Text: ="Signature method"
+                                                      - drpInvCoSign:
+                                                          Control: ModernDropdown
+                                                          Properties:
+                                                            AccessibleLabel: ="How the person signs the receipt"
+                                                            AlignInContainer: =AlignInContainer.Stretch
+                                                            Appearance: =Appearance.Outline
+                                                            Default: |-
+                                                              ={Value: "Electronic", Label: "Electronic: approval in Outlook / Teams"}
+                                                            Height: =36
+                                                            ItemDisplayText: =ThisItem.Label
+                                                            Items: |-
+                                                              =Table({Value: "Electronic", Label: "Electronic: approval in Outlook / Teams"}, {Value: "CAC", Label: "CAC: sign the PDF in Adobe, then upload it"})
+                                                            LayoutMinWidth: =0
+                                                            Width: =Parent.Width
+                                                - conInvCoSignHelp:
+                                                    Control: GroupContainer
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      DropShadow: =DropShadow.None
+                                                      Height: =60
+                                                      LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                      LayoutDirection: =LayoutDirection.Vertical
+                                                      LayoutJustifyContent: =LayoutJustifyContent.End
+                                                      LayoutMinHeight: =0
+                                                      LayoutMinWidth: =160
+                                                    Children:
+                                                      - txtInvCoSignHelp:
+                                                          Control: ModernText
+                                                          Properties:
+                                                            AccessibleLabel: =Self.Text
+                                                            Color: =RGBA(97, 97, 97, 1)
+                                                            Height: =40
+                                                            LayoutMinWidth: =0
+                                                            PaddingBottom: =0
+                                                            PaddingLeft: =0
+                                                            PaddingTop: =0
+                                                            Size: =12
+                                                            Text: =If(drpInvCoSign.Selected.Value = "CAC", "No approval is sent. Print or open the unsigned PDF on People, have them sign with their CAC, then upload it.", "They get an approval to acknowledge; the signed PDF is emailed to them.")
                               - conInvCoRight:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
-                                    AlignInContainer: =AlignInContainer.SetByContainer
                                     DropShadow: =DropShadow.None
                                     FillPortions: =If(App.Width >= 1500, 1, 0)
                                     Height: =conInvCoItems.Height
@@ -771,7 +843,7 @@ Screens:
                                           DropShadow: =DropShadow.Semilight
                                           Fill: =RGBA(255, 255, 255, 1)
                                           FillPortions: =0
-                                          Height: =20 + 48 + 12 + 64 + 12 + Max(galInvCoItems.Height, If(galInvCoItems.AllItemsCount = 0, 24, 0)) + 24
+                                          Height: =20 + 48 + 12 + 48 + If(IsEmpty(locScanMatches), 0, 8 + CountRows(locScanMatches) * 38) + If(IsBlank(locScanMsg), 0, 4 + 20) + 12 + Max(galInvCoItems.Height, If(galInvCoItems.AllItemsCount = 0, 24, 0)) + 24
                                           LayoutAlignItems: =LayoutAlignItems.Stretch
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutGap: =12
@@ -829,82 +901,139 @@ Screens:
                                               Control: GroupContainer
                                               Variant: AutoLayout
                                               Properties:
-                                                BorderColor: =RGBA(15, 76, 129, 1)
-                                                BorderThickness: =1
                                                 DropShadow: =DropShadow.None
-                                                Fill: =RGBA(255, 255, 255, 1)
                                                 FillPortions: =0
-                                                Height: =64
-                                                LayoutAlignItems: =LayoutAlignItems.Center
-                                                LayoutDirection: =LayoutDirection.Horizontal
-                                                LayoutGap: =12
+                                                Height: =48 + If(IsEmpty(locScanMatches), 0, 8 + CountRows(locScanMatches) * 38) + If(IsBlank(locScanMsg), 0, 4 + 20)
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
                                                 LayoutMinHeight: =0
                                                 LayoutMinWidth: =0
-                                                PaddingLeft: =16
-                                                PaddingRight: =16
-                                                RadiusBottomLeft: =8
-                                                RadiusBottomRight: =8
-                                                RadiusTopLeft: =8
-                                                RadiusTopRight: =8
+                                                PaddingRight: =2
+                                                RadiusBottomLeft: =0
+                                                RadiusBottomRight: =0
+                                                RadiusTopLeft: =0
+                                                RadiusTopRight: =0
                                               Children:
-                                                - btnInvCoScanIcon:
-                                                    Control: ModernButton
+                                                - conInvCoScanRow:
+                                                    Control: GroupContainer
+                                                    Variant: AutoLayout
                                                     Properties:
-                                                      AccessibleLabel: ="Scan"
-                                                      Appearance: =ButtonAppearance.Transparent
-                                                      DisplayMode: =DisplayMode.View
-                                                      Height: =36
-                                                      Icon: ="BarcodeScanner"
-                                                      Layout: =ButtonLayout.IconOnly
-                                                      LayoutMinWidth: =36
-                                                      Text: ="Scan"
-                                                      Width: =36
-                                                - txtInvCoScan:
-                                                    Control: Classic/TextInput
+                                                      BorderColor: =RGBA(15, 76, 129, 1)
+                                                      BorderThickness: =2
+                                                      DropShadow: =DropShadow.None
+                                                      Fill: =RGBA(255, 255, 255, 1)
+                                                      FillPortions: =0
+                                                      Height: =48
+                                                      LayoutAlignItems: =LayoutAlignItems.Center
+                                                      LayoutDirection: =LayoutDirection.Horizontal
+                                                      LayoutGap: =8
+                                                      LayoutMinHeight: =0
+                                                      LayoutMinWidth: =0
+                                                      PaddingLeft: =12
+                                                      PaddingRight: =4
+                                                      RadiusBottomLeft: =6
+                                                      RadiusBottomRight: =6
+                                                      RadiusTopLeft: =6
+                                                      RadiusTopRight: =6
+                                                    Children:
+                                                      - imgInvCoScan:
+                                                          Control: Image
+                                                          Properties:
+                                                            AccessibleLabel: ="Barcode"
+                                                            Height: =28
+                                                            Image: ="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2040%2028%22%3E%3Cg%20fill%3D%22%230f4c81%22%3E%3Crect%20x%3D%221%22%20y%3D%222%22%20width%3D%222%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%222%22%20width%3D%223%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2210%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2212%22%20y%3D%222%22%20width%3D%222%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2215%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2217%22%20y%3D%222%22%20width%3D%223%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2221%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2223%22%20y%3D%222%22%20width%3D%222%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2226%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2228%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2230%22%20y%3D%222%22%20width%3D%223%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2234%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2236%22%20y%3D%222%22%20width%3D%223%22%20height%3D%2224%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"
+                                                            Width: =40
+                                                      - txtInvCoScan:
+                                                          Control: Classic/TextInput
+                                                          Properties:
+                                                            AccessibleLabel: ="Scan, or type all or part of the asset tag / serial number"
+                                                            BorderStyle: =BorderStyle.None
+                                                            BorderThickness: =0
+                                                            Default: =""
+                                                            FillPortions: =1
+                                                            FocusedBorderThickness: =0
+                                                            HintText: ="Scan, or type all or part of the asset tag / serial number"
+                                                            LayoutMinWidth: =100
+                                                            OnChange: |-
+                                                              =With(
+                                                                  {code: Lower(Trim(Self.Text))},
+                                                                  If(
+                                                                      !IsBlank(code),
+                                                                      With(
+                                                                          {exact: Coalesce(LookUp(gblInvAssets, Lower(Title) = code), LookUp(gblInvAssets, Lower(Coalesce(SerialNumber, "")) = code))},
+                                                                          If(
+                                                                              !IsBlank(exact),
+                                                                              UpdateContext({locScanMsg: "", locScanMatches: Blank()});
+                                                                              With({hit: exact}, If(
+                                                                  hit.ID in colInvCoItems.ID, UpdateContext({locScanMsg: hit.Title & " is already on this receipt."}),
+                                                                  hit.Status <> "Available", UpdateContext({locScanMsg: hit.Title & " is " & hit.Status & " and can't be issued."}),
+                                                                  hit.Dept <> drpInvCoDept.Selected.Value, UpdateContext({locScanMsg: hit.Title & " is " & hit.Dept & " equipment. This receipt is for " & drpInvCoDept.Selected.Value & "."}),
+                                                                  !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only issue " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),
+                                                                  Collect(colInvCoItems, hit)
+                                                              )),
+                                                                              With(
+                                                                                  {m: FirstN(SortByColumns(Filter(gblInvAssets, code in Lower(Title) || code in Lower(Coalesce(SerialNumber, ""))), "Title"), 6)},
+                                                                                  If(
+                                                                                      IsEmpty(m), UpdateContext({locScanMsg: "No asset tag or serial number contains " & Trim(Self.Text) & ".", locScanMatches: Blank()}),
+                                                                                      CountRows(m) = 1, UpdateContext({locScanMsg: "", locScanMatches: Blank()}); With({hit: First(m)}, If(
+                                                                  hit.ID in colInvCoItems.ID, UpdateContext({locScanMsg: hit.Title & " is already on this receipt."}),
+                                                                  hit.Status <> "Available", UpdateContext({locScanMsg: hit.Title & " is " & hit.Status & " and can't be issued."}),
+                                                                  hit.Dept <> drpInvCoDept.Selected.Value, UpdateContext({locScanMsg: hit.Title & " is " & hit.Dept & " equipment. This receipt is for " & drpInvCoDept.Selected.Value & "."}),
+                                                                  !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only issue " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),
+                                                                  Collect(colInvCoItems, hit)
+                                                              )),
+                                                                                      UpdateContext({locScanMsg: "", locScanMatches: m})
+                                                                                  )
+                                                                              )
+                                                                          )
+                                                                      )
+                                                                  )
+                                                              );
+                                                              Reset(txtInvCoScan);
+                                                              SetFocus(txtInvCoScan)
+                                                            PaddingLeft: =6
+                                                            Size: =14
+                                                - galInvCoScanPick:
+                                                    Control: Gallery
+                                                    Variant: Vertical
                                                     Properties:
-                                                      AccessibleLabel: ="Scan or type the asset tag"
-                                                      BorderColor: =RGBA(209, 209, 209, 1)
-                                                      BorderThickness: =1
-                                                      Default: =""
-                                                      FillPortions: =1
-                                                      FocusedBorderColor: =RGBA(15, 76, 129, 1)
-                                                      FocusedBorderThickness: =2
-                                                      HintText: ="Scan or type the asset tag"
-                                                      LayoutMinWidth: =160
-                                                      OnChange: |-
-                                                        =With(
-                                                            {code: Lower(Trim(Self.Text))},
-                                                            If(
-                                                                !IsBlank(code),
-                                                                With(
-                                                                    {hit: Coalesce(LookUp(gblInvAssets, Lower(Title) = code), LookUp(gblInvAssets, Lower(Coalesce(SerialNumber, "")) = code))},
-                                                                    If(
-                                                                        IsBlank(hit),
-                                                                        UpdateContext({locScanMsg: "No asset has the tag or serial number " & Trim(Self.Text) & "."}),
-                                                                        UpdateContext({locScanMsg: ""});
-                                                                        If(
-                                                            hit.ID in colInvCoItems.ID, UpdateContext({locScanMsg: hit.Title & " is already on this receipt."}),
-                                                            hit.Status <> "Available", UpdateContext({locScanMsg: hit.Title & " is " & hit.Status & " and can't be issued."}),
-                                                            hit.Dept <> drpInvCoDept.Selected.Value, UpdateContext({locScanMsg: hit.Title & " is " & hit.Dept & " equipment. This receipt is for " & drpInvCoDept.Selected.Value & "."}),
-                                                            !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only issue " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),
-                                                            Collect(colInvCoItems, hit)
-                                                        )
-                                                                    )
-                                                                )
-                                                            )
-                                                        );
-                                                        Reset(txtInvCoScan);
-                                                        SetFocus(txtInvCoScan)
-                                                      RadiusBottomLeft: =4
-                                                      RadiusBottomRight: =4
-                                                      RadiusTopLeft: =4
-                                                      RadiusTopRight: =4
+                                                      AccessibleLabel: ="Matching assets"
+                                                      FillPortions: =0
+                                                      Height: =If(IsEmpty(locScanMatches), 0, 8 + CountRows(locScanMatches) * 38)
+                                                      Items: =locScanMatches
+                                                      LayoutMinHeight: =0
+                                                      LayoutMinWidth: =0
+                                                      ShowScrollbar: =false
+                                                      TabIndex: =0
+                                                      TemplatePadding: =2
+                                                      TemplateSize: =34
+                                                      Visible: =!IsEmpty(locScanMatches)
+                                                    Children:
+                                                      - btnInvCoScanPick:
+                                                          Control: ModernButton
+                                                          Properties:
+                                                            AccessibleLabel: ="Use " & ThisItem.Title
+                                                            Align: =Align.Left
+                                                            Appearance: =ButtonAppearance.Secondary
+                                                            Height: =34
+                                                            Icon: ="ChevronRight"
+                                                            Layout: =ButtonLayout.IconAfter
+                                                            OnSelect: |-
+                                                              =UpdateContext({locScanMatches: Blank(), locScanMsg: ""}); With({hit: ThisItem}, If(
+                                                                  hit.ID in colInvCoItems.ID, UpdateContext({locScanMsg: hit.Title & " is already on this receipt."}),
+                                                                  hit.Status <> "Available", UpdateContext({locScanMsg: hit.Title & " is " & hit.Status & " and can't be issued."}),
+                                                                  hit.Dept <> drpInvCoDept.Selected.Value, UpdateContext({locScanMsg: hit.Title & " is " & hit.Dept & " equipment. This receipt is for " & drpInvCoDept.Selected.Value & "."}),
+                                                                  !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only issue " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),
+                                                                  Collect(colInvCoItems, hit)
+                                                              ))
+                                                            Text: =ThisItem.Title & "   ·   " & Coalesce(ThisItem.CatalogNameSnapshot, "Equipment") & "   ·   " & ThisItem.Status
+                                                            Width: =Parent.TemplateWidth - 4
                                                 - txtInvCoScanMsg:
                                                     Control: ModernText
                                                     Properties:
                                                       AccessibleLabel: =Self.Text
                                                       Color: =RGBA(164, 38, 44, 1)
-                                                      Height: =40
+                                                      Height: =20
                                                       LayoutMinWidth: =0
                                                       PaddingBottom: =0
                                                       PaddingLeft: =0
@@ -912,7 +1041,7 @@ Screens:
                                                       Size: =12
                                                       Text: =locScanMsg
                                                       Visible: =!IsBlank(locScanMsg)
-                                                      Width: =320
+                                                      Wrap: =false
                                           - txtInvCoItemsEmpty:
                                               Control: ModernText
                                               Properties:
@@ -1074,7 +1203,7 @@ Screens:
                                               {start: ParseJSON('Inventory-Action'.Run(fxInvStartReceiptPayload(
                                                   Lower(cmbInvCoPerson.Selected.Mail), cmbInvCoPerson.Selected.DisplayName, "i:0#.f|membership|" & Lower(cmbInvCoPerson.Selected.UserPrincipalName),
                                                   Trim(txtInvCoPhone.Text), txtInvCoAcct.Text,
-                                                  If(drpInvCoType.Selected.Value = "Long-term Assignment", "", Text(dteInvCoReturn.SelectedDate, "yyyy-mm-dd")), drpInvCoType.Selected.Value, drpInvCoDept.Selected.Value
+                                                  If(drpInvCoType.Selected.Value = "Long-term Assignment", "", Text(dteInvCoReturn.SelectedDate, "yyyy-mm-dd")), drpInvCoType.Selected.Value, drpInvCoDept.Selected.Value, drpInvCoSign.Selected.Value
                                               )).response)},
                                               If(
                                                   Text(start.status) <> "Success",
@@ -1100,7 +1229,7 @@ Screens:
                                       If(
                                           locCoDone.Ok,
                                           Notify(locCoDone.Message, NotificationType.Success);
-                                          Clear(colInvCoItems); Reset(cmbInvCoPerson); Reset(txtInvCoPhone); Set(gblInvLoadedAt, Blank()); Select(btnInvCoReload),
+                                          Clear(colInvCoItems); Reset(cmbInvCoPerson); Reset(txtInvCoPhone); Reset(drpInvCoSign); Set(gblInvLoadedAt, Blank()); Select(btnInvCoReload),
                                           Notify(locCoDone.Message, NotificationType.Error)
                                       )
                                     Text: ="Issue items"

@@ -4,3 +4,7 @@ EditorState:
     - scrInvAssets
     - scrInvAsset
     - scrInvCheckout
+    - scrInvPerson
+    - scrInvHandReceipt
+    - scrInvReturns
+    - scrInvCount

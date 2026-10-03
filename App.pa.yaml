@@ -96,7 +96,10 @@ App:
       fxInvNav = Table(
           {Id: "home", Label: "Home", Icon: "Home", Target: scrInvHome, IsAllowed: true},
           {Id: "assets", Label: "Assets", Icon: "Box", Target: scrInvAssets, IsAllowed: fxCanViewInventory},
-          {Id: "checkout", Label: "Checkout", Icon: "Send", Target: scrInvCheckout, IsAllowed: fxIsInvStaff}
+          {Id: "checkout", Label: "Checkout", Icon: "Send", Target: scrInvCheckout, IsAllowed: fxIsInvStaff},
+          {Id: "returns", Label: "Returns", Icon: "ArrowUndo", Target: scrInvReturns, IsAllowed: fxIsInvStaff},
+          {Id: "person", Label: "People", Icon: "Person", Target: scrInvPerson, IsAllowed: fxCanViewInventory},
+          {Id: "count", Label: "Inventory count", Icon: "ClipboardTaskListLtr", Target: scrInvCount, IsAllowed: fxCanViewInventory}
       );
       fxInvVisibleNav = Filter(fxInvNav, IsAllowed);
 
@@ -109,14 +112,21 @@ App:
       );
       fxInvStatusPayload(assetId: Number, status: Text, note: Text): Text = JSON({actionVersion: fxInvActionVersion, action: "AssetStatus", assetId: assetId, status: status, note: note});
       // One handover = one receipt: StartReceipt, then Issue per item, then FinishReceipt.
-      fxInvStartReceiptPayload(email: Text, name: Text, claims: Text, dutyPhone: Text, orgAccountNo: Text, returnDate: Text, checkoutType: Text, department: Text): Text = JSON(
+      fxInvStartReceiptPayload(email: Text, name: Text, claims: Text, dutyPhone: Text, orgAccountNo: Text, returnDate: Text, checkoutType: Text, department: Text, signatureMethod: Text): Text = JSON(
           {
               actionVersion: fxInvActionVersion, action: "StartReceipt",
               recipient: {email: email, name: name, claims: claims}, dutyPhone: dutyPhone, orgAccountNo: orgAccountNo,
-              returnDate: returnDate, checkoutType: checkoutType, department: department, requestId: 0
+              returnDate: returnDate, checkoutType: checkoutType, department: department, requestId: 0, signatureMethod: signatureMethod
           }
       );
       fxInvIssuePayload(receiptId: Number, assetId: Number, reservationId: Number): Text = JSON({actionVersion: fxInvActionVersion, action: "Issue", receiptId: receiptId, assetId: assetId, reservationId: reservationId});
       fxInvFinishPayload(receiptId: Number): Text = JSON({actionVersion: fxInvActionVersion, action: "FinishReceipt", receiptId: receiptId});
+      // Person screen: check in, change return date, resend approval / record CAC signature.
+      fxInvReturnPayload(checkoutId: Number, condition: Text, note: Text): Text = JSON({actionVersion: fxInvActionVersion, action: "Return", checkoutId: checkoutId, condition: condition, note: note});
+      fxInvExtendPayload(checkoutId: Number, dueDate: Text, note: Text): Text = JSON({actionVersion: fxInvActionVersion, action: "Extend", checkoutId: checkoutId, dueDate: dueDate, note: note});
+      fxInvReceiptPayload(action: Text, receiptId: Number): Text = JSON({actionVersion: fxInvActionVersion, action: action, receiptId: receiptId});
+      // Signature method: Electronic (approval) or CAC (signed in Adobe, then uploaded).
+      fxInvSwitchPayload(receiptId: Number, method: Text): Text = JSON({actionVersion: fxInvActionVersion, action: "SwitchMethod", receiptId: receiptId, method: method});
+      fxInvCacUploadPayload(receiptId: Number, fileName: Text, fileContent: Text): Text = JSON({actionVersion: fxInvActionVersion, action: "CacUpload", receiptId: receiptId, file: {name: fileName, content: fileContent}});
     StartScreen: =scrInvHome
     Theme: =PowerAppsTheme

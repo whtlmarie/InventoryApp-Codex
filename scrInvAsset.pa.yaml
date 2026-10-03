@@ -4,7 +4,7 @@ Screens:
       Fill: =RGBA(245, 246, 248, 1)
       LoadingSpinnerColor: =RGBA(15, 76, 129, 1)
       OnVisible: |-
-        =UpdateContext({locNew: gblInvAssetId = 0, locEdit: gblInvAssetId = 0, locBusy: false});
+        =UpdateContext({locNew: gblInvAssetId = 0, locEdit: gblInvAssetId = 0, locBusy: false, locIncOpen: false});
         Select(btnInvAsdLoad)
     Children:
       - conInvAsdRoot:
@@ -206,7 +206,6 @@ Screens:
                                 Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, CheckoutStatus.Value = "Active" || CheckoutStatus.Value = "Awaiting Acknowledgement" || CheckoutStatus.Value = "Return Required"), Status, CheckoutStatus.Value));
                                 Set(gblInvReserved, Filter(InventoryReservations, ReservationStatus.Value = "Reserved"));
                                 Set(gblInvLines, Filter(RequestEquipment, NeedsInventoryAction = true));
-                                Set(gblInvMyReceipts, Filter(InventoryReceipts, RecipientEmail = fxCurrentUserEmail && ReceiptStatus.Value = "Awaiting Acknowledgement"));
                                 Set(gblInvLoadedAt, Now());
                                 Set(gblInvLoading, false)
                               Text: ="Reload"
@@ -338,7 +337,7 @@ Screens:
                                     Height: =36
                                     Icon: ="ArrowClockwise"
                                     LayoutMinWidth: =0
-                                    OnSelect: =Refresh(InventoryAssets); Refresh(InventoryHistory); Refresh(InventoryReservations); Refresh(InventoryCheckouts); Set(gblInvLoadedAt, Blank()); Select(btnInvAsdLoad)
+                                    OnSelect: =Refresh(InventoryAssets); Refresh(InventoryHistory); Refresh(InventoryReservations); Refresh(InventoryCheckouts); Refresh(InventoryAssetFiles); Refresh(InventoryIncidents); Set(gblInvLoadedAt, Blank()); Select(btnInvAsdLoad)
                                     Text: ="Refresh"
                                     Visible: =!locNew
                                     Width: =120
@@ -349,7 +348,7 @@ Screens:
                               DropShadow: =DropShadow.None
                               FillPortions: =0
                               Height: |-
-                                =With({r: If(locNew, 0, conInvAsdStatus.Height + 16 + conInvAsdRes.Height + 16 + conInvAsdHist.Height)}, If(App.Width >= 1250, Max(conInvAsdDetails.Height, r), conInvAsdDetails.Height + 16 + r))
+                                =With({l: conInvAsdDetails.Height + If(locNew, 0, 16 + conInvAsdFiles.Height), r: If(locNew, 0, conInvAsdStatus.Height + 16 + If(conInvAsdIncs.Visible, conInvAsdIncs.Height + 16, 0) + conInvAsdRes.Height + 16 + conInvAsdHist.Height)}, If(App.Width >= 1250, Max(l, r), l + 16 + r))
                               LayoutAlignItems: =If(App.Width >= 1250, LayoutAlignItems.Start, LayoutAlignItems.Stretch)
                               LayoutDirection: =If(App.Width >= 1250, LayoutDirection.Horizontal, LayoutDirection.Vertical)
                               LayoutGap: =16
@@ -361,10 +360,9 @@ Screens:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
-                                    AlignInContainer: =AlignInContainer.SetByContainer
                                     DropShadow: =DropShadow.None
                                     FillPortions: =If(App.Width >= 1250, 3, 0)
-                                    Height: =conInvAsdDetails.Height
+                                    Height: =conInvAsdDetails.Height + If(locNew, 0, 16 + conInvAsdFiles.Height)
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =16
@@ -974,14 +972,344 @@ Screens:
                                                       Text: =If(locNew, "Add asset", "Save")
                                                       Visible: =locEdit
                                                       Width: =130
+                                    - conInvAsdFiles:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.Semilight
+                                          Fill: =RGBA(255, 255, 255, 1)
+                                          FillPortions: =0
+                                          Height: =20 + 48 + 12 + If(conInvAsdFileUp.Visible, conInvAsdFileUp.Height + 12, 0) + Max(24, galInvAsdFiles.Height) + 24
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =12
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =24
+                                          PaddingLeft: =24
+                                          PaddingRight: =24
+                                          PaddingTop: =20
+                                          RadiusBottomLeft: =8
+                                          RadiusBottomRight: =8
+                                          RadiusTopLeft: =8
+                                          RadiusTopRight: =8
+                                          Visible: =!locNew
+                                        Children:
+                                          - conInvAsdFilesHead:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                FillPortions: =0
+                                                Height: =48
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutGap: =2
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                              Children:
+                                                - txtInvAsdFilesTitle:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(36, 36, 36, 1)
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =26
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =16
+                                                      Text: ="Photos and documents"
+                                                - txtInvAsdFilesDesc:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(97, 97, 97, 1)
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =12
+                                                      Text: ="Condition photos, warranty and purchase papers."
+                                                      Wrap: =false
+                                          - conInvAsdFileUp:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                FillPortions: =0
+                                                Height: =90 + 8 + 60 + 8 + 40
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutGap: =8
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                                Visible: =fxCanManage(locAsset.Department.Value)
+                                              Children:
+                                                - attInvAsdFile:
+                                                    Control: Attachments
+                                                    Properties:
+                                                      AccessibleLabel: ="Photo or document"
+                                                      AddAttachmentText: ="Attach a photo or document"
+                                                      BorderColor: =RGBA(209, 209, 209, 1)
+                                                      BorderThickness: =1
+                                                      Height: =90
+                                                      Items: =Table()
+                                                      LayoutMinWidth: =0
+                                                      MaxAttachments: =1
+                                                      NoAttachmentsText: ="No file attached."
+                                                      Width: =Parent.Width
+                                                - conInvAsdFileRow:
+                                                    Control: GroupContainer
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      DropShadow: =DropShadow.None
+                                                      FillPortions: =0
+                                                      Height: =60
+                                                      LayoutDirection: =LayoutDirection.Horizontal
+                                                      LayoutGap: =12
+                                                      LayoutMinHeight: =0
+                                                      LayoutMinWidth: =0
+                                                    Children:
+                                                      - conInvAsdFFileKind:
+                                                          Control: GroupContainer
+                                                          Variant: AutoLayout
+                                                          Properties:
+                                                            DropShadow: =DropShadow.None
+                                                            Height: =60
+                                                            LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                            LayoutDirection: =LayoutDirection.Vertical
+                                                            LayoutGap: =4
+                                                            LayoutMinHeight: =0
+                                                            LayoutMinWidth: =140
+                                                          Children:
+                                                            - txtInvAsdFFileKindLbl:
+                                                                Control: ModernText
+                                                                Properties:
+                                                                  AccessibleLabel: =Self.Text
+                                                                  Color: =RGBA(66, 66, 66, 1)
+                                                                  FontWeight: =FontWeight.Semibold
+                                                                  Height: =20
+                                                                  LayoutMinWidth: =0
+                                                                  PaddingBottom: =0
+                                                                  PaddingLeft: =0
+                                                                  PaddingTop: =0
+                                                                  Size: =13
+                                                                  Text: ="Kind"
+                                                            - drpInvAsdFileKind:
+                                                                Control: ModernDropdown
+                                                                Properties:
+                                                                  AccessibleLabel: ="Kind of file"
+                                                                  AlignInContainer: =AlignInContainer.Stretch
+                                                                  Appearance: =Appearance.Outline
+                                                                  Default: |-
+                                                                    ={Value: "Photo"}
+                                                                  Height: =36
+                                                                  ItemDisplayText: =ThisItem.Value
+                                                                  Items: =["Photo", "Document"]
+                                                                  LayoutMinWidth: =0
+                                                                  Width: =Parent.Width
+                                                      - conInvAsdFFileNote:
+                                                          Control: GroupContainer
+                                                          Variant: AutoLayout
+                                                          Properties:
+                                                            DropShadow: =DropShadow.None
+                                                            Height: =60
+                                                            LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                            LayoutDirection: =LayoutDirection.Vertical
+                                                            LayoutGap: =4
+                                                            LayoutMinHeight: =0
+                                                            LayoutMinWidth: =140
+                                                          Children:
+                                                            - txtInvAsdFFileNoteLbl:
+                                                                Control: ModernText
+                                                                Properties:
+                                                                  AccessibleLabel: =Self.Text
+                                                                  Color: =RGBA(66, 66, 66, 1)
+                                                                  FontWeight: =FontWeight.Semibold
+                                                                  Height: =20
+                                                                  LayoutMinWidth: =0
+                                                                  PaddingBottom: =0
+                                                                  PaddingLeft: =0
+                                                                  PaddingTop: =0
+                                                                  Size: =13
+                                                                  Text: ="Note (optional)"
+                                                            - txtInvAsdFileNote:
+                                                                Control: ModernTextInput
+                                                                Properties:
+                                                                  AccessibleLabel: ="Note about the file"
+                                                                  AlignInContainer: =AlignInContainer.Stretch
+                                                                  Appearance: =Appearance.Outline
+                                                                  Height: =36
+                                                                  LayoutMinWidth: =0
+                                                                  Placeholder: ="e.g. condition at issue, warranty"
+                                                                  Width: =Parent.Width
+                                                - btnInvAsdFileUp:
+                                                    Control: ModernButton
+                                                    Properties:
+                                                      AccessibleLabel: ="Upload the file"
+                                                      AlignInContainer: =AlignInContainer.End
+                                                      DisplayMode: =If(locBusy || IsEmpty(attInvAsdFile.Attachments), DisplayMode.Disabled, DisplayMode.Edit)
+                                                      Height: =36
+                                                      Icon: ="ArrowUpload"
+                                                      LayoutMinWidth: =0
+                                                      OnSelect: |-
+                                                        =UpdateContext({locBusy: true});
+                                                        IfError(
+                                                            With(
+                                                                {raw: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "AssetFile", assetId: gblInvAssetId, kind: drpInvAsdFileKind.Selected.Value, note: Trim(txtInvAsdFileNote.Text), file: {name: First(attInvAsdFile.Attachments).Name, content: With({j: JSON(First(attInvAsdFile.Attachments).Value, JSONFormat.IncludeBinaryData)}, Mid(j, 2, Len(j) - 2))}})).response)},
+                                                                UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message), Id: Value(raw.id)}})
+                                                            ),
+                                                            UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again.", Id: 0}})
+                                                        );
+                                                        UpdateContext({locBusy: false});
+                                                        Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
+                                                        If(locResult.Status = "Success", Reset(attInvAsdFile); Reset(txtInvAsdFileNote); Refresh(InventoryAssetFiles); Set(gblInvLoadedAt, Blank()); Select(btnInvAsdLoad))
+                                                      Text: ="Upload"
+                                                      Width: =130
+                                          - txtInvAsdFilesEmpty:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(97, 97, 97, 1)
+                                                Height: =24
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =12
+                                                Text: ="No files yet."
+                                                Visible: =galInvAsdFiles.AllItemsCount = 0
+                                                Wrap: =false
+                                          - galInvAsdFiles:
+                                              Control: Gallery
+                                              Variant: Vertical
+                                              Properties:
+                                                AccessibleLabel: ="Photos and documents"
+                                                FillPortions: =0
+                                                Height: =Self.AllItemsCount * 72
+                                                Items: =Sort(Filter(InventoryAssetFiles, AssetId = gblInvAssetId), ID, SortOrder.Descending)
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                                ShowScrollbar: =false
+                                                TabIndex: =0
+                                                TemplatePadding: =0
+                                                TemplateSize: =72
+                                              Children:
+                                                - conInvAsdFileItem:
+                                                    Control: GroupContainer
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      BorderColor: =RGBA(225, 228, 232, 1)
+                                                      BorderThickness: =1
+                                                      DropShadow: =DropShadow.None
+                                                      Height: =Parent.TemplateHeight - 6
+                                                      LayoutAlignItems: =LayoutAlignItems.Center
+                                                      LayoutDirection: =LayoutDirection.Horizontal
+                                                      LayoutGap: =12
+                                                      PaddingLeft: =6
+                                                      PaddingRight: =6
+                                                      RadiusBottomLeft: =6
+                                                      RadiusBottomRight: =6
+                                                      RadiusTopLeft: =6
+                                                      RadiusTopRight: =6
+                                                      Width: =Parent.TemplateWidth
+                                                    Children:
+                                                      - imgInvAsdFileThumb:
+                                                          Control: Image
+                                                          Properties:
+                                                            AccessibleLabel: =ThisItem.'{FilenameWithExtension}'
+                                                            Height: =56
+                                                            Image: =If(ThisItem.FileKind.Value = "Photo", ThisItem.'{Thumbnail}'.Small, "")
+                                                            ImagePosition: =ImagePosition.Fill
+                                                            Visible: =ThisItem.FileKind.Value = "Photo"
+                                                            Width: =56
+                                                      - conInvAsdFileText:
+                                                          Control: GroupContainer
+                                                          Variant: AutoLayout
+                                                          Properties:
+                                                            DropShadow: =DropShadow.None
+                                                            Height: =56
+                                                            LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                            LayoutDirection: =LayoutDirection.Vertical
+                                                            LayoutJustifyContent: =LayoutJustifyContent.Center
+                                                            LayoutMinHeight: =0
+                                                            LayoutMinWidth: =0
+                                                          Children:
+                                                            - txtInvAsdFileName:
+                                                                Control: ModernText
+                                                                Properties:
+                                                                  AccessibleLabel: =Self.Text
+                                                                  Color: =RGBA(36, 36, 36, 1)
+                                                                  FontWeight: =FontWeight.Semibold
+                                                                  Height: =20
+                                                                  LayoutMinWidth: =0
+                                                                  PaddingBottom: =0
+                                                                  PaddingLeft: =0
+                                                                  PaddingTop: =0
+                                                                  Size: =13
+                                                                  Text: |-
+                                                                    =ThisItem.FileKind.Value & ":  " & ThisItem.'{FilenameWithExtension}'
+                                                                  Wrap: =false
+                                                            - txtInvAsdFileMeta:
+                                                                Control: ModernText
+                                                                Properties:
+                                                                  AccessibleLabel: =Self.Text
+                                                                  Color: =RGBA(97, 97, 97, 1)
+                                                                  Height: =20
+                                                                  LayoutMinWidth: =0
+                                                                  PaddingBottom: =0
+                                                                  PaddingLeft: =0
+                                                                  PaddingTop: =0
+                                                                  Size: =12
+                                                                  Text: =Text(ThisItem.Created, "mmm d, yyyy") & If(IsBlank(ThisItem.FileNote), "", "  ·  " & ThisItem.FileNote)
+                                                                  Wrap: =false
+                                                      - btnInvAsdFileOpen:
+                                                          Control: ModernButton
+                                                          Properties:
+                                                            AccessibleLabel: ="Open " & ThisItem.'{FilenameWithExtension}'
+                                                            Appearance: =ButtonAppearance.Subtle
+                                                            Height: =36
+                                                            Icon: ="Open"
+                                                            Layout: =ButtonLayout.IconOnly
+                                                            LayoutMinWidth: =36
+                                                            OnSelect: =Launch(ThisItem.'{Link}')
+                                                            Text: ="Open"
+                                                            Width: =36
+                                                      - btnInvAsdFileDel:
+                                                          Control: ModernButton
+                                                          Properties:
+                                                            AccessibleLabel: ="Remove " & ThisItem.'{FilenameWithExtension}'
+                                                            Appearance: =ButtonAppearance.Subtle
+                                                            DisplayMode: =If(locBusy, DisplayMode.Disabled, DisplayMode.Edit)
+                                                            Height: =36
+                                                            Icon: ="Delete"
+                                                            Layout: =ButtonLayout.IconOnly
+                                                            LayoutMinWidth: =36
+                                                            OnSelect: |-
+                                                              =UpdateContext({locBusy: true});
+                                                              IfError(
+                                                                  With(
+                                                                      {raw: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "DeleteAssetFile", fileId: ThisItem.ID})).response)},
+                                                                      UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message), Id: Value(raw.id)}})
+                                                                  ),
+                                                                  UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again.", Id: 0}})
+                                                              );
+                                                              UpdateContext({locBusy: false});
+                                                              Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
+                                                              If(locResult.Status = "Success", Refresh(InventoryAssetFiles); Set(gblInvLoadedAt, Blank()); Select(btnInvAsdLoad))
+                                                            Text: ="Remove"
+                                                            Visible: =fxCanManage(locAsset.Department.Value)
+                                                            Width: =36
                               - conInvAsdRight:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
-                                    AlignInContainer: =AlignInContainer.SetByContainer
                                     DropShadow: =DropShadow.None
                                     FillPortions: =If(App.Width >= 1250, 2, 0)
-                                    Height: =If(locNew, 0, conInvAsdStatus.Height + 16 + conInvAsdRes.Height + 16 + conInvAsdHist.Height)
+                                    Height: =If(locNew, 0, conInvAsdStatus.Height + 16 + If(conInvAsdIncs.Visible, conInvAsdIncs.Height + 16, 0) + conInvAsdRes.Height + 16 + conInvAsdHist.Height)
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =16
@@ -995,7 +1323,7 @@ Screens:
                                           DropShadow: =DropShadow.Semilight
                                           Fill: =RGBA(255, 255, 255, 1)
                                           FillPortions: =0
-                                          Height: =20 + 48 + 12 + 40 + 12 + 60 + 12 + 60 + 12 + 36 + 24
+                                          Height: =20 + 48 + 12 + 40 + 12 + 60 + 12 + 60 + 12 + 36 + 12 + If(conInvAsdInc.Visible, conInvAsdInc.Height, If(btnInvAsdIncOpen.Visible, 36, 0)) + 24
                                           LayoutAlignItems: =LayoutAlignItems.Stretch
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutGap: =12
@@ -1195,6 +1523,399 @@ Screens:
                                                   If(locResult.Status = "Success", Set(gblInvLoadedAt, Blank()); Reset(txtInvAsdStatusNote); Reset(drpInvAsdNewStatus); Select(btnInvAsdLoad))
                                                 Text: ="Apply"
                                                 Width: =110
+                                          - btnInvAsdIncOpen:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Report this asset lost or damaged"
+                                                AlignInContainer: =AlignInContainer.Start
+                                                Appearance: =ButtonAppearance.Subtle
+                                                Height: =36
+                                                Icon: ="Warning"
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =UpdateContext({locIncOpen: true})
+                                                Text: ="Report lost or damaged"
+                                                Visible: =!locIncOpen && fxCanManage(locAsset.Department.Value) && !(locAsset.AssetStatus.Value in ["Lost", "Retired"])
+                                                Width: =220
+                                          - conInvAsdInc:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                BorderColor: =RGBA(164, 38, 44, 1)
+                                                BorderThickness: =1
+                                                DropShadow: =DropShadow.None
+                                                Fill: =RGBA(253, 246, 246, 1)
+                                                FillPortions: =0
+                                                Height: =28 + 6 + 2 * (60 + 6) + 96 + 6 + 40 + 24
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutGap: =6
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =12
+                                                PaddingLeft: =12
+                                                PaddingRight: =12
+                                                PaddingTop: =12
+                                                RadiusBottomLeft: =6
+                                                RadiusBottomRight: =6
+                                                RadiusTopLeft: =6
+                                                RadiusTopRight: =6
+                                                Visible: =locIncOpen && fxCanManage(locAsset.Department.Value)
+                                              Children:
+                                                - txtInvAsdIncTitle:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(164, 38, 44, 1)
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =28
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =13
+                                                      Text: ="Report lost or damaged"
+                                                      Wrap: =false
+                                                - conInvAsdIncR1:
+                                                    Control: GroupContainer
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      DropShadow: =DropShadow.None
+                                                      FillPortions: =0
+                                                      Height: =60
+                                                      LayoutDirection: =LayoutDirection.Horizontal
+                                                      LayoutGap: =12
+                                                      LayoutMinHeight: =0
+                                                      LayoutMinWidth: =0
+                                                    Children:
+                                                      - conInvAsdFIncType:
+                                                          Control: GroupContainer
+                                                          Variant: AutoLayout
+                                                          Properties:
+                                                            DropShadow: =DropShadow.None
+                                                            Height: =60
+                                                            LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                            LayoutDirection: =LayoutDirection.Vertical
+                                                            LayoutGap: =4
+                                                            LayoutMinHeight: =0
+                                                            LayoutMinWidth: =140
+                                                          Children:
+                                                            - txtInvAsdFIncTypeLbl:
+                                                                Control: ModernText
+                                                                Properties:
+                                                                  AccessibleLabel: =Self.Text
+                                                                  Color: =RGBA(66, 66, 66, 1)
+                                                                  FontWeight: =FontWeight.Semibold
+                                                                  Height: =20
+                                                                  LayoutMinWidth: =0
+                                                                  PaddingBottom: =0
+                                                                  PaddingLeft: =0
+                                                                  PaddingTop: =0
+                                                                  Size: =13
+                                                                  Text: ="What happened"
+                                                            - drpInvAsdIncType:
+                                                                Control: ModernDropdown
+                                                                Properties:
+                                                                  AccessibleLabel: ="Lost or damaged"
+                                                                  AlignInContainer: =AlignInContainer.Stretch
+                                                                  Appearance: =Appearance.Outline
+                                                                  Default: |-
+                                                                    ={Value: "Damaged"}
+                                                                  Height: =36
+                                                                  ItemDisplayText: =ThisItem.Value
+                                                                  Items: =["Damaged", "Lost"]
+                                                                  LayoutMinWidth: =0
+                                                                  Width: =Parent.Width
+                                                      - conInvAsdFIncDate:
+                                                          Control: GroupContainer
+                                                          Variant: AutoLayout
+                                                          Properties:
+                                                            DropShadow: =DropShadow.None
+                                                            Height: =60
+                                                            LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                            LayoutDirection: =LayoutDirection.Vertical
+                                                            LayoutGap: =4
+                                                            LayoutMinHeight: =0
+                                                            LayoutMinWidth: =140
+                                                          Children:
+                                                            - txtInvAsdFIncDateLbl:
+                                                                Control: ModernText
+                                                                Properties:
+                                                                  AccessibleLabel: =Self.Text
+                                                                  Color: =RGBA(66, 66, 66, 1)
+                                                                  FontWeight: =FontWeight.Semibold
+                                                                  Height: =20
+                                                                  LayoutMinWidth: =0
+                                                                  PaddingBottom: =0
+                                                                  PaddingLeft: =0
+                                                                  PaddingTop: =0
+                                                                  Size: =13
+                                                                  Text: ="When"
+                                                            - dteInvAsdIncDate:
+                                                                Control: ModernDatePicker
+                                                                Properties:
+                                                                  AccessibleLabel: ="Date it happened"
+                                                                  AlignInContainer: =AlignInContainer.Stretch
+                                                                  Appearance: =Appearance.Outline
+                                                                  DefaultDate: =Today()
+                                                                  Height: =36
+                                                                  LayoutMinWidth: =0
+                                                                  Width: =Parent.Width
+                                                - conInvAsdIncR2:
+                                                    Control: GroupContainer
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      DropShadow: =DropShadow.None
+                                                      FillPortions: =0
+                                                      Height: =60
+                                                      LayoutDirection: =LayoutDirection.Horizontal
+                                                      LayoutGap: =12
+                                                      LayoutMinHeight: =0
+                                                      LayoutMinWidth: =0
+                                                    Children:
+                                                      - conInvAsdFIncCost:
+                                                          Control: GroupContainer
+                                                          Variant: AutoLayout
+                                                          Properties:
+                                                            DropShadow: =DropShadow.None
+                                                            Height: =60
+                                                            LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                            LayoutDirection: =LayoutDirection.Vertical
+                                                            LayoutGap: =4
+                                                            LayoutMinHeight: =0
+                                                            LayoutMinWidth: =140
+                                                          Children:
+                                                            - txtInvAsdFIncCostLbl:
+                                                                Control: ModernText
+                                                                Properties:
+                                                                  AccessibleLabel: =Self.Text
+                                                                  Color: =RGBA(66, 66, 66, 1)
+                                                                  FontWeight: =FontWeight.Semibold
+                                                                  Height: =20
+                                                                  LayoutMinWidth: =0
+                                                                  PaddingBottom: =0
+                                                                  PaddingLeft: =0
+                                                                  PaddingTop: =0
+                                                                  Size: =13
+                                                                  Text: ="Estimated cost (optional)"
+                                                            - txtInvAsdIncCost:
+                                                                Control: ModernTextInput
+                                                                Properties:
+                                                                  AccessibleLabel: ="Estimated cost"
+                                                                  AlignInContainer: =AlignInContainer.Stretch
+                                                                  Appearance: =Appearance.Outline
+                                                                  Height: =36
+                                                                  LayoutMinWidth: =0
+                                                                  Placeholder: ="e.g. 250.00"
+                                                                  Width: =Parent.Width
+                                                      - conInvAsdIncSpacer:
+                                                          Control: GroupContainer
+                                                          Variant: AutoLayout
+                                                          Properties:
+                                                            DropShadow: =DropShadow.None
+                                                            Height: =60
+                                                            LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                            LayoutDirection: =LayoutDirection.Vertical
+                                                            LayoutMinHeight: =0
+                                                            LayoutMinWidth: =0
+                                                - conInvAsdFIncText:
+                                                    Control: GroupContainer
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      DropShadow: =DropShadow.None
+                                                      FillPortions: =0
+                                                      Height: =96
+                                                      LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                      LayoutDirection: =LayoutDirection.Vertical
+                                                      LayoutGap: =4
+                                                      LayoutMinHeight: =0
+                                                      LayoutMinWidth: =0
+                                                    Children:
+                                                      - txtInvAsdIncTextLbl:
+                                                          Control: ModernText
+                                                          Properties:
+                                                            AccessibleLabel: =Self.Text
+                                                            Color: =RGBA(66, 66, 66, 1)
+                                                            FontWeight: =FontWeight.Semibold
+                                                            Height: =20
+                                                            LayoutMinWidth: =0
+                                                            PaddingBottom: =0
+                                                            PaddingLeft: =0
+                                                            PaddingTop: =0
+                                                            Size: =13
+                                                            Text: ="Circumstances (required)"
+                                                      - txtInvAsdIncText:
+                                                          Control: ModernTextInput
+                                                          Properties:
+                                                            AccessibleLabel: ="What happened"
+                                                            AlignInContainer: =AlignInContainer.Stretch
+                                                            Appearance: =Appearance.Outline
+                                                            Height: =72
+                                                            LayoutMinWidth: =0
+                                                            Type: =TextInputType.Multiline
+                                                            Width: =Parent.Width
+                                                - conInvAsdIncBtns:
+                                                    Control: GroupContainer
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      DropShadow: =DropShadow.None
+                                                      FillPortions: =0
+                                                      Height: =40
+                                                      LayoutAlignItems: =LayoutAlignItems.Center
+                                                      LayoutDirection: =LayoutDirection.Horizontal
+                                                      LayoutGap: =8
+                                                      LayoutJustifyContent: =LayoutJustifyContent.End
+                                                      LayoutMinHeight: =0
+                                                      LayoutMinWidth: =0
+                                                    Children:
+                                                      - btnInvAsdIncCancel:
+                                                          Control: ModernButton
+                                                          Properties:
+                                                            AccessibleLabel: ="Cancel the report"
+                                                            Appearance: =ButtonAppearance.Secondary
+                                                            Height: =36
+                                                            LayoutMinWidth: =0
+                                                            OnSelect: |-
+                                                              =UpdateContext({locIncOpen: false})
+                                                            Text: ="Cancel"
+                                                            Width: =110
+                                                      - btnInvAsdIncGo:
+                                                          Control: ModernButton
+                                                          Properties:
+                                                            AccessibleLabel: ="Submit the report"
+                                                            DisplayMode: =If(locBusy || IsBlank(Trim(txtInvAsdIncText.Text)), DisplayMode.Disabled, DisplayMode.Edit)
+                                                            Height: =36
+                                                            Icon: ="Warning"
+                                                            LayoutMinWidth: =0
+                                                            OnSelect: |-
+                                                              =UpdateContext({locBusy: true});
+                                                              IfError(
+                                                                  With(
+                                                                      {raw: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "ReportIncident", assetId: gblInvAssetId, type: drpInvAsdIncType.Selected.Value, incidentDate: Text(dteInvAsdIncDate.SelectedDate, "yyyy-mm-dd"), circumstances: Trim(txtInvAsdIncText.Text), estimatedCost: If(IsBlank(Trim(txtInvAsdIncCost.Text)), "", Text(Value(txtInvAsdIncCost.Text)))})).response)},
+                                                                      UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message), Id: Value(raw.id)}})
+                                                                  ),
+                                                                  UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again.", Id: 0}})
+                                                              );
+                                                              UpdateContext({locBusy: false});
+                                                              Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
+                                                              If(locResult.Status = "Success", UpdateContext({locIncOpen: false}); Reset(txtInvAsdIncText); Reset(txtInvAsdIncCost); Refresh(InventoryIncidents); Set(gblInvLoadedAt, Blank()); Select(btnInvAsdLoad))
+                                                            Text: ="Submit report"
+                                                            Width: =150
+                                    - conInvAsdIncs:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.Semilight
+                                          Fill: =RGBA(255, 255, 255, 1)
+                                          FillPortions: =0
+                                          Height: =20 + 48 + 12 + Max(24, galInvAsdIncs.Height) + 24
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =12
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =24
+                                          PaddingLeft: =24
+                                          PaddingRight: =24
+                                          PaddingTop: =20
+                                          RadiusBottomLeft: =8
+                                          RadiusBottomRight: =8
+                                          RadiusTopLeft: =8
+                                          RadiusTopRight: =8
+                                          Visible: =!locNew && !IsEmpty(Filter(InventoryIncidents, AssetId = gblInvAssetId))
+                                        Children:
+                                          - conInvAsdIncsHead:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                FillPortions: =0
+                                                Height: =48
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutGap: =2
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                              Children:
+                                                - txtInvAsdIncsTitle:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(36, 36, 36, 1)
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =26
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =16
+                                                      Text: ="Lost and damaged reports"
+                                                - txtInvAsdIncsDesc:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(97, 97, 97, 1)
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =12
+                                                      Text: ="Reports filed for this unit."
+                                                      Wrap: =false
+                                          - galInvAsdIncs:
+                                              Control: Gallery
+                                              Variant: Vertical
+                                              Properties:
+                                                AccessibleLabel: ="Incidents"
+                                                FillPortions: =0
+                                                Height: =Self.AllItemsCount * 60
+                                                Items: =Sort(Filter(InventoryIncidents, AssetId = gblInvAssetId), ID, SortOrder.Descending)
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                                ShowScrollbar: =false
+                                                TabIndex: =0
+                                                TemplatePadding: =0
+                                                TemplateSize: =60
+                                              Children:
+                                                - conInvAsdIncRow:
+                                                    Control: GroupContainer
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      DropShadow: =DropShadow.None
+                                                      Height: =Parent.TemplateHeight - 4
+                                                      LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                      LayoutDirection: =LayoutDirection.Vertical
+                                                      LayoutJustifyContent: =LayoutJustifyContent.Center
+                                                      Width: =Parent.TemplateWidth
+                                                    Children:
+                                                      - txtInvAsdIncWhat:
+                                                          Control: ModernText
+                                                          Properties:
+                                                            AccessibleLabel: =Self.Text
+                                                            Color: =RGBA(164, 38, 44, 1)
+                                                            FontWeight: =FontWeight.Semibold
+                                                            Height: =20
+                                                            LayoutMinWidth: =0
+                                                            PaddingBottom: =0
+                                                            PaddingLeft: =0
+                                                            PaddingTop: =0
+                                                            Size: =13
+                                                            Text: =ThisItem.IncidentType.Value & "  ·  " & Text(ThisItem.IncidentDate, "mmm d, yyyy") & If(IsBlank(ThisItem.HolderName), "", "  ·  with " & fxPersonName(ThisItem.HolderName)) & If(IsBlank(ThisItem.EstimatedCost), "", "  ·  est. " & Text(ThisItem.EstimatedCost, "$#,##0.00"))
+                                                            Wrap: =false
+                                                      - txtInvAsdIncWhy:
+                                                          Control: ModernText
+                                                          Properties:
+                                                            AccessibleLabel: =Self.Text
+                                                            Color: =RGBA(97, 97, 97, 1)
+                                                            Height: =20
+                                                            LayoutMinWidth: =0
+                                                            PaddingBottom: =0
+                                                            PaddingLeft: =0
+                                                            PaddingTop: =0
+                                                            Size: =12
+                                                            Text: =ThisItem.Circumstances & "  (" & fxPersonName(ThisItem.ReportedByName) & ")"
+                                                            Wrap: =false
                                     - conInvAsdRes:
                                         Control: GroupContainer
                                         Variant: AutoLayout

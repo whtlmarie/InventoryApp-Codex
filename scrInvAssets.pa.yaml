@@ -4,7 +4,7 @@ Screens:
       Fill: =RGBA(245, 246, 248, 1)
       LoadingSpinnerColor: =RGBA(15, 76, 129, 1)
       OnVisible: |-
-        =UpdateContext({locAstDept: Coalesce(locAstDept, fxDefaultDept), locAstStatus: Coalesce(locAstStatus, "All"), locScanMsg: ""});
+        =UpdateContext({locAstDept: Coalesce(locAstDept, fxDefaultDept), locAstStatus: Coalesce(locAstStatus, "All"), locScanMsg: "", locScanMatches: Blank()});
         If((IsBlank(gblInvLoadedAt) || DateDiff(gblInvLoadedAt, Now(), TimeUnit.Minutes) >= 2), Select(btnInvAstReload));
         SetFocus(txtInvAstScan)
     Children:
@@ -207,7 +207,6 @@ Screens:
                                 Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, CheckoutStatus.Value = "Active" || CheckoutStatus.Value = "Awaiting Acknowledgement" || CheckoutStatus.Value = "Return Required"), Status, CheckoutStatus.Value));
                                 Set(gblInvReserved, Filter(InventoryReservations, ReservationStatus.Value = "Reserved"));
                                 Set(gblInvLines, Filter(RequestEquipment, NeedsInventoryAction = true));
-                                Set(gblInvMyReceipts, Filter(InventoryReceipts, RecipientEmail = fxCurrentUserEmail && ReceiptStatus.Value = "Awaiting Acknowledgement"));
                                 Set(gblInvLoadedAt, Now());
                                 Set(gblInvLoading, false)
                               Text: ="Reload"
@@ -309,76 +308,121 @@ Screens:
                             Control: GroupContainer
                             Variant: AutoLayout
                             Properties:
-                              BorderColor: =RGBA(15, 76, 129, 1)
-                              BorderThickness: =1
                               DropShadow: =DropShadow.None
-                              Fill: =RGBA(255, 255, 255, 1)
                               FillPortions: =0
-                              Height: =64
-                              LayoutAlignItems: =LayoutAlignItems.Center
-                              LayoutDirection: =LayoutDirection.Horizontal
-                              LayoutGap: =12
+                              Height: =48 + If(IsEmpty(locScanMatches), 0, 8 + CountRows(locScanMatches) * 38) + If(IsBlank(locScanMsg), 0, 4 + 20)
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
                               LayoutMinHeight: =0
                               LayoutMinWidth: =0
-                              PaddingLeft: =16
-                              PaddingRight: =16
-                              RadiusBottomLeft: =8
-                              RadiusBottomRight: =8
-                              RadiusTopLeft: =8
-                              RadiusTopRight: =8
+                              PaddingRight: =2
+                              RadiusBottomLeft: =0
+                              RadiusBottomRight: =0
+                              RadiusTopLeft: =0
+                              RadiusTopRight: =0
                             Children:
-                              - btnInvAstScanIcon:
-                                  Control: ModernButton
+                              - conInvAstScanRow:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
                                   Properties:
-                                    AccessibleLabel: ="Scan"
-                                    Appearance: =ButtonAppearance.Transparent
-                                    DisplayMode: =DisplayMode.View
-                                    Height: =36
-                                    Icon: ="BarcodeScanner"
-                                    Layout: =ButtonLayout.IconOnly
-                                    LayoutMinWidth: =36
-                                    Text: ="Scan"
-                                    Width: =36
-                              - txtInvAstScan:
-                                  Control: Classic/TextInput
+                                    BorderColor: =RGBA(15, 76, 129, 1)
+                                    BorderThickness: =2
+                                    DropShadow: =DropShadow.None
+                                    Fill: =RGBA(255, 255, 255, 1)
+                                    FillPortions: =0
+                                    Height: =48
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =8
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    PaddingLeft: =12
+                                    PaddingRight: =4
+                                    RadiusBottomLeft: =6
+                                    RadiusBottomRight: =6
+                                    RadiusTopLeft: =6
+                                    RadiusTopRight: =6
+                                  Children:
+                                    - imgInvAstScan:
+                                        Control: Image
+                                        Properties:
+                                          AccessibleLabel: ="Barcode"
+                                          Height: =28
+                                          Image: ="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2040%2028%22%3E%3Cg%20fill%3D%22%230f4c81%22%3E%3Crect%20x%3D%221%22%20y%3D%222%22%20width%3D%222%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%222%22%20width%3D%223%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2210%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2212%22%20y%3D%222%22%20width%3D%222%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2215%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2217%22%20y%3D%222%22%20width%3D%223%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2221%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2223%22%20y%3D%222%22%20width%3D%222%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2226%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2228%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2230%22%20y%3D%222%22%20width%3D%223%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2234%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2236%22%20y%3D%222%22%20width%3D%223%22%20height%3D%2224%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"
+                                          Width: =40
+                                    - txtInvAstScan:
+                                        Control: Classic/TextInput
+                                        Properties:
+                                          AccessibleLabel: ="Scan, or type all or part of an asset tag / serial number"
+                                          BorderStyle: =BorderStyle.None
+                                          BorderThickness: =0
+                                          Default: =""
+                                          FillPortions: =1
+                                          FocusedBorderThickness: =0
+                                          HintText: ="Scan, or type all or part of an asset tag / serial number"
+                                          LayoutMinWidth: =100
+                                          OnChange: |-
+                                            =With(
+                                                {code: Lower(Trim(Self.Text))},
+                                                If(
+                                                    !IsBlank(code),
+                                                    With(
+                                                        {exact: Coalesce(LookUp(gblInvAssets, Lower(Title) = code), LookUp(gblInvAssets, Lower(Coalesce(SerialNumber, "")) = code))},
+                                                        If(
+                                                            !IsBlank(exact),
+                                                            UpdateContext({locScanMsg: "", locScanMatches: Blank()});
+                                                            With({hit: exact}, Set(gblInvAssetId, hit.ID); Navigate(scrInvAsset, ScreenTransition.None)),
+                                                            With(
+                                                                {m: FirstN(SortByColumns(Filter(gblInvAssets, code in Lower(Title) || code in Lower(Coalesce(SerialNumber, ""))), "Title"), 6)},
+                                                                If(
+                                                                    IsEmpty(m), UpdateContext({locScanMsg: "No asset tag or serial number contains " & Trim(Self.Text) & ".", locScanMatches: Blank()}),
+                                                                    CountRows(m) = 1, UpdateContext({locScanMsg: "", locScanMatches: Blank()}); With({hit: First(m)}, Set(gblInvAssetId, hit.ID); Navigate(scrInvAsset, ScreenTransition.None)),
+                                                                    UpdateContext({locScanMsg: "", locScanMatches: m})
+                                                                )
+                                                            )
+                                                        )
+                                                    )
+                                                )
+                                            );
+                                            Reset(txtInvAstScan);
+                                            SetFocus(txtInvAstScan)
+                                          PaddingLeft: =6
+                                          Size: =14
+                              - galInvAstScanPick:
+                                  Control: Gallery
+                                  Variant: Vertical
                                   Properties:
-                                    AccessibleLabel: ="Scan or type an asset tag or serial number"
-                                    BorderColor: =RGBA(209, 209, 209, 1)
-                                    BorderThickness: =1
-                                    Default: =""
-                                    FillPortions: =1
-                                    FocusedBorderColor: =RGBA(15, 76, 129, 1)
-                                    FocusedBorderThickness: =2
-                                    HintText: ="Scan or type an asset tag or serial number"
-                                    LayoutMinWidth: =160
-                                    OnChange: |-
-                                      =With(
-                                          {code: Lower(Trim(Self.Text))},
-                                          If(
-                                              !IsBlank(code),
-                                              With(
-                                                  {hit: Coalesce(LookUp(gblInvAssets, Lower(Title) = code), LookUp(gblInvAssets, Lower(Coalesce(SerialNumber, "")) = code))},
-                                                  If(
-                                                      IsBlank(hit),
-                                                      UpdateContext({locScanMsg: "No asset has the tag or serial number " & Trim(Self.Text) & "."}),
-                                                      UpdateContext({locScanMsg: ""});
-                                                      Set(gblInvAssetId, hit.ID); Navigate(scrInvAsset, ScreenTransition.None)
-                                                  )
-                                              )
-                                          )
-                                      );
-                                      Reset(txtInvAstScan);
-                                      SetFocus(txtInvAstScan)
-                                    RadiusBottomLeft: =4
-                                    RadiusBottomRight: =4
-                                    RadiusTopLeft: =4
-                                    RadiusTopRight: =4
+                                    AccessibleLabel: ="Matching assets"
+                                    FillPortions: =0
+                                    Height: =If(IsEmpty(locScanMatches), 0, 8 + CountRows(locScanMatches) * 38)
+                                    Items: =locScanMatches
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    ShowScrollbar: =false
+                                    TabIndex: =0
+                                    TemplatePadding: =2
+                                    TemplateSize: =34
+                                    Visible: =!IsEmpty(locScanMatches)
+                                  Children:
+                                    - btnInvAstScanPick:
+                                        Control: ModernButton
+                                        Properties:
+                                          AccessibleLabel: ="Use " & ThisItem.Title
+                                          Align: =Align.Left
+                                          Appearance: =ButtonAppearance.Secondary
+                                          Height: =34
+                                          Icon: ="ChevronRight"
+                                          Layout: =ButtonLayout.IconAfter
+                                          OnSelect: |-
+                                            =UpdateContext({locScanMatches: Blank(), locScanMsg: ""}); With({hit: ThisItem}, Set(gblInvAssetId, hit.ID); Navigate(scrInvAsset, ScreenTransition.None))
+                                          Text: =ThisItem.Title & "   ·   " & Coalesce(ThisItem.CatalogNameSnapshot, "Equipment") & "   ·   " & ThisItem.Status
+                                          Width: =Parent.TemplateWidth - 4
                               - txtInvAstScanMsg:
                                   Control: ModernText
                                   Properties:
                                     AccessibleLabel: =Self.Text
                                     Color: =RGBA(164, 38, 44, 1)
-                                    Height: =40
+                                    Height: =20
                                     LayoutMinWidth: =0
                                     PaddingBottom: =0
                                     PaddingLeft: =0
@@ -386,7 +430,7 @@ Screens:
                                     Size: =12
                                     Text: =locScanMsg
                                     Visible: =!IsBlank(locScanMsg)
-                                    Width: =320
+                                    Wrap: =false
                         - conInvAstFilters:
                             Control: GroupContainer
                             Variant: AutoLayout

@@ -1,0 +1,1864 @@
+Screens:
+  scrInvPerson:
+    Properties:
+      Fill: =RGBA(245, 246, 248, 1)
+      LoadingSpinnerColor: =RGBA(15, 76, 129, 1)
+      OnVisible: |-
+        =UpdateContext({locScanMsg: "", locScanMatches: Blank(), locBusy: false, locPerSel: Blank(), locPerRcpt: Blank(), locPerConfirmAll: false});
+        If(IsBlank(gblInvLoadedAt) || DateDiff(gblInvLoadedAt, Now(), TimeUnit.Minutes) >= 2, Select(btnInvPerReload));
+        Select(btnInvPerLoad)
+    Children:
+      - conInvPerRoot:
+          Control: GroupContainer
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Fill: =RGBA(245, 246, 248, 1)
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutDirection: =LayoutDirection.Vertical
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            Width: =Parent.Width
+          Children:
+            - conInvPerHeader:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(15, 76, 129, 1)
+                  FillPortions: =0
+                  Height: =56
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =12
+                  LayoutMinHeight: =56
+                  LayoutMinWidth: =0
+                  PaddingLeft: =8
+                  PaddingRight: =16
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                Children:
+                  - btnInvPerNavToggle:
+                      Control: ModernButton
+                      Properties:
+                        AccessibleLabel: =If(varNavCollapsed, "Expand navigation", "Collapse navigation")
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(255, 255, 255, 1)
+                        Height: =40
+                        Icon: ="Navigation"
+                        Layout: =ButtonLayout.IconOnly
+                        LayoutMinWidth: =40
+                        OnSelect: =Set(varNavCollapsed, !varNavCollapsed)
+                        Text: =If(varNavCollapsed, "Expand navigation", "Collapse navigation")
+                        Tooltip: =If(varNavCollapsed, "Expand navigation", "Collapse navigation")
+                        Width: =40
+                  - txtInvPerAppTitle:
+                      Control: ModernText
+                      Properties:
+                        AccessibleLabel: ="Inventory"
+                        Color: =RGBA(255, 255, 255, 1)
+                        FillPortions: =1
+                        FontWeight: =FontWeight.Semibold
+                        Height: =40
+                        LayoutMinWidth: =120
+                        PaddingBottom: =0
+                        PaddingLeft: =0
+                        PaddingTop: =0
+                        Size: =18
+                        Text: ="Inventory"
+                        Wrap: =false
+                  - txtInvPerUserName:
+                      Control: ModernText
+                      Properties:
+                        AccessibleLabel: ="Signed in as " & User().FullName
+                        Align: =Align.Right
+                        Color: =RGBA(255, 255, 255, 1)
+                        Height: =40
+                        LayoutMinWidth: =0
+                        PaddingBottom: =0
+                        PaddingLeft: =0
+                        PaddingTop: =0
+                        Size: =14
+                        Text: =User().FullName
+                        Visible: =App.Width >= 640
+                        Width: =240
+                        Wrap: =false
+            - conInvPerBody:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutMinHeight: =0
+                  LayoutMinWidth: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                Children:
+                  - conInvPerNav:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        FillPortions: =0
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutMinHeight: =0
+                        LayoutMinWidth: =0
+                        PaddingBottom: =8
+                        PaddingLeft: =8
+                        PaddingRight: =8
+                        PaddingTop: =8
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        Width: =If(varNavCollapsed, 56, 240)
+                      Children:
+                        - galInvPerNav:
+                            Control: Gallery
+                            Variant: Vertical
+                            Properties:
+                              AccessibleLabel: ="Main navigation"
+                              FillPortions: =0
+                              Height: =CountRows(fxInvVisibleNav) * 46
+                              Items: =fxInvVisibleNav
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              ShowScrollbar: =false
+                              TabIndex: =0
+                              TemplatePadding: =2
+                              TemplateSize: =44
+                            Children:
+                              - conInvPerNavRow:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    Fill: =If(ThisItem.Id = "person", RGBA(230, 240, 250, 1), RGBA(0, 0, 0, 0))
+                                    Height: =Parent.TemplateHeight
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    RadiusBottomLeft: =6
+                                    RadiusBottomRight: =6
+                                    RadiusTopLeft: =6
+                                    RadiusTopRight: =6
+                                    Width: =Parent.TemplateWidth
+                                  Children:
+                                    - btnInvPerNavItem:
+                                        Control: ModernButton
+                                        Properties:
+                                          AccessibleLabel: =ThisItem.Label
+                                          Align: =If(varNavCollapsed, Align.Center, Align.Left)
+                                          Appearance: =ButtonAppearance.Subtle
+                                          Color: =If(ThisItem.Id = "person", RGBA(15, 76, 129, 1), RGBA(36, 36, 36, 1))
+                                          FillPortions: =1
+                                          FontWeight: =If(ThisItem.Id = "person", FontWeight.Semibold, FontWeight.Normal)
+                                          Height: =40
+                                          Icon: =ThisItem.Icon
+                                          IconStyle: =If(ThisItem.Id = "person", IconStyle.Filled, IconStyle.Outline)
+                                          Layout: =If(varNavCollapsed, ButtonLayout.IconOnly, ButtonLayout.IconBefore)
+                                          LayoutMinWidth: =40
+                                          OnSelect: =Navigate(ThisItem.Target, ScreenTransition.None)
+                                          Text: =ThisItem.Label
+                                          Tooltip: =ThisItem.Label
+                  - conInvPerMain:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =16
+                        LayoutMinHeight: =0
+                        LayoutMinWidth: =0
+                        LayoutOverflowY: =LayoutOverflow.Scroll
+                        PaddingBottom: =24
+                        PaddingLeft: =If(App.Width >= 800, 32, 16)
+                        PaddingRight: =If(App.Width >= 800, 32, 16)
+                        PaddingTop: =16
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                      Children:
+                        - btnInvPerReload:
+                            Control: ModernButton
+                            Properties:
+                              AccessibleLabel: ="Reload inventory data"
+                              Height: =36
+                              LayoutMinWidth: =0
+                              OnSelect: |-
+                                =// Inventory data for all screens (whole lists; fine at the current volume).
+                                Set(gblInvLoading, true);
+                                Refresh(InventoryAssets);
+                                Refresh(InventoryCheckouts);
+                                Refresh(InventoryReservations);
+                                Refresh(InventoryReceipts);
+                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, AssetStatus.Value, Kind, AssetKind.Value));
+                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, CheckoutStatus.Value = "Active" || CheckoutStatus.Value = "Awaiting Acknowledgement" || CheckoutStatus.Value = "Return Required"), Status, CheckoutStatus.Value));
+                                Set(gblInvReserved, Filter(InventoryReservations, ReservationStatus.Value = "Reserved"));
+                                Set(gblInvLines, Filter(RequestEquipment, NeedsInventoryAction = true));
+                                Set(gblInvLoadedAt, Now());
+                                Set(gblInvLoading, false)
+                              Text: ="Reload"
+                              Visible: =false
+                              Width: =10
+                        - btnInvPerLoad:
+                            Control: ModernButton
+                            Properties:
+                              AccessibleLabel: ="Load person"
+                              Height: =36
+                              LayoutMinWidth: =0
+                              OnSelect: |-
+                                =// One person's checkouts (open and closed) and receipts, newest first.
+                                If(
+                                    IsBlank(gblInvPersonEmail),
+                                    UpdateContext({locPerItems: Blank(), locPerReceipts: Blank()}),
+                                    Refresh(InventoryCheckouts); Refresh(InventoryReceipts);
+                                    UpdateContext({
+                                        locPerItems: AddColumns(
+                                            Sort(Filter(InventoryCheckouts, RecipientEmail = gblInvPersonEmail), ID, SortOrder.Descending),
+                                            Status, CheckoutStatus.Value,
+                                            Kind, CheckoutType.Value,
+                                            Desc, With({a: LookUp(gblInvAssets, ID = AssetId)}, Coalesce(a.CatalogNameSnapshot, "Equipment") & If(IsBlank(Trim(a.Make & a.Model)), "", " - " & Trim(a.Make & " " & a.Model))),
+                                            Dept, LookUp(gblInvAssets, ID = AssetId).Dept
+                                        ),
+                                        locPerReceipts: Sort(Filter(InventoryReceipts, RecipientEmail = gblInvPersonEmail), ID, SortOrder.Descending)
+                                    })
+                                );
+                                UpdateContext({locPerSel: Blank(), locPerConfirmAll: false})
+                              Text: ="Load"
+                              Visible: =false
+                              Width: =10
+                        - conInvPerPageHeader:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =64
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =8
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                            Children:
+                              - conInvPerTitles:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    Height: =64
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutJustifyContent: =LayoutJustifyContent.Center
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvPerPageTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(36, 36, 36, 1)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =36
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =24
+                                          Text: ="People"
+                                          Wrap: =false
+                                    - txtInvPerPageSubtitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =13
+                                          Text: ="What one person has, their receipts and history."
+                                          Wrap: =false
+                              - btnInvPerPrint:
+                                  Control: ModernButton
+                                  Properties:
+                                    AccessibleLabel: ="Open the printable hand receipt"
+                                    Appearance: =ButtonAppearance.Secondary
+                                    Height: =36
+                                    Icon: ="Print"
+                                    LayoutMinWidth: =0
+                                    OnSelect: =Set(gblInvHandItems, Filter(locPerItems, Status in ["Active", "Awaiting Acknowledgement", "Return Required"])); Set(gblInvHandPhone, Coalesce(First(Filter(locPerReceipts, !IsBlank(DutyPhone))).DutyPhone, "")); Navigate(scrInvHandReceipt, ScreenTransition.None)
+                                    Text: ="Hand receipt"
+                                    Visible: =!IsBlank(gblInvPersonEmail)
+                                    Width: =150
+                              - txtInvPerUpdated:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Align: =Align.Right
+                                    Color: =RGBA(97, 97, 97, 1)
+                                    Height: =20
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =12
+                                    Text: =If(gblInvLoading, "Loading…", If(IsBlank(gblInvLoadedAt), "", "Updated " & Text(gblInvLoadedAt, "h:mm AM/PM")))
+                                    Visible: =App.Width >= 900
+                                    Width: =120
+                                    Wrap: =false
+                              - btnInvPerRefresh:
+                                  Control: ModernButton
+                                  Properties:
+                                    AccessibleLabel: ="Refresh"
+                                    Appearance: =ButtonAppearance.Secondary
+                                    DisplayMode: =If(gblInvLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                                    Height: =36
+                                    Icon: ="ArrowClockwise"
+                                    LayoutMinWidth: =0
+                                    OnSelect: =Select(btnInvPerReload)
+                                    Text: ="Refresh"
+                                    Width: =120
+                        - conInvPerFind:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.Semilight
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FillPortions: =0
+                              Height: =20 + 48 + 12 + conInvPerFindRow.Height + 24
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =12
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              PaddingBottom: =24
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              PaddingTop: =20
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                            Children:
+                              - conInvPerFindHead:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =48
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvPerFindTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(36, 36, 36, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =26
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =16
+                                          Text: ="Find a person"
+                                    - txtInvPerFindDesc:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: ="Search by name, or scan any item they have."
+                                          Wrap: =false
+                              - conInvPerFindRow:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =If(App.Width >= 900, Max(48, conInvPerScan.Height), 48 + 16 + conInvPerScan.Height)
+                                    LayoutAlignItems: =If(App.Width >= 900, LayoutAlignItems.Start, LayoutAlignItems.Stretch)
+                                    LayoutDirection: =If(App.Width >= 900, LayoutDirection.Horizontal, LayoutDirection.Vertical)
+                                    LayoutGap: =16
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - cmbInvPerPerson:
+                                        Control: ModernCombobox
+                                        Properties:
+                                          AccessibleLabel: ="Person"
+                                          AlignInContainer: =AlignInContainer.Stretch
+                                          Appearance: =Appearance.Outline
+                                          DelayOutput: =true
+                                          FillPortions: =1
+                                          Height: =44
+                                          InputTextPlaceholder: ="Search by name or email"
+                                          ItemDisplayText: =ThisItem.DisplayName & "  (" & ThisItem.Mail & ")"
+                                          Items: |-
+                                            =If(
+                                                Len(Trim(cmbInvPerPerson.SearchText)) >= 2,
+                                                Filter(
+                                                    Office365Users.SearchUserV2({searchTerm: Trim(cmbInvPerPerson.SearchText), top: 15, isSearchTermRequired: true}).value,
+                                                    AccountEnabled && !IsBlank(Mail)
+                                                )
+                                            )
+                                          LayoutMinWidth: =200
+                                          OnChange: =If(!IsBlank(Self.Selected), Set(gblInvPersonEmail, Lower(Self.Selected.Mail)); Set(gblInvPersonName, Self.Selected.DisplayName); Select(btnInvPerLoad))
+                                          SelectMultiple: =false
+                                          Width: =Parent.Width
+                                    - conInvPerScanWrap:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =conInvPerScan.Height
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =200
+                                        Children:
+                                          - conInvPerScan:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                FillPortions: =0
+                                                Height: =48 + If(IsEmpty(locScanMatches), 0, 8 + CountRows(locScanMatches) * 38) + If(IsBlank(locScanMsg), 0, 4 + 20)
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                                PaddingRight: =2
+                                                RadiusBottomLeft: =0
+                                                RadiusBottomRight: =0
+                                                RadiusTopLeft: =0
+                                                RadiusTopRight: =0
+                                              Children:
+                                                - conInvPerScanRow:
+                                                    Control: GroupContainer
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      BorderColor: =RGBA(15, 76, 129, 1)
+                                                      BorderThickness: =2
+                                                      DropShadow: =DropShadow.None
+                                                      Fill: =RGBA(255, 255, 255, 1)
+                                                      FillPortions: =0
+                                                      Height: =48
+                                                      LayoutAlignItems: =LayoutAlignItems.Center
+                                                      LayoutDirection: =LayoutDirection.Horizontal
+                                                      LayoutGap: =8
+                                                      LayoutMinHeight: =0
+                                                      LayoutMinWidth: =0
+                                                      PaddingLeft: =12
+                                                      PaddingRight: =4
+                                                      RadiusBottomLeft: =6
+                                                      RadiusBottomRight: =6
+                                                      RadiusTopLeft: =6
+                                                      RadiusTopRight: =6
+                                                    Children:
+                                                      - imgInvPerScan:
+                                                          Control: Image
+                                                          Properties:
+                                                            AccessibleLabel: ="Barcode"
+                                                            Height: =28
+                                                            Image: ="data:image/svg+xml;utf8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2040%2028%22%3E%3Cg%20fill%3D%22%230f4c81%22%3E%3Crect%20x%3D%221%22%20y%3D%222%22%20width%3D%222%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%224%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%226%22%20y%3D%222%22%20width%3D%223%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2210%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2212%22%20y%3D%222%22%20width%3D%222%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2215%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2217%22%20y%3D%222%22%20width%3D%223%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2221%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2223%22%20y%3D%222%22%20width%3D%222%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2226%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2228%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2230%22%20y%3D%222%22%20width%3D%223%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2234%22%20y%3D%222%22%20width%3D%221%22%20height%3D%2224%22%2F%3E%3Crect%20x%3D%2236%22%20y%3D%222%22%20width%3D%223%22%20height%3D%2224%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"
+                                                            Width: =40
+                                                      - txtInvPerScan:
+                                                          Control: Classic/TextInput
+                                                          Properties:
+                                                            AccessibleLabel: ="Scan, or type part of a tag / serial they have"
+                                                            BorderStyle: =BorderStyle.None
+                                                            BorderThickness: =0
+                                                            Default: =""
+                                                            FillPortions: =1
+                                                            FocusedBorderThickness: =0
+                                                            HintText: ="Scan, or type part of a tag / serial they have"
+                                                            LayoutMinWidth: =100
+                                                            OnChange: |-
+                                                              =With(
+                                                                  {code: Lower(Trim(Self.Text))},
+                                                                  If(
+                                                                      !IsBlank(code),
+                                                                      With(
+                                                                          {exact: Coalesce(LookUp(gblInvAssets, Lower(Title) = code), LookUp(gblInvAssets, Lower(Coalesce(SerialNumber, "")) = code))},
+                                                                          If(
+                                                                              !IsBlank(exact),
+                                                                              UpdateContext({locScanMsg: "", locScanMatches: Blank()});
+                                                                              With({hit: exact}, If(
+                                                                  IsBlank(hit.CurrentHolderEmail),
+                                                                  UpdateContext({locScanMsg: hit.Title & " is not checked out to anyone."}),
+                                                                  Set(gblInvPersonEmail, Lower(hit.CurrentHolderEmail)); Set(gblInvPersonName, hit.CurrentHolderName); Select(btnInvPerLoad)
+                                                              )),
+                                                                              With(
+                                                                                  {m: FirstN(SortByColumns(Filter(gblInvAssets, code in Lower(Title) || code in Lower(Coalesce(SerialNumber, ""))), "Title"), 6)},
+                                                                                  If(
+                                                                                      IsEmpty(m), UpdateContext({locScanMsg: "No asset tag or serial number contains " & Trim(Self.Text) & ".", locScanMatches: Blank()}),
+                                                                                      CountRows(m) = 1, UpdateContext({locScanMsg: "", locScanMatches: Blank()}); With({hit: First(m)}, If(
+                                                                  IsBlank(hit.CurrentHolderEmail),
+                                                                  UpdateContext({locScanMsg: hit.Title & " is not checked out to anyone."}),
+                                                                  Set(gblInvPersonEmail, Lower(hit.CurrentHolderEmail)); Set(gblInvPersonName, hit.CurrentHolderName); Select(btnInvPerLoad)
+                                                              )),
+                                                                                      UpdateContext({locScanMsg: "", locScanMatches: m})
+                                                                                  )
+                                                                              )
+                                                                          )
+                                                                      )
+                                                                  )
+                                                              );
+                                                              Reset(txtInvPerScan);
+                                                              SetFocus(txtInvPerScan)
+                                                            PaddingLeft: =6
+                                                            Size: =14
+                                                - galInvPerScanPick:
+                                                    Control: Gallery
+                                                    Variant: Vertical
+                                                    Properties:
+                                                      AccessibleLabel: ="Matching assets"
+                                                      FillPortions: =0
+                                                      Height: =If(IsEmpty(locScanMatches), 0, 8 + CountRows(locScanMatches) * 38)
+                                                      Items: =locScanMatches
+                                                      LayoutMinHeight: =0
+                                                      LayoutMinWidth: =0
+                                                      ShowScrollbar: =false
+                                                      TabIndex: =0
+                                                      TemplatePadding: =2
+                                                      TemplateSize: =34
+                                                      Visible: =!IsEmpty(locScanMatches)
+                                                    Children:
+                                                      - btnInvPerScanPick:
+                                                          Control: ModernButton
+                                                          Properties:
+                                                            AccessibleLabel: ="Use " & ThisItem.Title
+                                                            Align: =Align.Left
+                                                            Appearance: =ButtonAppearance.Secondary
+                                                            Height: =34
+                                                            Icon: ="ChevronRight"
+                                                            Layout: =ButtonLayout.IconAfter
+                                                            OnSelect: |-
+                                                              =UpdateContext({locScanMatches: Blank(), locScanMsg: ""}); With({hit: ThisItem}, If(
+                                                                  IsBlank(hit.CurrentHolderEmail),
+                                                                  UpdateContext({locScanMsg: hit.Title & " is not checked out to anyone."}),
+                                                                  Set(gblInvPersonEmail, Lower(hit.CurrentHolderEmail)); Set(gblInvPersonName, hit.CurrentHolderName); Select(btnInvPerLoad)
+                                                              ))
+                                                            Text: =ThisItem.Title & "   ·   " & Coalesce(ThisItem.CatalogNameSnapshot, "Equipment") & "   ·   " & ThisItem.Status
+                                                            Width: =Parent.TemplateWidth - 4
+                                                - txtInvPerScanMsg:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(164, 38, 44, 1)
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =12
+                                                      Text: =locScanMsg
+                                                      Visible: =!IsBlank(locScanMsg)
+                                                      Wrap: =false
+                        - conInvPerSummary:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              BorderColor: =RGBA(225, 228, 232, 1)
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FillPortions: =0
+                              Height: =64
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =16
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              PaddingLeft: =16
+                              PaddingRight: =16
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                              Visible: =!IsBlank(gblInvPersonEmail)
+                            Children:
+                              - conInvPerWho:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    Height: =48
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutJustifyContent: =LayoutJustifyContent.Center
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvPerName:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(36, 36, 36, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =26
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =16
+                                          Text: =fxPersonName(Coalesce(gblInvPersonName, gblInvPersonEmail))
+                                          Wrap: =false
+                                    - txtInvPerEmail:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: =gblInvPersonEmail
+                                          Wrap: =false
+                              - txtInvPerCounts:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Align: =Align.Right
+                                    Color: =RGBA(36, 36, 36, 1)
+                                    FillPortions: =2
+                                    Height: =40
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =13
+                                    Text: |-
+                                      =With(
+                                          {h: Filter(locPerItems, Status in ["Active", "Awaiting Acknowledgement", "Return Required"])},
+                                          CountRows(h) & " held  ·  " & CountRows(Filter(h, Kind = "Long-term Assignment")) & " long-term  ·  " &
+                                          CountRows(Filter(h, !IsBlank(DueDate) && DueDate < Today())) & " overdue  ·  " &
+                                          CountRows(Filter(h, Status = "Awaiting Acknowledgement")) & " awaiting acknowledgement"
+                                      )
+                        - conInvPerHeld:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.Semilight
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FillPortions: =0
+                              Height: =20 + 48 + 12 + 40 + 12 + If(conInvPerAct.Visible, conInvPerAct.Height + 12, 0) + Max(24, galInvPerHeld.Height) + 24
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =12
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              PaddingBottom: =24
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              PaddingTop: =20
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                              Visible: =!IsBlank(gblInvPersonEmail)
+                            Children:
+                              - conInvPerHeldHead:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =48
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvPerHeldTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(36, 36, 36, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =26
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =16
+                                          Text: ="Items held (" & CountRows(Filter(locPerItems, Status in ["Active", "Awaiting Acknowledgement", "Return Required"])) & ")"
+                                    - txtInvPerHeldDesc:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: ="Select › on an item to check it in, change its return date or transfer it."
+                                          Wrap: =false
+                              - conInvPerAllRow:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =40
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =8
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    Visible: =fxIsInvStaff
+                                  Children:
+                                    - txtInvPerAllHint:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =If(locPerConfirmAll, RGBA(164, 38, 44, 1), RGBA(97, 97, 97, 1))
+                                          FillPortions: =1
+                                          Height: =36
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: |-
+                                            =If(locPerConfirmAll, "Check in all " & CountRows(Filter(locPerItems, Status in ["Active", "Awaiting Acknowledgement", "Return Required"])) & " items as returned in Good condition?", "Out-processing: check in everything this person has.")
+                                    - btnInvPerAll:
+                                        Control: ModernButton
+                                        Properties:
+                                          AccessibleLabel: ="Check in all items"
+                                          Appearance: =ButtonAppearance.Secondary
+                                          DisplayMode: =If(locBusy || IsEmpty(Filter(locPerItems, Status in ["Active", "Awaiting Acknowledgement", "Return Required"])), DisplayMode.Disabled, DisplayMode.Edit)
+                                          Height: =36
+                                          LayoutMinWidth: =0
+                                          OnSelect: |-
+                                            =UpdateContext({locPerConfirmAll: true})
+                                          Text: ="Check in all"
+                                          Visible: =!locPerConfirmAll
+                                          Width: =140
+                                    - btnInvPerAllNo:
+                                        Control: ModernButton
+                                        Properties:
+                                          AccessibleLabel: ="Cancel check in all"
+                                          Appearance: =ButtonAppearance.Secondary
+                                          Height: =36
+                                          LayoutMinWidth: =0
+                                          OnSelect: |-
+                                            =UpdateContext({locPerConfirmAll: false})
+                                          Text: ="Cancel"
+                                          Visible: =locPerConfirmAll
+                                          Width: =110
+                                    - btnInvPerAllYes:
+                                        Control: ModernButton
+                                        Properties:
+                                          AccessibleLabel: ="Confirm check in all"
+                                          DisplayMode: =If(locBusy, DisplayMode.Disabled, DisplayMode.Edit)
+                                          Height: =36
+                                          LayoutMinWidth: =0
+                                          OnSelect: |-
+                                            =// Out-processing: check in every open item as returned in Good condition.
+                                            UpdateContext({locBusy: true});
+                                            With(
+                                                {results: ForAll(Filter(locPerItems, Status in ["Active", "Awaiting Acknowledgement", "Return Required"]) As it, With({r: IfError(ParseJSON('Inventory-Action'.Run(fxInvReturnPayload(it.ID, "Good", "Checked in during out-processing.")).response), Blank())}, {Tag: it.AssetTagSnapshot, Ok: !IsBlank(r) && Text(r.status) = "Success", Message: If(IsBlank(r), "The service could not be reached.", Text(r.message))}))},
+                                                UpdateContext({locBusy: false, locPerConfirmAll: false});
+                                                Notify(
+                                                    CountRows(Filter(results, Ok)) & " of " & CountRows(results) & " items checked in." & If(CountRows(Filter(results, !Ok)) > 0, " Not checked in: " & Concat(Filter(results, !Ok), Tag & " (" & Message & ")", "; "), ""),
+                                                    If(CountRows(Filter(results, !Ok)) = 0, NotificationType.Success, NotificationType.Warning)
+                                                )
+                                            );
+                                            Set(gblInvLoadedAt, Blank()); Select(btnInvPerLoad)
+                                          Text: ="Yes, check in all"
+                                          Visible: =locPerConfirmAll
+                                          Width: =170
+                              - conInvPerAct:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    BorderColor: =RGBA(15, 76, 129, 1)
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                    Fill: =RGBA(246, 249, 253, 1)
+                                    FillPortions: =0
+                                    Height: =If(App.Width >= 900, 28 + 6 + 3 * (60 + 6) + 24, 28 + 6 + 7 * 72 + 24)
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =6
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =12
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =12
+                                    RadiusBottomLeft: =6
+                                    RadiusBottomRight: =6
+                                    RadiusTopLeft: =6
+                                    RadiusTopRight: =6
+                                    Visible: =!IsBlank(locPerSel) && fxIsInvStaff
+                                  Children:
+                                    - conInvPerActHead:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =28
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =8
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =0
+                                        Children:
+                                          - txtInvPerActTitle:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(15, 76, 129, 1)
+                                                FillPortions: =1
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =24
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =13
+                                                Text: |-
+                                                  ="Check in, extend or transfer: " & locPerSel.AssetTagSnapshot & "  ·  " & locPerSel.Desc
+                                                Wrap: =false
+                                          - btnInvPerActClose:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Close"
+                                                Appearance: =ButtonAppearance.Subtle
+                                                Height: =28
+                                                Icon: ="Dismiss"
+                                                Layout: =ButtonLayout.IconOnly
+                                                LayoutMinWidth: =28
+                                                OnSelect: |-
+                                                  =UpdateContext({locPerSel: Blank()})
+                                                Text: ="Close"
+                                                Width: =28
+                                    - conInvPerActReturn:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =If(App.Width >= 900, 60, 144)
+                                          LayoutAlignItems: =If(App.Width >= 900, LayoutAlignItems.End, LayoutAlignItems.Stretch)
+                                          LayoutDirection: =If(App.Width >= 900, LayoutDirection.Horizontal, LayoutDirection.Vertical)
+                                          LayoutGap: =12
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =0
+                                        Children:
+                                          - conInvPerFCond:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                Height: =60
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutGap: =4
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =160
+                                              Children:
+                                                - txtInvPerFCondLbl:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(66, 66, 66, 1)
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =13
+                                                      Text: ="Returned in"
+                                                - drpInvPerCond:
+                                                    Control: ModernDropdown
+                                                    Properties:
+                                                      AccessibleLabel: ="Condition"
+                                                      AlignInContainer: =AlignInContainer.Stretch
+                                                      Appearance: =Appearance.Outline
+                                                      Default: |-
+                                                        ={Value: "Good"}
+                                                      Height: =36
+                                                      ItemDisplayText: =ThisItem.Value
+                                                      Items: =fxConditions
+                                                      LayoutMinWidth: =0
+                                                      Width: =Parent.Width
+                                          - conInvPerFNote:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                Height: =60
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutGap: =4
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =160
+                                              Children:
+                                                - txtInvPerFNoteLbl:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(66, 66, 66, 1)
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =13
+                                                      Text: ="Note (required if damaged)"
+                                                - txtInvPerNote:
+                                                    Control: ModernTextInput
+                                                    Properties:
+                                                      AccessibleLabel: ="Return note"
+                                                      AlignInContainer: =AlignInContainer.Stretch
+                                                      Appearance: =Appearance.Outline
+                                                      Height: =36
+                                                      LayoutMinWidth: =0
+                                                      Width: =Parent.Width
+                                          - btnInvPerReturn:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Check in this item"
+                                                DisplayMode: =If(locBusy || (drpInvPerCond.Selected.Value = "Damaged" && IsBlank(Trim(txtInvPerNote.Text))), DisplayMode.Disabled, DisplayMode.Edit)
+                                                Height: =36
+                                                Icon: ="ArrowUndo"
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =UpdateContext({locBusy: true});
+                                                  IfError(
+                                                      With({raw: ParseJSON('Inventory-Action'.Run(fxInvReturnPayload(locPerSel.ID, drpInvPerCond.Selected.Value, Trim(txtInvPerNote.Text))).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
+                                                      UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
+                                                  );
+                                                  UpdateContext({locBusy: false});
+                                                  Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
+                                                  If(locResult.Status = "Success", Reset(txtInvPerNote); Set(gblInvLoadedAt, Blank()); Select(btnInvPerLoad))
+                                                Text: ="Check in"
+                                                Width: =140
+                                    - conInvPerActExtend:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =If(App.Width >= 900, 60, 144)
+                                          LayoutAlignItems: =If(App.Width >= 900, LayoutAlignItems.End, LayoutAlignItems.Stretch)
+                                          LayoutDirection: =If(App.Width >= 900, LayoutDirection.Horizontal, LayoutDirection.Vertical)
+                                          LayoutGap: =12
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =0
+                                        Children:
+                                          - conInvPerFDue:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                Height: =60
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutGap: =4
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =160
+                                              Children:
+                                                - txtInvPerFDueLbl:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(66, 66, 66, 1)
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =13
+                                                      Text: ="New return date"
+                                                - dteInvPerDue:
+                                                    Control: ModernDatePicker
+                                                    Properties:
+                                                      AccessibleLabel: ="New return date"
+                                                      AlignInContainer: =AlignInContainer.Stretch
+                                                      Appearance: =Appearance.Outline
+                                                      DefaultDate: =DateAdd(Coalesce(locPerSel.DueDate, Today()), 7, TimeUnit.Days)
+                                                      Height: =36
+                                                      LayoutMinWidth: =0
+                                                      Width: =Parent.Width
+                                          - conInvPerFDueNote:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                Height: =60
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutGap: =4
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =160
+                                              Children:
+                                                - txtInvPerFDueNoteLbl:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(66, 66, 66, 1)
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =13
+                                                      Text: ="Reason (optional)"
+                                                - txtInvPerDueNote:
+                                                    Control: ModernTextInput
+                                                    Properties:
+                                                      AccessibleLabel: ="Reason for the new date"
+                                                      AlignInContainer: =AlignInContainer.Stretch
+                                                      Appearance: =Appearance.Outline
+                                                      Height: =36
+                                                      LayoutMinWidth: =0
+                                                      Width: =Parent.Width
+                                          - btnInvPerExtend:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Change the return date"
+                                                Appearance: =ButtonAppearance.Secondary
+                                                DisplayMode: =If(locBusy || IsBlank(dteInvPerDue.SelectedDate), DisplayMode.Disabled, DisplayMode.Edit)
+                                                Height: =36
+                                                Icon: ="CalendarArrowRight"
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =UpdateContext({locBusy: true});
+                                                  IfError(
+                                                      With({raw: ParseJSON('Inventory-Action'.Run(fxInvExtendPayload(locPerSel.ID, Text(dteInvPerDue.SelectedDate, "yyyy-mm-dd"), Trim(txtInvPerDueNote.Text))).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
+                                                      UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
+                                                  );
+                                                  UpdateContext({locBusy: false});
+                                                  Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
+                                                  If(locResult.Status = "Success", Reset(txtInvPerDueNote); Set(gblInvLoadedAt, Blank()); Select(btnInvPerLoad))
+                                                Text: ="Extend"
+                                                Width: =140
+                                    - conInvPerActXfer:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =If(App.Width >= 900, 60, 216)
+                                          LayoutAlignItems: =If(App.Width >= 900, LayoutAlignItems.End, LayoutAlignItems.Stretch)
+                                          LayoutDirection: =If(App.Width >= 900, LayoutDirection.Horizontal, LayoutDirection.Vertical)
+                                          LayoutGap: =12
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =0
+                                        Children:
+                                          - conInvPerFXferTo:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                Height: =60
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutGap: =4
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =160
+                                              Children:
+                                                - txtInvPerFXferToLbl:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(66, 66, 66, 1)
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =13
+                                                      Text: ="Transfer to"
+                                                - cmbInvPerXferTo:
+                                                    Control: ModernCombobox
+                                                    Properties:
+                                                      AccessibleLabel: ="Person receiving the item"
+                                                      AlignInContainer: =AlignInContainer.Stretch
+                                                      Appearance: =Appearance.Outline
+                                                      DelayOutput: =true
+                                                      Height: =36
+                                                      InputTextPlaceholder: ="Search by name or email"
+                                                      ItemDisplayText: =ThisItem.DisplayName & "  (" & ThisItem.Mail & ")"
+                                                      Items: |-
+                                                        =If(Len(Trim(cmbInvPerXferTo.SearchText)) >= 2, Filter(Office365Users.SearchUserV2({searchTerm: Trim(cmbInvPerXferTo.SearchText), top: 15, isSearchTermRequired: true}).value, AccountEnabled && !IsBlank(Mail)))
+                                                      LayoutMinWidth: =0
+                                                      SelectMultiple: =false
+                                                      Width: =Parent.Width
+                                          - conInvPerFXferType:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                Height: =60
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutGap: =4
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =160
+                                              Children:
+                                                - txtInvPerFXferTypeLbl:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(66, 66, 66, 1)
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =13
+                                                      Text: ="As"
+                                                - drpInvPerXferType:
+                                                    Control: ModernDropdown
+                                                    Properties:
+                                                      AccessibleLabel: ="Type of checkout for the receiver"
+                                                      AlignInContainer: =AlignInContainer.Stretch
+                                                      Appearance: =Appearance.Outline
+                                                      Default: |-
+                                                        =If(locPerSel.Kind = "Long-term Assignment", {Value: "Long-term Assignment"}, {Value: "Walk-up Loan"})
+                                                      Height: =36
+                                                      ItemDisplayText: =ThisItem.Value
+                                                      Items: =["Walk-up Loan", "Long-term Assignment"]
+                                                      LayoutMinWidth: =0
+                                                      Width: =Parent.Width
+                                          - conInvPerFXferDue:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                Height: =60
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutGap: =4
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =160
+                                              Children:
+                                                - txtInvPerFXferDueLbl:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(66, 66, 66, 1)
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =13
+                                                      Text: ="Return date"
+                                                - dteInvPerXferDue:
+                                                    Control: ModernDatePicker
+                                                    Properties:
+                                                      AccessibleLabel: ="Return date for the receiver"
+                                                      AlignInContainer: =AlignInContainer.Stretch
+                                                      Appearance: =Appearance.Outline
+                                                      DefaultDate: =Coalesce(locPerSel.DueDate, DateAdd(Today(), 7, TimeUnit.Days))
+                                                      DisplayMode: =If(drpInvPerXferType.Selected.Value = "Long-term Assignment", DisplayMode.Disabled, DisplayMode.Edit)
+                                                      Height: =36
+                                                      LayoutMinWidth: =0
+                                                      Width: =Parent.Width
+                                          - btnInvPerXfer:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Transfer this item"
+                                                Appearance: =ButtonAppearance.Secondary
+                                                DisplayMode: =If(locBusy || IsBlank(cmbInvPerXferTo.Selected) || Lower(cmbInvPerXferTo.Selected.Mail) = gblInvPersonEmail || (drpInvPerXferType.Selected.Value <> "Long-term Assignment" && IsBlank(dteInvPerXferDue.SelectedDate)), DisplayMode.Disabled, DisplayMode.Edit)
+                                                Height: =36
+                                                Icon: ="ArrowSwap"
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =UpdateContext({locBusy: true});
+                                                  With(
+                                                      {who: cmbInvPerXferTo.Selected, sel: locPerSel},
+                                                      IfError(
+                                                          With(
+                                                              {r1: ParseJSON('Inventory-Action'.Run(fxInvReturnPayload(sel.ID, "Good", "Transferred to " & who.DisplayName & ".")).response)},
+                                                              If(
+                                                                  Text(r1.status) <> "Success",
+                                                                  UpdateContext({locResult: {Status: "Failed", Message: Text(r1.message)}}),
+                                                                  With(
+                                                                      {st: ParseJSON('Inventory-Action'.Run(fxInvStartReceiptPayload(Lower(who.Mail), who.DisplayName, "i:0#.f|membership|" & Lower(who.UserPrincipalName), Coalesce(First(who.BusinessPhones).Value, who.mobilePhone, ""), "", If(drpInvPerXferType.Selected.Value = "Long-term Assignment", "", Text(dteInvPerXferDue.SelectedDate, "yyyy-mm-dd")), drpInvPerXferType.Selected.Value, sel.Dept, "Electronic")).response)},
+                                                                      If(
+                                                                          Text(st.status) <> "Success",
+                                                                          UpdateContext({locResult: {Status: "Failed", Message: "Checked in, but the new receipt could not be started: " & Text(st.message)}}),
+                                                                          With(
+                                                                              {iss: ParseJSON('Inventory-Action'.Run(fxInvIssuePayload(Value(st.id), sel.AssetId, 0)).response)},
+                                                                              With(
+                                                                                  {fin: ParseJSON('Inventory-Action'.Run(fxInvFinishPayload(Value(st.id))).response)},
+                                                                                  UpdateContext({locResult: If(
+                                                                                      Text(iss.status) = "Success",
+                                                                                      {Status: "Success", Message: sel.AssetTagSnapshot & " transferred to " & who.DisplayName & ". " & Text(fin.message)},
+                                                                                      {Status: "Failed", Message: "Checked in, but not issued to " & who.DisplayName & ": " & Text(iss.message)}
+                                                                                  )})
+                                                                              )
+                                                                          )
+                                                                      )
+                                                                  )
+                                                              )
+                                                          ),
+                                                          UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Check the item before trying again."}})
+                                                      )
+                                                  );
+                                                  UpdateContext({locBusy: false});
+                                                  Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
+                                                  Reset(cmbInvPerXferTo); Set(gblInvLoadedAt, Blank()); Select(btnInvPerLoad)
+                                                Text: ="Transfer"
+                                                Width: =140
+                              - txtInvPerHeldEmpty:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(97, 97, 97, 1)
+                                    Height: =24
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =13
+                                    Text: ="Nothing checked out to this person."
+                                    Visible: =galInvPerHeld.AllItemsCount = 0
+                                    Wrap: =false
+                              - galInvPerHeld:
+                                  Control: Gallery
+                                  Variant: Vertical
+                                  Properties:
+                                    AccessibleLabel: ="Items held"
+                                    FillPortions: =0
+                                    Height: =Self.AllItemsCount * 60
+                                    Items: =Filter(locPerItems, Status in ["Active", "Awaiting Acknowledgement", "Return Required"])
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    ShowScrollbar: =false
+                                    TabIndex: =0
+                                    TemplatePadding: =0
+                                    TemplateSize: =60
+                                  Children:
+                                    - conInvPerHeldRow:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          BorderColor: =If(locPerSel.ID = ThisItem.ID, RGBA(15, 76, 129, 1), RGBA(225, 228, 232, 1))
+                                          BorderThickness: =1
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight - 4
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =12
+                                          PaddingLeft: =12
+                                          PaddingRight: =4
+                                          RadiusBottomLeft: =6
+                                          RadiusBottomRight: =6
+                                          RadiusTopLeft: =6
+                                          RadiusTopRight: =6
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - conInvPerHeldText:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                Height: =50
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutJustifyContent: =LayoutJustifyContent.Center
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                              Children:
+                                                - txtInvPerHeldTag:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(36, 36, 36, 1)
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =13
+                                                      Text: =ThisItem.AssetTagSnapshot & "  ·  " & ThisItem.Desc
+                                                      Wrap: =false
+                                                - txtInvPerHeldMeta:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(97, 97, 97, 1)
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =12
+                                                      Text: =ThisItem.Kind & "  ·  " & ThisItem.ReceiptNumber & "  ·  issued " & Text(ThisItem.IssuedDate, "mmm d, yyyy") & If(IsBlank(ThisItem.DueDate), "", "  ·  due " & Text(ThisItem.DueDate, "mmm d, yyyy"))
+                                                      Wrap: =false
+                                          - txtInvPerHeldStatus:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Align: =Align.Center
+                                                AlignInContainer: =AlignInContainer.Center
+                                                Color: =Switch(If(ThisItem.Status = "Active" && !IsBlank(ThisItem.DueDate) && ThisItem.DueDate < Today(), "Overdue", ThisItem.Status), "Overdue", RGBA(164, 38, 44, 1), "Awaiting Acknowledgement", RGBA(92, 45, 145, 1), "Return Required", RGBA(131, 82, 0, 1), "Returned", RGBA(16, 110, 16, 1), "Lost", RGBA(164, 38, 44, 1), RGBA(15, 76, 129, 1))
+                                                Fill: =Switch(If(ThisItem.Status = "Active" && !IsBlank(ThisItem.DueDate) && ThisItem.DueDate < Today(), "Overdue", ThisItem.Status), "Overdue", RGBA(253, 231, 233, 1), "Awaiting Acknowledgement", RGBA(243, 238, 250, 1), "Return Required", RGBA(255, 244, 206, 1), "Returned", RGBA(223, 246, 221, 1), "Lost", RGBA(253, 231, 233, 1), RGBA(230, 240, 250, 1))
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =24
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                RadiusBottomLeft: =12
+                                                RadiusBottomRight: =12
+                                                RadiusTopLeft: =12
+                                                RadiusTopRight: =12
+                                                Size: =12
+                                                Text: =If(ThisItem.Status = "Active" && !IsBlank(ThisItem.DueDate) && ThisItem.DueDate < Today(), "Overdue", ThisItem.Status)
+                                                Width: =170
+                                                Wrap: =false
+                                          - btnInvPerHeldPick:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Select " & ThisItem.AssetTagSnapshot
+                                                Appearance: =If(locPerSel.ID = ThisItem.ID, ButtonAppearance.Primary, ButtonAppearance.Subtle)
+                                                Height: =36
+                                                Icon: ="ChevronRight"
+                                                Layout: =ButtonLayout.IconOnly
+                                                LayoutMinWidth: =36
+                                                OnSelect: |-
+                                                  =UpdateContext({locPerSel: If(locPerSel.ID = ThisItem.ID, Blank(), ThisItem)})
+                                                Text: ="Select"
+                                                Visible: =fxIsInvStaff
+                                                Width: =36
+                        - conInvPerRcpts:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.Semilight
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FillPortions: =0
+                              Height: =20 + 48 + 12 + If(conInvPerUp.Visible, conInvPerUp.Height + 12, 0) + Max(24, galInvPerRcpts.Height) + 24
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =12
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              PaddingBottom: =24
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              PaddingTop: =20
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                              Visible: =!IsBlank(gblInvPersonEmail)
+                            Children:
+                              - conInvPerRcptsHead:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =48
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvPerRcptsTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(36, 36, 36, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =26
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =16
+                                          Text: ="Receipts (DAF Form 1297)"
+                                    - txtInvPerRcptsDesc:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: ="Signed electronically (approval) or with a CAC (signed PDF uploaded)."
+                                          Wrap: =false
+                              - conInvPerUp:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    BorderColor: =RGBA(15, 76, 129, 1)
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                    Fill: =RGBA(246, 249, 253, 1)
+                                    FillPortions: =0
+                                    Height: =28 + 6 + 20 + 6 + 90 + 6 + 40 + 24
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =6
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =12
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =12
+                                    RadiusBottomLeft: =6
+                                    RadiusBottomRight: =6
+                                    RadiusTopLeft: =6
+                                    RadiusTopRight: =6
+                                    Visible: =!IsBlank(locPerRcpt) && fxIsInvStaff
+                                  Children:
+                                    - txtInvPerUpTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(15, 76, 129, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =28
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =13
+                                          Text: ="Upload the CAC-signed PDF for " & locPerRcpt.Title
+                                          Wrap: =false
+                                    - txtInvPerUpHelp:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: ="Open the unsigned PDF, have " & fxPersonName(locPerRcpt.RecipientName) & " sign it with their CAC in Adobe, save it, then attach it here."
+                                          Wrap: =false
+                                    - attInvPerCac:
+                                        Control: Attachments
+                                        Properties:
+                                          AccessibleLabel: ="CAC-signed PDF"
+                                          AddAttachmentText: ="Attach the signed PDF"
+                                          BorderColor: =RGBA(209, 209, 209, 1)
+                                          BorderThickness: =1
+                                          Height: =90
+                                          Items: =Table()
+                                          LayoutMinWidth: =0
+                                          MaxAttachments: =1
+                                          NoAttachmentsText: ="No file attached."
+                                          Width: =Parent.Width
+                                    - conInvPerUpBtns:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =40
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =8
+                                          LayoutJustifyContent: =LayoutJustifyContent.End
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =0
+                                        Children:
+                                          - btnInvPerUpCancel:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Cancel upload"
+                                                Appearance: =ButtonAppearance.Secondary
+                                                Height: =36
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =Reset(attInvPerCac); UpdateContext({locPerRcpt: Blank()})
+                                                Text: ="Cancel"
+                                                Width: =110
+                                          - btnInvPerUpGo:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Upload the signed PDF"
+                                                DisplayMode: =If(locBusy || IsEmpty(attInvPerCac.Attachments), DisplayMode.Disabled, DisplayMode.Edit)
+                                                Height: =36
+                                                Icon: ="ArrowUpload"
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =UpdateContext({locBusy: true});
+                                                  IfError(
+                                                      With({raw: ParseJSON('Inventory-Action'.Run(fxInvCacUploadPayload(locPerRcpt.ID, First(attInvPerCac.Attachments).Name, With({j: JSON(First(attInvPerCac.Attachments).Value, JSONFormat.IncludeBinaryData)}, Mid(j, 2, Len(j) - 2)))).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
+                                                      UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
+                                                  );
+                                                  UpdateContext({locBusy: false});
+                                                  Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
+                                                  If(locResult.Status = "Success", Reset(attInvPerCac); UpdateContext({locPerRcpt: Blank()}); Set(gblInvLoadedAt, Blank()); Select(btnInvPerLoad))
+                                                Text: ="Upload"
+                                                Width: =130
+                              - txtInvPerRcptsEmpty:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(97, 97, 97, 1)
+                                    Height: =24
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =13
+                                    Text: ="No receipts yet."
+                                    Visible: =galInvPerRcpts.AllItemsCount = 0
+                                    Wrap: =false
+                              - galInvPerRcpts:
+                                  Control: Gallery
+                                  Variant: Vertical
+                                  Properties:
+                                    AccessibleLabel: ="Receipts"
+                                    FillPortions: =0
+                                    Height: =Self.AllItemsCount * 64
+                                    Items: =locPerReceipts
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    ShowScrollbar: =false
+                                    TabIndex: =0
+                                    TemplatePadding: =0
+                                    TemplateSize: =64
+                                  Children:
+                                    - conInvPerRcptRow:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          BorderColor: =If(locPerRcpt.ID = ThisItem.ID, RGBA(15, 76, 129, 1), RGBA(225, 228, 232, 1))
+                                          BorderThickness: =1
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight - 4
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =8
+                                          PaddingLeft: =12
+                                          PaddingRight: =8
+                                          RadiusBottomLeft: =6
+                                          RadiusBottomRight: =6
+                                          RadiusTopLeft: =6
+                                          RadiusTopRight: =6
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - conInvPerRcptText:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                Height: =54
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutJustifyContent: =LayoutJustifyContent.Center
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                              Children:
+                                                - txtInvPerRcptNo:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(36, 36, 36, 1)
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =13
+                                                      Text: =ThisItem.Title & "  ·  " & ThisItem.ItemCount & If(ThisItem.ItemCount = 1, " item", " items") & "  ·  " & ThisItem.Department.Value
+                                                      Wrap: =false
+                                                - txtInvPerRcptMeta:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(97, 97, 97, 1)
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =12
+                                                      Text: ="Issued " & Text(ThisItem.IssueDate, "mmm d, yyyy") & "  ·  " & If(Coalesce(ThisItem.SignatureMethod.Value, "Electronic") = "CAC", "CAC signature", "Electronic approval") & If(IsBlank(ThisItem.AckDate), If(ThisItem.ReceiptStatus.Value = "Awaiting Acknowledgement", If(Coalesce(ThisItem.SignatureMethod.Value, "Electronic") = "CAC", ", waiting for the signed PDF", ", approval sent"), ""), ", signed " & Text(ThisItem.AckDate, "mmm d, yyyy"))
+                                                      Wrap: =false
+                                          - txtInvPerRcptStatus:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Align: =Align.Center
+                                                AlignInContainer: =AlignInContainer.Center
+                                                Color: =Switch(ThisItem.ReceiptStatus.Value, "Overdue", RGBA(164, 38, 44, 1), "Awaiting Acknowledgement", RGBA(92, 45, 145, 1), "Return Required", RGBA(131, 82, 0, 1), "Returned", RGBA(16, 110, 16, 1), "Lost", RGBA(164, 38, 44, 1), RGBA(15, 76, 129, 1))
+                                                Fill: =Switch(ThisItem.ReceiptStatus.Value, "Overdue", RGBA(253, 231, 233, 1), "Awaiting Acknowledgement", RGBA(243, 238, 250, 1), "Return Required", RGBA(255, 244, 206, 1), "Returned", RGBA(223, 246, 221, 1), "Lost", RGBA(253, 231, 233, 1), RGBA(230, 240, 250, 1))
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =24
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                RadiusBottomLeft: =12
+                                                RadiusBottomRight: =12
+                                                RadiusTopLeft: =12
+                                                RadiusTopRight: =12
+                                                Size: =12
+                                                Text: =ThisItem.ReceiptStatus.Value
+                                                Width: =170
+                                                Wrap: =false
+                                          - btnInvPerPdf:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Open the PDF for " & ThisItem.Title
+                                                Appearance: =ButtonAppearance.Subtle
+                                                Height: =36
+                                                Icon: ="DocumentPdf"
+                                                LayoutMinWidth: =0
+                                                OnSelect: =Launch(ThisItem.PdfUrl)
+                                                Text: =If(ThisItem.ReceiptStatus.Value = "Awaiting Acknowledgement" && Coalesce(ThisItem.SignatureMethod.Value, "Electronic") = "CAC", "Unsigned PDF", "PDF")
+                                                Visible: =!IsBlank(ThisItem.PdfUrl)
+                                                Width: =140
+                                          - btnInvPerUpload:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Upload the CAC-signed PDF for " & ThisItem.Title
+                                                Appearance: =ButtonAppearance.Subtle
+                                                Height: =36
+                                                Icon: ="ArrowUpload"
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =UpdateContext({locPerRcpt: ThisItem})
+                                                Text: =If(ThisItem.ReceiptStatus.Value = "Awaiting Acknowledgement", "Upload signed", "Replace signed")
+                                                Visible: =fxIsInvStaff && Coalesce(ThisItem.SignatureMethod.Value, "Electronic") = "CAC" && ThisItem.ReceiptStatus.Value in ["Awaiting Acknowledgement", "Acknowledged", "Closed"]
+                                                Width: =150
+                                          - btnInvPerResend:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Resend the approval for " & ThisItem.Title
+                                                Appearance: =ButtonAppearance.Subtle
+                                                DisplayMode: =If(locBusy, DisplayMode.Disabled, DisplayMode.Edit)
+                                                Height: =36
+                                                Icon: ="MailArrowUp"
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =UpdateContext({locBusy: true});
+                                                  IfError(
+                                                      With({raw: ParseJSON('Inventory-Action'.Run(fxInvReceiptPayload("ResendApproval", ThisItem.ID)).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
+                                                      UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
+                                                  );
+                                                  UpdateContext({locBusy: false});
+                                                  Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
+                                                  If(locResult.Status = "Success", Set(gblInvLoadedAt, Blank()); Select(btnInvPerLoad))
+                                                Text: ="Resend"
+                                                Visible: =ThisItem.ReceiptStatus.Value = "Awaiting Acknowledgement" && Coalesce(ThisItem.SignatureMethod.Value, "Electronic") = "Electronic" && fxIsInvStaff
+                                                Width: =110
+                                          - btnInvPerSwitch:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Change how " & ThisItem.Title & " is signed"
+                                                Appearance: =ButtonAppearance.Subtle
+                                                DisplayMode: =If(locBusy, DisplayMode.Disabled, DisplayMode.Edit)
+                                                Height: =36
+                                                Icon: ="ArrowSwap"
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =UpdateContext({locBusy: true});
+                                                  IfError(
+                                                      With({raw: ParseJSON('Inventory-Action'.Run(fxInvSwitchPayload(ThisItem.ID, If(Coalesce(ThisItem.SignatureMethod.Value, "Electronic") = "CAC", "Electronic", "CAC"))).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
+                                                      UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
+                                                  );
+                                                  UpdateContext({locBusy: false});
+                                                  Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
+                                                  If(locResult.Status = "Success", Set(gblInvLoadedAt, Blank()); Select(btnInvPerLoad))
+                                                Text: =If(Coalesce(ThisItem.SignatureMethod.Value, "Electronic") = "CAC", "Use approval", "Use CAC")
+                                                Visible: =ThisItem.ReceiptStatus.Value = "Awaiting Acknowledgement" && fxIsInvStaff
+                                                Width: =140
+                        - conInvPerHist:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.Semilight
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FillPortions: =0
+                              Height: =20 + 48 + 12 + Max(galInvPerHist.Height, If(galInvPerHist.AllItemsCount = 0, 24, 0)) + 24
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =12
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              PaddingBottom: =24
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              PaddingTop: =20
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                              Visible: =!IsBlank(gblInvPersonEmail)
+                            Children:
+                              - conInvPerHistHead:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =48
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvPerHistTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(36, 36, 36, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =26
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =16
+                                          Text: ="History"
+                                    - txtInvPerHistDesc:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: ="Items this person has returned or that were reported lost."
+                                          Wrap: =false
+                              - txtInvPerHistEmpty:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(97, 97, 97, 1)
+                                    Height: =24
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =13
+                                    Text: ="No past items."
+                                    Visible: =galInvPerHist.AllItemsCount = 0
+                                    Wrap: =false
+                              - galInvPerHist:
+                                  Control: Gallery
+                                  Variant: Vertical
+                                  Properties:
+                                    AccessibleLabel: ="Past items"
+                                    FillPortions: =0
+                                    Height: =Min(Self.AllItemsCount, 20) * 52
+                                    Items: =Filter(locPerItems, !(Status in ["Active", "Awaiting Acknowledgement", "Return Required"]))
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    ShowScrollbar: =false
+                                    TabIndex: =0
+                                    TemplatePadding: =0
+                                    TemplateSize: =52
+                                  Children:
+                                    - conInvPerHistRow:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight - 4
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutJustifyContent: =LayoutJustifyContent.Center
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - txtInvPerHistWhat:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(36, 36, 36, 1)
+                                                Height: =20
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =13
+                                                Text: =ThisItem.AssetTagSnapshot & "  ·  " & ThisItem.Desc & "  ·  " & ThisItem.Status
+                                                Wrap: =false
+                                          - txtInvPerHistWhen:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(97, 97, 97, 1)
+                                                Height: =20
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =12
+                                                Text: ="Issued " & Text(ThisItem.IssuedDate, "mmm d, yyyy") & If(IsBlank(ThisItem.ReturnedDate), "", "  ·  returned " & Text(ThisItem.ReturnedDate, "mmm d, yyyy") & If(IsBlank(ThisItem.ReturnCondition.Value), "", " (" & ThisItem.ReturnCondition.Value & ")")) & "  ·  " & ThisItem.ReceiptNumber
+                                                Wrap: =false
+                        - txtInvPerNoAccess:
+                            Control: ModernText
+                            Properties:
+                              AccessibleLabel: =Self.Text
+                              Color: =RGBA(164, 38, 44, 1)
+                              Fill: =RGBA(253, 231, 233, 1)
+                              Height: =48
+                              LayoutMinWidth: =0
+                              PaddingBottom: =0
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =0
+                              RadiusBottomLeft: =6
+                              RadiusBottomRight: =6
+                              RadiusTopLeft: =6
+                              RadiusTopRight: =6
+                              Size: =14
+                              Text: ="This screen is for AV and IT inventory staff."
+                              Visible: =!fxCanViewInventory
