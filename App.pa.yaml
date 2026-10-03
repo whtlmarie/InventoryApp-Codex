@@ -104,7 +104,8 @@ App:
           {Id: "returns", Label: "Returns", Icon: "ArrowUndo", Target: scrInvReturns, IsAllowed: fxIsInvStaff},
           {Id: "person", Label: "People", Icon: "Person", Target: scrInvPerson, IsAllowed: fxCanViewInventory},
           {Id: "count", Label: "Inventory count", Icon: "Note", Target: scrInvCount, IsAllowed: fxCanViewInventory},
-          {Id: "locations", Label: "Locations", Icon: "Location", Target: scrInvLocations, IsAllowed: fxCanViewInventory}
+          {Id: "locations", Label: "Locations", Icon: "Location", Target: scrInvLocations, IsAllowed: fxCanViewInventory},
+          {Id: "import", Label: "Import", Icon: "ArrowUpload", Target: scrInvImport, IsAllowed: fxIsInvStaff}
       );
       fxInvVisibleNav = Filter(fxInvNav, IsAllowed);
 
