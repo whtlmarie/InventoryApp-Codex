@@ -248,7 +248,9 @@ Screens:
                                         SortOrder.Ascending
                                     )
                                 );
-                                UpdateContext({locReqSel: If(IsBlank(locReqSel), Blank(), LookUp(gblInvReqLines, LineId = locReqSel.LineId))})
+                                // Opened from a Home row: select that line once.
+                                UpdateContext({locReqSel: If(!IsBlank(gblInvReqOpenLine), LookUp(gblInvReqLines, LineId = gblInvReqOpenLine), IsBlank(locReqSel), Blank(), LookUp(gblInvReqLines, LineId = locReqSel.LineId))});
+                                Set(gblInvReqOpenLine, Blank())
                               Text: ="Load"
                               Visible: =false
                               Width: =10
@@ -1687,6 +1689,140 @@ Screens:
                                                   If(locResult.Status = "Success", Set(gblInvLoadedAt, Blank()); Select(btnInvReqReload); Select(btnInvReqLoad))
                                                 Text: ="Reserve"
                                                 Width: =120
+                        - conInvReqShort:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.Semilight
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FillPortions: =0
+                              Height: =20 + 48 + 12 + 60 + 12 + 40 + 24
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =12
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              PaddingBottom: =24
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              PaddingTop: =20
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                              Visible: =!IsBlank(locReqSel) && fxIsInvStaff && locReqSel.Issued < locReqSel.Qty
+                            Children:
+                              - conInvReqShortHead:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =48
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvReqShortTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(36, 36, 36, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =26
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =16
+                                          Text: ="Cannot provide them all?"
+                                    - txtInvReqShortDesc:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: ="Close this item with " & locReqSel.Issued & " of " & locReqSel.Qty & " provided. Units reserved but not issued are released."
+                                          Wrap: =false
+                              - conInvReqFNote:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =60
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =4
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =170
+                                  Children:
+                                    - txtInvReqFNoteLbl:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(66, 66, 66, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =13
+                                          Text: ="Message to the requester (required)"
+                                    - txtInvReqNote:
+                                        Control: ModernTextInput
+                                        Properties:
+                                          AccessibleLabel: ="Message to the requester"
+                                          AlignInContainer: =AlignInContainer.Stretch
+                                          Appearance: =Appearance.Outline
+                                          Height: =36
+                                          LayoutMinWidth: =0
+                                          Placeholder: ="e.g. Only one unit is available for these dates."
+                                          Width: =Parent.Width
+                              - conInvReqShortBtns:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =40
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutJustifyContent: =LayoutJustifyContent.End
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - btnInvReqShortGo:
+                                        Control: ModernButton
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Appearance: =ButtonAppearance.Secondary
+                                          DisplayMode: =If(locBusy || IsBlank(Trim(txtInvReqNote.Text)), DisplayMode.Disabled, DisplayMode.Edit)
+                                          Height: =36
+                                          Icon: ="Checkmark"
+                                          LayoutMinWidth: =0
+                                          OnSelect: |-
+                                            =UpdateContext({locBusy: true});
+                                            IfError(
+                                                With(
+                                                    {raw: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "CloseLine", lineId: locReqSel.LineId, note: Trim(txtInvReqNote.Text)})).response)},
+                                                    UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})
+                                                ),
+                                                UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
+                                            );
+                                            UpdateContext({locBusy: false});
+                                            Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
+                                            If(locResult.Status = "Success", Reset(txtInvReqNote); UpdateContext({locReqSel: Blank()}); Set(gblInvLoadedAt, Blank()); Select(btnInvReqReload); Select(btnInvReqLoad))
+                                          Text: ="Close with " & locReqSel.Issued & " of " & locReqSel.Qty & " provided"
+                                          Width: =260
                         - txtInvReqNoAccess:
                             Control: ModernText
                             Properties:

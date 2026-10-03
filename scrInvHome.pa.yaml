@@ -655,6 +655,19 @@ Screens:
                                                       Text: =If(Coalesce(ThisItem.ReservedQuantity, 0) = 0, "To reserve", "In progress")
                                                       Width: =110
                                                       Wrap: =false
+                                                - btnInvHomeLineOpen:
+                                                    Control: ModernButton
+                                                    Properties:
+                                                      AccessibleLabel: ="Open " & Coalesce(ThisItem.EquipmentNameSnapshot, "item") & " in Request items"
+                                                      Appearance: =ButtonAppearance.Subtle
+                                                      Height: =36
+                                                      Icon: ="ChevronRight"
+                                                      Layout: =ButtonLayout.IconOnly
+                                                      LayoutMinWidth: =36
+                                                      OnSelect: =Set(gblInvReqOpenLine, ThisItem.ID); Navigate(scrInvRequests, ScreenTransition.None)
+                                                      Text: ="Open"
+                                                      Visible: =fxIsInvStaff
+                                                      Width: =36
                               - conInvHomeDue:
                                   Control: GroupContainer
                                   Variant: AutoLayout
