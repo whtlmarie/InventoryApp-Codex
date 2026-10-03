@@ -565,7 +565,7 @@ Screens:
                                         Properties:
                                           AccessibleLabel: ="Request items to handle"
                                           FillPortions: =0
-                                          Height: =Min(Self.AllItemsCount, 8) * 60
+                                          Height: =Min(Self.AllItemsCount, 8) * 68 + 8
                                           Items: |-
                                             =SortByColumns(
                                                 Filter(
@@ -580,7 +580,7 @@ Screens:
                                           ShowScrollbar: =false
                                           TabIndex: =0
                                           TemplatePadding: =0
-                                          TemplateSize: =60
+                                          TemplateSize: =68
                                         Children:
                                           - conInvHomeLineRow:
                                               Control: GroupContainer
@@ -749,7 +749,7 @@ Screens:
                                         Properties:
                                           AccessibleLabel: ="Due back"
                                           FillPortions: =0
-                                          Height: =Min(Self.AllItemsCount, 8) * 60
+                                          Height: =Min(Self.AllItemsCount, 8) * 68 + 8
                                           Items: |-
                                             =SortByColumns(
                                                 Filter(
@@ -764,7 +764,7 @@ Screens:
                                           ShowScrollbar: =false
                                           TabIndex: =0
                                           TemplatePadding: =0
-                                          TemplateSize: =60
+                                          TemplateSize: =68
                                         Children:
                                           - conInvHomeDueRow:
                                               Control: GroupContainer
