@@ -476,7 +476,8 @@ Screens:
                             Properties:
                               DropShadow: =DropShadow.None
                               FillPortions: =0
-                              Height: =If(App.Width >= 1250, Max(conInvHomeLines.Height, conInvHomeDue.Height), conInvHomeLines.Height + 16 + conInvHomeDue.Height)
+                              Height: |-
+                                =With({l: IfError(conInvHomeLines.Height, 160), d: IfError(conInvHomeDue.Height, 160)}, If(App.Width >= 1250, Max(l, d), l + 16 + d))
                               LayoutAlignItems: =If(App.Width >= 1250, LayoutAlignItems.Start, LayoutAlignItems.Stretch)
                               LayoutDirection: =If(App.Width >= 1250, LayoutDirection.Horizontal, LayoutDirection.Vertical)
                               LayoutGap: =16
@@ -565,7 +566,7 @@ Screens:
                                         Properties:
                                           AccessibleLabel: ="Request items to handle"
                                           FillPortions: =0
-                                          Height: =Min(Self.AllItemsCount, 8) * 68 + 8
+                                          Height: =Min(Self.AllItemsCount, 8) * 72 + 12
                                           Items: |-
                                             =SortByColumns(
                                                 Filter(
@@ -580,7 +581,7 @@ Screens:
                                           ShowScrollbar: =false
                                           TabIndex: =0
                                           TemplatePadding: =0
-                                          TemplateSize: =68
+                                          TemplateSize: =72
                                         Children:
                                           - conInvHomeLineRow:
                                               Control: GroupContainer
@@ -749,7 +750,7 @@ Screens:
                                         Properties:
                                           AccessibleLabel: ="Due back"
                                           FillPortions: =0
-                                          Height: =Min(Self.AllItemsCount, 8) * 68 + 8
+                                          Height: =Min(Self.AllItemsCount, 8) * 72 + 12
                                           Items: |-
                                             =SortByColumns(
                                                 Filter(
@@ -764,7 +765,7 @@ Screens:
                                           ShowScrollbar: =false
                                           TabIndex: =0
                                           TemplatePadding: =0
-                                          TemplateSize: =68
+                                          TemplateSize: =72
                                         Children:
                                           - conInvHomeDueRow:
                                               Control: GroupContainer
