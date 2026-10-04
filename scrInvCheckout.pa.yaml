@@ -334,7 +334,7 @@ Screens:
                             Properties:
                               DropShadow: =DropShadow.None
                               FillPortions: =0
-                              Height: =If(App.Width >= 1500, Max(conInvCoWho.Height + 16 + conInvCoWhen.Height, conInvCoItems.Height), conInvCoWho.Height + 16 + conInvCoWhen.Height + 16 + conInvCoItems.Height)
+                              Height: =If(App.Width >= 1500, Max((20 + 48 + 12 + 2 * (If(App.Width >= 900, 60, 136) + 12) + 24) + 16 + (20 + 48 + 12 + 2 * (If(App.Width >= 900, 60, 136) + 12) + 24), (20 + 48 + 12 + 48 + If(IsEmpty(locScanMatches), 0, 8 + CountRows(locScanMatches) * 38) + If(IsBlank(locScanMsg), 0, 4 + 20) + 12 + Max(galInvCoItems.Height, If(galInvCoItems.AllItemsCount = 0, 24, 0)) + 24)), (20 + 48 + 12 + 2 * (If(App.Width >= 900, 60, 136) + 12) + 24) + 16 + (20 + 48 + 12 + 2 * (If(App.Width >= 900, 60, 136) + 12) + 24) + 16 + (20 + 48 + 12 + 48 + If(IsEmpty(locScanMatches), 0, 8 + CountRows(locScanMatches) * 38) + If(IsBlank(locScanMsg), 0, 4 + 20) + 12 + Max(galInvCoItems.Height, If(galInvCoItems.AllItemsCount = 0, 24, 0)) + 24))
                               LayoutAlignItems: =If(App.Width >= 1500, LayoutAlignItems.Start, LayoutAlignItems.Stretch)
                               LayoutDirection: =If(App.Width >= 1500, LayoutDirection.Horizontal, LayoutDirection.Vertical)
                               LayoutGap: =16
@@ -348,7 +348,7 @@ Screens:
                                   Properties:
                                     DropShadow: =DropShadow.None
                                     FillPortions: =If(App.Width >= 1500, 1, 0)
-                                    Height: =conInvCoWho.Height + 16 + conInvCoWhen.Height
+                                    Height: =(20 + 48 + 12 + 2 * (If(App.Width >= 900, 60, 136) + 12) + 24) + 16 + (20 + 48 + 12 + 2 * (If(App.Width >= 900, 60, 136) + 12) + 24)
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =16
@@ -829,7 +829,7 @@ Screens:
                                   Properties:
                                     DropShadow: =DropShadow.None
                                     FillPortions: =If(App.Width >= 1500, 1, 0)
-                                    Height: =conInvCoItems.Height
+                                    Height: =(20 + 48 + 12 + 48 + If(IsEmpty(locScanMatches), 0, 8 + CountRows(locScanMatches) * 38) + If(IsBlank(locScanMsg), 0, 4 + 20) + 12 + Max(galInvCoItems.Height, If(galInvCoItems.AllItemsCount = 0, 24, 0)) + 24)
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =16

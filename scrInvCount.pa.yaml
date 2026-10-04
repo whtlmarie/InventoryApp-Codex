@@ -502,7 +502,7 @@ Screens:
                               DropShadow: =DropShadow.Semilight
                               Fill: =RGBA(255, 255, 255, 1)
                               FillPortions: =0
-                              Height: =20 + 48 + 12 + conInvCntScan.Height + 12 + conInvCntRes.Height + 12 + 40 + 24
+                              Height: =20 + 48 + 12 + (48 + If(IsEmpty(locScanMatches), 0, 8 + CountRows(locScanMatches) * 38) + If(IsBlank(locScanMsg), 0, 4 + 20)) + 12 + (If(App.Width >= 1100, Max((40 + Max(24, galInvCntMissing.Height) + 12), (40 + Max(24, galInvCntUnexp.Height) + 12), (40 + Max(24, galInvCntOut.Height) + 12), (40 + Max(24, galInvCntFound.Height) + 12)), (40 + Max(24, galInvCntMissing.Height) + 12) + (40 + Max(24, galInvCntUnexp.Height) + 12) + (40 + Max(24, galInvCntOut.Height) + 12) + (40 + Max(24, galInvCntFound.Height) + 12) + 36)) + 12 + 40 + 24
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =12
@@ -690,7 +690,7 @@ Screens:
                                   Properties:
                                     DropShadow: =DropShadow.None
                                     FillPortions: =0
-                                    Height: =If(App.Width >= 1100, Max(conInvCntMissing.Height, conInvCntUnexp.Height, conInvCntOut.Height, conInvCntFound.Height), conInvCntMissing.Height + conInvCntUnexp.Height + conInvCntOut.Height + conInvCntFound.Height + 36)
+                                    Height: =If(App.Width >= 1100, Max((40 + Max(24, galInvCntMissing.Height) + 12), (40 + Max(24, galInvCntUnexp.Height) + 12), (40 + Max(24, galInvCntOut.Height) + 12), (40 + Max(24, galInvCntFound.Height) + 12)), (40 + Max(24, galInvCntMissing.Height) + 12) + (40 + Max(24, galInvCntUnexp.Height) + 12) + (40 + Max(24, galInvCntOut.Height) + 12) + (40 + Max(24, galInvCntFound.Height) + 12) + 36)
                                     LayoutAlignItems: =If(App.Width >= 1100, LayoutAlignItems.Start, LayoutAlignItems.Stretch)
                                     LayoutDirection: =If(App.Width >= 1100, LayoutDirection.Horizontal, LayoutDirection.Vertical)
                                     LayoutGap: =12

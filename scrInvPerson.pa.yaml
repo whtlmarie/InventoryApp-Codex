@@ -339,7 +339,7 @@ Screens:
                               DropShadow: =DropShadow.Semilight
                               Fill: =RGBA(255, 255, 255, 1)
                               FillPortions: =0
-                              Height: =20 + 48 + 12 + conInvPerFindRow.Height + 24
+                              Height: =20 + 48 + 12 + (If(App.Width >= 900, Max(48, (48 + If(IsEmpty(locScanMatches), 0, 8 + CountRows(locScanMatches) * 38) + If(IsBlank(locScanMsg), 0, 4 + 20))), 48 + 16 + (48 + If(IsEmpty(locScanMatches), 0, 8 + CountRows(locScanMatches) * 38) + If(IsBlank(locScanMsg), 0, 4 + 20)))) + 24
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =12
@@ -399,7 +399,7 @@ Screens:
                                   Properties:
                                     DropShadow: =DropShadow.None
                                     FillPortions: =0
-                                    Height: =If(App.Width >= 900, Max(48, conInvPerScan.Height), 48 + 16 + conInvPerScan.Height)
+                                    Height: =If(App.Width >= 900, Max(48, (48 + If(IsEmpty(locScanMatches), 0, 8 + CountRows(locScanMatches) * 38) + If(IsBlank(locScanMsg), 0, 4 + 20))), 48 + 16 + (48 + If(IsEmpty(locScanMatches), 0, 8 + CountRows(locScanMatches) * 38) + If(IsBlank(locScanMsg), 0, 4 + 20)))
                                     LayoutAlignItems: =If(App.Width >= 900, LayoutAlignItems.Start, LayoutAlignItems.Stretch)
                                     LayoutDirection: =If(App.Width >= 900, LayoutDirection.Horizontal, LayoutDirection.Vertical)
                                     LayoutGap: =16
@@ -434,7 +434,7 @@ Screens:
                                         Variant: AutoLayout
                                         Properties:
                                           DropShadow: =DropShadow.None
-                                          Height: =conInvPerScan.Height
+                                          Height: =(48 + If(IsEmpty(locScanMatches), 0, 8 + CountRows(locScanMatches) * 38) + If(IsBlank(locScanMsg), 0, 4 + 20))
                                           LayoutAlignItems: =LayoutAlignItems.Stretch
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutMinHeight: =0
@@ -668,7 +668,7 @@ Screens:
                               DropShadow: =DropShadow.Semilight
                               Fill: =RGBA(255, 255, 255, 1)
                               FillPortions: =0
-                              Height: =20 + 48 + 12 + 40 + 12 + If(conInvPerAct.Visible, conInvPerAct.Height + 12, 0) + Max(24, galInvPerHeld.Height) + 24
+                              Height: =20 + 48 + 12 + 40 + 12 + If(conInvPerAct.Visible, (If(App.Width >= 900, 28 + 6 + 3 * (60 + 6) + 24, 28 + 6 + 7 * 72 + 24)) + 12, 0) + Max(24, galInvPerHeld.Height) + 24
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =12
@@ -1375,7 +1375,7 @@ Screens:
                               DropShadow: =DropShadow.Semilight
                               Fill: =RGBA(255, 255, 255, 1)
                               FillPortions: =0
-                              Height: =20 + 48 + 12 + If(conInvPerUp.Visible, conInvPerUp.Height + 12, 0) + Max(24, galInvPerRcpts.Height) + 24
+                              Height: =20 + 48 + 12 + If(conInvPerUp.Visible, (28 + 6 + 20 + 6 + 90 + 6 + 40 + 24) + 12, 0) + Max(24, galInvPerRcpts.Height) + 24
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =12

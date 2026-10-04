@@ -301,7 +301,7 @@ Screens:
                               DropShadow: =DropShadow.Semilight
                               Fill: =RGBA(255, 255, 255, 1)
                               FillPortions: =0
-                              Height: =20 + 48 + 12 + conInvRetScan.Height + 12 + Max(24, galInvRetItems.Height) + 24
+                              Height: =20 + 48 + 12 + (48 + If(IsEmpty(locScanMatches), 0, 8 + CountRows(locScanMatches) * 38) + If(IsBlank(locScanMsg), 0, 4 + 20)) + 12 + Max(24, galInvRetItems.Height) + 24
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =12

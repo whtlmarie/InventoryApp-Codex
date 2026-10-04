@@ -348,7 +348,7 @@ Screens:
                               DropShadow: =DropShadow.None
                               FillPortions: =0
                               Height: |-
-                                =With({l: conInvAsdDetails.Height + If(locNew, 0, 16 + conInvAsdFiles.Height), r: If(locNew, 0, conInvAsdStatus.Height + 16 + If(conInvAsdIncs.Visible, conInvAsdIncs.Height + 16, 0) + conInvAsdRes.Height + 16 + conInvAsdHist.Height)}, If(App.Width >= 1250, Max(l, r), l + 16 + r))
+                                =With({l: (20 + 48 + 12 + 5 * (If(App.Width >= 700, 60, 128) + 12) + 96 + 12 + 40 + 24) + If(locNew, 0, 16 + (20 + 48 + 12 + If(conInvAsdFileUp.Visible, (90 + 8 + 60 + 8 + 40) + 12, 0) + Max(24, galInvAsdFiles.Height) + 24)), r: If(locNew, 0, (20 + 48 + 12 + 40 + 12 + 60 + 12 + 60 + 12 + 36 + 12 + If(conInvAsdInc.Visible, (28 + 6 + 2 * (60 + 6) + 96 + 6 + 40 + 24), If(btnInvAsdIncOpen.Visible, 36, 0)) + If(conInvAsdDisp.Visible, 12 + (28 + 6 + 4 * (60 + 6) + 40 + 24), If(btnInvAsdDispOpen.Visible, 12 + 36, 0)) + 24) + 16 + If(conInvAsdIncs.Visible, (20 + 48 + 12 + Max(24, galInvAsdIncs.Height) + 24) + 16, 0) + (20 + 48 + 12 + Max(galInvAsdRes.Height, If(galInvAsdRes.AllItemsCount = 0, 24, 0)) + 24) + 16 + (20 + 48 + 12 + Max(galInvAsdHist.Height, If(galInvAsdHist.AllItemsCount = 0, 24, 0)) + 24))}, If(App.Width >= 1250, Max(l, r), l + 16 + r))
                               LayoutAlignItems: =If(App.Width >= 1250, LayoutAlignItems.Start, LayoutAlignItems.Stretch)
                               LayoutDirection: =If(App.Width >= 1250, LayoutDirection.Horizontal, LayoutDirection.Vertical)
                               LayoutGap: =16
@@ -362,7 +362,7 @@ Screens:
                                   Properties:
                                     DropShadow: =DropShadow.None
                                     FillPortions: =If(App.Width >= 1250, 3, 0)
-                                    Height: =conInvAsdDetails.Height + If(locNew, 0, 16 + conInvAsdFiles.Height)
+                                    Height: =(20 + 48 + 12 + 5 * (If(App.Width >= 700, 60, 128) + 12) + 96 + 12 + 40 + 24) + If(locNew, 0, 16 + (20 + 48 + 12 + If(conInvAsdFileUp.Visible, (90 + 8 + 60 + 8 + 40) + 12, 0) + Max(24, galInvAsdFiles.Height) + 24))
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =16
@@ -993,7 +993,7 @@ Screens:
                                           DropShadow: =DropShadow.Semilight
                                           Fill: =RGBA(255, 255, 255, 1)
                                           FillPortions: =0
-                                          Height: =20 + 48 + 12 + If(conInvAsdFileUp.Visible, conInvAsdFileUp.Height + 12, 0) + Max(24, galInvAsdFiles.Height) + 24
+                                          Height: =20 + 48 + 12 + If(conInvAsdFileUp.Visible, (90 + 8 + 60 + 8 + 40) + 12, 0) + Max(24, galInvAsdFiles.Height) + 24
                                           LayoutAlignItems: =LayoutAlignItems.Stretch
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutGap: =12
@@ -1330,7 +1330,7 @@ Screens:
                                   Properties:
                                     DropShadow: =DropShadow.None
                                     FillPortions: =If(App.Width >= 1250, 2, 0)
-                                    Height: =If(locNew, 0, conInvAsdStatus.Height + 16 + If(conInvAsdIncs.Visible, conInvAsdIncs.Height + 16, 0) + conInvAsdRes.Height + 16 + conInvAsdHist.Height)
+                                    Height: =If(locNew, 0, (20 + 48 + 12 + 40 + 12 + 60 + 12 + 60 + 12 + 36 + 12 + If(conInvAsdInc.Visible, (28 + 6 + 2 * (60 + 6) + 96 + 6 + 40 + 24), If(btnInvAsdIncOpen.Visible, 36, 0)) + If(conInvAsdDisp.Visible, 12 + (28 + 6 + 4 * (60 + 6) + 40 + 24), If(btnInvAsdDispOpen.Visible, 12 + 36, 0)) + 24) + 16 + If(conInvAsdIncs.Visible, (20 + 48 + 12 + Max(24, galInvAsdIncs.Height) + 24) + 16, 0) + (20 + 48 + 12 + Max(galInvAsdRes.Height, If(galInvAsdRes.AllItemsCount = 0, 24, 0)) + 24) + 16 + (20 + 48 + 12 + Max(galInvAsdHist.Height, If(galInvAsdHist.AllItemsCount = 0, 24, 0)) + 24))
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =16
@@ -1344,7 +1344,7 @@ Screens:
                                           DropShadow: =DropShadow.Semilight
                                           Fill: =RGBA(255, 255, 255, 1)
                                           FillPortions: =0
-                                          Height: =20 + 48 + 12 + 40 + 12 + 60 + 12 + 60 + 12 + 36 + 12 + If(conInvAsdInc.Visible, conInvAsdInc.Height, If(btnInvAsdIncOpen.Visible, 36, 0)) + If(conInvAsdDisp.Visible, 12 + conInvAsdDisp.Height, If(btnInvAsdDispOpen.Visible, 12 + 36, 0)) + 24
+                                          Height: =20 + 48 + 12 + 40 + 12 + 60 + 12 + 60 + 12 + 36 + 12 + If(conInvAsdInc.Visible, (28 + 6 + 2 * (60 + 6) + 96 + 6 + 40 + 24), If(btnInvAsdIncOpen.Visible, 36, 0)) + If(conInvAsdDisp.Visible, 12 + (28 + 6 + 4 * (60 + 6) + 40 + 24), If(btnInvAsdDispOpen.Visible, 12 + 36, 0)) + 24
                                           LayoutAlignItems: =LayoutAlignItems.Stretch
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutGap: =12
