@@ -1137,6 +1137,31 @@ Screens:
                                             =UpdateContext({locCnt: Blank()}); Clear(colInvCntScanned)
                                           Text: ="Discard"
                                           Width: =110
+                                    - btnInvCntExport:
+                                        Control: ModernButton
+                                        Properties:
+                                          AccessibleLabel: ="Export this count to Excel"
+                                          Appearance: =ButtonAppearance.Secondary
+                                          DisplayMode: =If(locBusy, DisplayMode.Disabled, DisplayMode.Edit)
+                                          Height: =36
+                                          Icon: ="Save"
+                                          LayoutMinWidth: =0
+                                          OnSelect: |-
+                                            =UpdateContext({locBusy: true});
+                                            IfError(
+                                                With(
+                                                    {raw: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "ExportCsv", name: "Count " & If(locCnt.Scope = "Department", locCnt.Dept, locCnt.Value), csv: "Result,Asset Tag,Serial Number,Catalog Item,Model,Department,Status,Home Location,Held By" & Char(13) & Char(10) & Concat(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), ID in colInvCntScanned.ID), fxCsv("Found") & "," & fxCsv(Title) & "," & fxCsv(Coalesce(SerialNumber, "")) & "," & fxCsv(Coalesce(CatalogNameSnapshot, "")) & "," & fxCsv(Trim(Coalesce(Make, "") & " " & Coalesce(Model, ""))) & "," & fxCsv(Dept) & "," & fxCsv(Status) & "," & fxCsv(Coalesce(HomeLocation, "")) & "," & fxCsv(Coalesce(CurrentHolderName, "")) & Char(13) & Char(10)) & Concat(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued"), fxCsv("Missing") & "," & fxCsv(Title) & "," & fxCsv(Coalesce(SerialNumber, "")) & "," & fxCsv(Coalesce(CatalogNameSnapshot, "")) & "," & fxCsv(Trim(Coalesce(Make, "") & " " & Coalesce(Model, ""))) & "," & fxCsv(Dept) & "," & fxCsv(Status) & "," & fxCsv(Coalesce(HomeLocation, "")) & "," & fxCsv(Coalesce(CurrentHolderName, "")) & Char(13) & Char(10)) & Concat(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)).ID)), fxCsv("Unexpected here") & "," & fxCsv(Title) & "," & fxCsv(Coalesce(SerialNumber, "")) & "," & fxCsv(Coalesce(CatalogNameSnapshot, "")) & "," & fxCsv(Trim(Coalesce(Make, "") & " " & Coalesce(Model, ""))) & "," & fxCsv(Dept) & "," & fxCsv(Status) & "," & fxCsv(Coalesce(HomeLocation, "")) & "," & fxCsv(Coalesce(CurrentHolderName, "")) & Char(13) & Char(10)) & Concat(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status = "Issued"), fxCsv("Out with people") & "," & fxCsv(Title) & "," & fxCsv(Coalesce(SerialNumber, "")) & "," & fxCsv(Coalesce(CatalogNameSnapshot, "")) & "," & fxCsv(Trim(Coalesce(Make, "") & " " & Coalesce(Model, ""))) & "," & fxCsv(Dept) & "," & fxCsv(Status) & "," & fxCsv(Coalesce(HomeLocation, "")) & "," & fxCsv(Coalesce(CurrentHolderName, "")) & Char(13) & Char(10))})).response)},
+                                                    If(
+                                                        Text(raw.status) = "Success",
+                                                        Notify(Text(raw.message) & " Opening it now.", NotificationType.Success); Launch(Text(raw.number)),
+                                                        Notify(Text(raw.message), NotificationType.Error)
+                                                    )
+                                                ),
+                                                Notify("The inventory service could not be reached. Try again.", NotificationType.Error)
+                                            );
+                                            UpdateContext({locBusy: false})
+                                          Text: ="Export to Excel"
+                                          Width: =170
                                     - btnInvCntSave:
                                         Control: ModernButton
                                         Properties:

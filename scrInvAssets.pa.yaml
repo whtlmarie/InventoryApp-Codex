@@ -265,6 +265,42 @@ Screens:
                                           Size: =13
                                           Text: ="Every tracked unit. Scan a label to open it."
                                           Wrap: =false
+                              - btnInvAstExport:
+                                  Control: ModernButton
+                                  Properties:
+                                    AccessibleLabel: ="Export the assets shown to Excel"
+                                    Appearance: =ButtonAppearance.Secondary
+                                    DisplayMode: =If(locBusy, DisplayMode.Disabled, DisplayMode.Edit)
+                                    Height: =36
+                                    Icon: ="Save"
+                                    LayoutMinWidth: =0
+                                    OnSelect: |-
+                                      =UpdateContext({locBusy: true});
+                                      IfError(
+                                          With(
+                                              {raw: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "ExportCsv", name: "Assets", csv: "Asset Tag,Serial Number,Department,Orgn Acct,Kind,Catalog Item,Make,Model,Status,Condition,Home Location,Held By,Held By Email,Last Verified,Purchase Date,Warranty End,Notes" & Char(13) & Char(10) & Concat(SortByColumns(
+                                          Filter(
+                                              gblInvAssets,
+                                              (locAstDept = "All" || Dept = locAstDept) &&
+                                              ((locAstStatus = "All" && Status <> "Disposed") || Status = locAstStatus) &&
+                                              (!chkInvAstNoCat.Checked || Coalesce(CatalogItemId, 0) = 0) &&
+                                              (IsBlank(Trim(txtInvAstSearch.Text)) || Trim(txtInvAstSearch.Text) in Title || Trim(txtInvAstSearch.Text) in SerialNumber || Trim(txtInvAstSearch.Text) in Make || Trim(txtInvAstSearch.Text) in Model ||
+                                                  Trim(txtInvAstSearch.Text) in CatalogNameSnapshot || Trim(txtInvAstSearch.Text) in CurrentHolderName)
+                                          ),
+                                          "Title"
+                                      ), fxCsv(Title) & "," & fxCsv(Coalesce(SerialNumber, "")) & "," & fxCsv(Dept) & "," & fxCsv(fxOrgAccount(Dept)) & "," & fxCsv(Kind) & "," & fxCsv(Coalesce(CatalogNameSnapshot, "")) & "," & fxCsv(Coalesce(Make, "")) & "," & fxCsv(Coalesce(Model, "")) & "," & fxCsv(Status) & "," & fxCsv(Coalesce(Condition.Value, "")) & "," & fxCsv(Coalesce(HomeLocation, "")) & "," & fxCsv(Coalesce(CurrentHolderName, "")) & "," & fxCsv(Coalesce(CurrentHolderEmail, "")) & "," & fxCsv(If(IsBlank(LastVerifiedDate), "", Text(LastVerifiedDate, "yyyy-mm-dd"))) & "," & fxCsv(If(IsBlank(PurchaseDate), "", Text(PurchaseDate, "yyyy-mm-dd"))) & "," & fxCsv(If(IsBlank(WarrantyEnd), "", Text(WarrantyEnd, "yyyy-mm-dd"))) & "," & fxCsv(Coalesce(Notes, "")), Char(13) & Char(10))})).response)},
+                                              If(
+                                                  Text(raw.status) = "Success",
+                                                  Notify(Text(raw.message) & " Opening it now.", NotificationType.Success); Launch(Text(raw.number)),
+                                                  Notify(Text(raw.message), NotificationType.Error)
+                                              )
+                                          ),
+                                          Notify("The inventory service could not be reached. Try again.", NotificationType.Error)
+                                      );
+                                      UpdateContext({locBusy: false})
+                                    Text: ="Export to Excel"
+                                    Visible: =fxIsInvStaff
+                                    Width: =170
                               - btnInvAstAdd:
                                   Control: ModernButton
                                   Properties:
@@ -588,6 +624,17 @@ Screens:
                                       Select(btnInvAstReload)
                                     Text: ="Set catalog item"
                                     Width: =170
+                              - btnInvAstBulkLabels:
+                                  Control: ModernButton
+                                  Properties:
+                                    AccessibleLabel: ="Print labels for the selected assets"
+                                    Appearance: =ButtonAppearance.Secondary
+                                    Height: =36
+                                    Icon: ="Print"
+                                    LayoutMinWidth: =0
+                                    OnSelect: =Set(gblInvLabelIds, colInvAstSel); Navigate(scrInvLabels, ScreenTransition.None)
+                                    Text: ="Print labels"
+                                    Width: =150
                               - btnInvAstBulkClear:
                                   Control: ModernButton
                                   Properties:

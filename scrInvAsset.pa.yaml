@@ -919,6 +919,19 @@ Screens:
                                                       AccessibleLabel: ="Saving"
                                                       LayoutMinWidth: =0
                                                       Visible: =locBusy
+                                                - btnInvAsdLabel:
+                                                    Control: ModernButton
+                                                    Properties:
+                                                      AccessibleLabel: ="Print a label for this asset"
+                                                      Appearance: =ButtonAppearance.Secondary
+                                                      Height: =36
+                                                      Icon: ="Print"
+                                                      LayoutMinWidth: =0
+                                                      OnSelect: |-
+                                                        =Set(gblInvLabelIds, Table({ID: gblInvAssetId})); Navigate(scrInvLabels, ScreenTransition.None)
+                                                      Text: ="Label"
+                                                      Visible: =!locEdit && !IsBlank(locAsset) && fxIsInvStaff
+                                                      Width: =110
                                                 - btnInvAsdEdit:
                                                     Control: ModernButton
                                                     Properties:

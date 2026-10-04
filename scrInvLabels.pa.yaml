@@ -1,0 +1,718 @@
+Screens:
+  scrInvLabels:
+    Properties:
+      Fill: =RGBA(245, 246, 248, 1)
+      LoadingSpinnerColor: =RGBA(15, 76, 129, 1)
+      OnVisible: |-
+        =UpdateContext({locBusy: false});
+        If(IsBlank(gblInvLoadedAt) || DateDiff(gblInvLoadedAt, Now(), TimeUnit.Minutes) >= 2, Select(btnInvLblReload))
+    Children:
+      - conInvLblRoot:
+          Control: GroupContainer
+          Variant: AutoLayout
+          Properties:
+            DropShadow: =DropShadow.None
+            Fill: =RGBA(245, 246, 248, 1)
+            Height: =Parent.Height
+            LayoutAlignItems: =LayoutAlignItems.Stretch
+            LayoutDirection: =LayoutDirection.Vertical
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
+            Width: =Parent.Width
+          Children:
+            - conInvLblHeader:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  Fill: =RGBA(15, 76, 129, 1)
+                  FillPortions: =0
+                  Height: =56
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =12
+                  LayoutMinHeight: =56
+                  LayoutMinWidth: =0
+                  PaddingLeft: =8
+                  PaddingRight: =16
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                Children:
+                  - btnInvLblNavToggle:
+                      Control: ModernButton
+                      Properties:
+                        AccessibleLabel: =If(varNavCollapsed, "Expand navigation", "Collapse navigation")
+                        Appearance: =ButtonAppearance.Transparent
+                        Color: =RGBA(255, 255, 255, 1)
+                        Height: =40
+                        Icon: ="Navigation"
+                        Layout: =ButtonLayout.IconOnly
+                        LayoutMinWidth: =40
+                        OnSelect: =Set(varNavCollapsed, !varNavCollapsed)
+                        Text: =If(varNavCollapsed, "Expand navigation", "Collapse navigation")
+                        Tooltip: =If(varNavCollapsed, "Expand navigation", "Collapse navigation")
+                        Width: =40
+                  - txtInvLblAppTitle:
+                      Control: ModernText
+                      Properties:
+                        AccessibleLabel: ="Inventory"
+                        Color: =RGBA(255, 255, 255, 1)
+                        FillPortions: =1
+                        FontWeight: =FontWeight.Semibold
+                        Height: =40
+                        LayoutMinWidth: =120
+                        PaddingBottom: =0
+                        PaddingLeft: =0
+                        PaddingTop: =0
+                        Size: =18
+                        Text: ="Inventory"
+                        Wrap: =false
+                  - txtInvLblUserName:
+                      Control: ModernText
+                      Properties:
+                        AccessibleLabel: ="Signed in as " & User().FullName
+                        Align: =Align.Right
+                        Color: =RGBA(255, 255, 255, 1)
+                        Height: =40
+                        LayoutMinWidth: =0
+                        PaddingBottom: =0
+                        PaddingLeft: =0
+                        PaddingTop: =0
+                        Size: =14
+                        Text: =User().FullName
+                        Visible: =App.Width >= 640
+                        Width: =240
+                        Wrap: =false
+            - conInvLblBody:
+                Control: GroupContainer
+                Variant: AutoLayout
+                Properties:
+                  DropShadow: =DropShadow.None
+                  LayoutAlignItems: =LayoutAlignItems.Stretch
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutMinHeight: =0
+                  LayoutMinWidth: =0
+                  RadiusBottomLeft: =0
+                  RadiusBottomRight: =0
+                  RadiusTopLeft: =0
+                  RadiusTopRight: =0
+                Children:
+                  - conInvLblNav:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        FillPortions: =0
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutMinHeight: =0
+                        LayoutMinWidth: =0
+                        PaddingBottom: =8
+                        PaddingLeft: =8
+                        PaddingRight: =8
+                        PaddingTop: =8
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                        Width: =If(varNavCollapsed, 56, 240)
+                      Children:
+                        - galInvLblNav:
+                            Control: Gallery
+                            Variant: Vertical
+                            Properties:
+                              AccessibleLabel: ="Main navigation"
+                              FillPortions: =0
+                              Height: =CountRows(fxInvVisibleNav) * 46
+                              Items: =fxInvVisibleNav
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              ShowScrollbar: =false
+                              TabIndex: =0
+                              TemplatePadding: =2
+                              TemplateSize: =44
+                            Children:
+                              - conInvLblNavRow:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    Fill: =If(ThisItem.Id = "assets", RGBA(230, 240, 250, 1), RGBA(0, 0, 0, 0))
+                                    Height: =Parent.TemplateHeight
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    RadiusBottomLeft: =6
+                                    RadiusBottomRight: =6
+                                    RadiusTopLeft: =6
+                                    RadiusTopRight: =6
+                                    Width: =Parent.TemplateWidth
+                                  Children:
+                                    - btnInvLblNavItem:
+                                        Control: ModernButton
+                                        Properties:
+                                          AccessibleLabel: =ThisItem.Label
+                                          Align: =If(varNavCollapsed, Align.Center, Align.Left)
+                                          Appearance: =ButtonAppearance.Subtle
+                                          Color: =If(ThisItem.Id = "assets", RGBA(15, 76, 129, 1), RGBA(36, 36, 36, 1))
+                                          FillPortions: =1
+                                          FontWeight: =If(ThisItem.Id = "assets", FontWeight.Semibold, FontWeight.Normal)
+                                          Height: =40
+                                          Icon: =ThisItem.Icon
+                                          IconStyle: =If(ThisItem.Id = "assets", IconStyle.Filled, IconStyle.Outline)
+                                          Layout: =If(varNavCollapsed, ButtonLayout.IconOnly, ButtonLayout.IconBefore)
+                                          LayoutMinWidth: =40
+                                          OnSelect: =Navigate(ThisItem.Target, ScreenTransition.None)
+                                          Text: =ThisItem.Label
+                                          Tooltip: =ThisItem.Label
+                  - conInvLblMain:
+                      Control: GroupContainer
+                      Variant: AutoLayout
+                      Properties:
+                        DropShadow: =DropShadow.None
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =16
+                        LayoutMinHeight: =0
+                        LayoutMinWidth: =0
+                        LayoutOverflowY: =LayoutOverflow.Scroll
+                        PaddingBottom: =24
+                        PaddingLeft: =If(App.Width >= 800, 32, 16)
+                        PaddingRight: =If(App.Width >= 800, 32, 16)
+                        PaddingTop: =16
+                        RadiusBottomLeft: =0
+                        RadiusBottomRight: =0
+                        RadiusTopLeft: =0
+                        RadiusTopRight: =0
+                      Children:
+                        - btnInvLblReload:
+                            Control: ModernButton
+                            Properties:
+                              AccessibleLabel: ="Reload inventory data"
+                              Height: =36
+                              LayoutMinWidth: =0
+                              OnSelect: |-
+                                =// Inventory data for all screens (whole lists; fine at the current volume).
+                                Set(gblInvLoading, true);
+                                Refresh(InventoryAssets);
+                                Refresh(InventoryCheckouts);
+                                Refresh(InventoryReservations);
+                                Refresh(InventoryReceipts);
+                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, AssetStatus.Value, Kind, AssetKind.Value));
+                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, CheckoutStatus.Value = "Active" || CheckoutStatus.Value = "Awaiting Acknowledgement" || CheckoutStatus.Value = "Return Required"), Status, CheckoutStatus.Value));
+                                Set(gblInvReserved, Filter(InventoryReservations, ReservationStatus.Value = "Reserved"));
+                                Set(gblInvLines, Filter(RequestEquipment, NeedsInventoryAction = true));
+                                Set(gblInvLoadedAt, Now());
+                                Set(gblInvLoading, false)
+                              Text: ="Reload"
+                              Visible: =false
+                              Width: =10
+                        - conInvLblPageHeader:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =64
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =8
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                            Children:
+                              - conInvLblTitles:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    Height: =64
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutJustifyContent: =LayoutJustifyContent.Center
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvLblPageTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(36, 36, 36, 1)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =36
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =24
+                                          Text: ="Print labels"
+                                          Wrap: =false
+                                    - txtInvLblPageSubtitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =13
+                                          Text: ="Asset labels for Avery sheets on a regular printer."
+                                          Wrap: =false
+                              - btnInvLblBack:
+                                  Control: ModernButton
+                                  Properties:
+                                    AccessibleLabel: ="Back to assets"
+                                    Appearance: =ButtonAppearance.Subtle
+                                    Height: =36
+                                    Icon: ="ArrowLeft"
+                                    LayoutMinWidth: =0
+                                    OnSelect: =Navigate(scrInvAssets, ScreenTransition.None)
+                                    Text: ="Assets"
+                                    Width: =120
+                              - txtInvLblUpdated:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Align: =Align.Right
+                                    Color: =RGBA(97, 97, 97, 1)
+                                    Height: =20
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =12
+                                    Text: =If(gblInvLoading, "Loading…", If(IsBlank(gblInvLoadedAt), "", "Updated " & Text(gblInvLoadedAt, "h:mm AM/PM")))
+                                    Visible: =App.Width >= 900
+                                    Width: =120
+                                    Wrap: =false
+                              - btnInvLblRefresh:
+                                  Control: ModernButton
+                                  Properties:
+                                    AccessibleLabel: ="Refresh"
+                                    Appearance: =ButtonAppearance.Secondary
+                                    DisplayMode: =If(gblInvLoading, DisplayMode.Disabled, DisplayMode.Edit)
+                                    Height: =36
+                                    Icon: ="ArrowClockwise"
+                                    LayoutMinWidth: =0
+                                    OnSelect: =Select(btnInvLblReload)
+                                    Text: ="Refresh"
+                                    Width: =120
+                        - conInvLblOpts:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.Semilight
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FillPortions: =0
+                              Height: =20 + 48 + 12 + 60 + 12 + 40 + 24
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =12
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              PaddingBottom: =24
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              PaddingTop: =20
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                              Visible: =fxIsInvStaff
+                            Children:
+                              - conInvLblOptsHead:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =48
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvLblOptsTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(36, 36, 36, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =26
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =16
+                                          Text: ="Labels (" & CountRows(SortByColumns(Filter(gblInvAssets, ID in gblInvLabelIds.ID), "Title")) & ")"
+                                    - txtInvLblOptsDesc:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: |-
+                                            ="Avery 5160 / 8160: 30 per sheet, 1"" x 2 5/8"". Barcode = asset tag (Code 128)."
+                                          Wrap: =false
+                              - conInvLblOptRow:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =60
+                                    LayoutAlignItems: =LayoutAlignItems.End
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =16
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - conInvLblFStart:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =60
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =4
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =0
+                                          Width: =200
+                                        Children:
+                                          - txtInvLblStartLbl:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(66, 66, 66, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =20
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =13
+                                                Text: ="Start at label (1-30)"
+                                          - txtInvLblStart:
+                                              Control: ModernTextInput
+                                              Properties:
+                                                AccessibleLabel: ="Start at label number"
+                                                Appearance: =Appearance.Outline
+                                                Default: ="1"
+                                                Height: =36
+                                                LayoutMinWidth: =0
+                                                Width: =Parent.Width
+                                    - txtInvLblStartHelp:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          FillPortions: =1
+                                          Height: =36
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: |-
+                                            ="For a partly used sheet: labels are counted left to right, top to bottom."
+                              - conInvLblBtns:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =40
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =8
+                                    LayoutJustifyContent: =LayoutJustifyContent.End
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - spnInvLblBusy:
+                                        Control: ModernSpinner
+                                        Properties:
+                                          AccessibleLabel: ="Working"
+                                          LayoutMinWidth: =0
+                                          Visible: =locBusy
+                                    - btnInvLblClear:
+                                        Control: ModernButton
+                                        Properties:
+                                          AccessibleLabel: ="Remove all labels"
+                                          Appearance: =ButtonAppearance.Subtle
+                                          Height: =36
+                                          LayoutMinWidth: =0
+                                          OnSelect: =Set(gblInvLabelIds, Blank())
+                                          Text: ="Clear"
+                                          Width: =100
+                                    - btnInvLblGo:
+                                        Control: ModernButton
+                                        Properties:
+                                          AccessibleLabel: ="Create the label sheet"
+                                          DisplayMode: =If(locBusy || IsEmpty(SortByColumns(Filter(gblInvAssets, ID in gblInvLabelIds.ID), "Title")), DisplayMode.Disabled, DisplayMode.Edit)
+                                          Height: =36
+                                          Icon: ="Print"
+                                          LayoutMinWidth: =0
+                                          OnSelect: |-
+                                            =UpdateContext({locBusy: true});
+                                            IfError(
+                                                With(
+                                                    {raw: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "ExportCsv", name: "Labels", ext: "html", content: With(
+                                                {list: ForAll(Sequence(CountRows(SortByColumns(Filter(gblInvAssets, ID in gblInvLabelIds.ID), "Title"))) As s, With({a: Index(SortByColumns(Filter(gblInvAssets, ID in gblInvLabelIds.ID), "Title"), s.Value)}, {n: s.Value + Max(0, Min(29, RoundDown(IfError(Value(txtInvLblStart.Text), 1), 0) - 1)), Tag: a.Title, Model: Coalesce(Trim(a.Make & " " & a.Model), a.CatalogNameSnapshot, ""), Acct: fxOrgAccount(a.Dept)}))},
+                                                With(
+                                                    {pages: RoundUp((CountRows(list) + Max(0, Min(29, RoundDown(IfError(Value(txtInvLblStart.Text), 1), 0) - 1))) / 30, 0)},
+                                                    "<!DOCTYPE html><html><head><meta charset='utf-8'><title>Inventory labels</title><style>@page{size:8.5in 11in;margin:0}html,body{margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;color:#000}.page{position:relative;width:8.5in;height:11in;overflow:hidden;page-break-after:always;break-after:page}.l{position:absolute;width:2.625in;height:1in;box-sizing:border-box;padding:0.07in 0.14in;overflow:hidden}.m{font-size:7.5pt;line-height:0.14in;height:0.14in;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.b svg{display:block;width:2.34in;height:0.48in;margin:0.03in 0}.t{display:flex;justify-content:space-between;font-size:8pt;font-weight:bold;line-height:0.13in}.help{font:13px Arial,sans-serif;padding:10px 14px;background:#fff4ce;border-bottom:1px solid #e0c060}@media print{.help{display:none}}</style></head><body>" &
+                                                    "<div class='help'><b>Avery 5160 / 8160 label sheet</b> (" & CountRows(list) & " labels). Print with <b>Scale: 100% / Actual size</b> and <b>Margins: None</b>. Try one sheet on plain paper first and hold it behind a label sheet to check the alignment.</div>" &
+                                                    Concat(
+                                                        Sequence(pages) As p,
+                                                        "<div class='page'>" &
+                                                        Concat(
+                                                            Filter(list, RoundDown((n - 1) / 30, 0) = p.Value - 1),
+                                                            "<div class='l' style='left:" & Text(0.1875 + Mod(Mod(n - 1, 30), 3) * 2.75, "0.0000") & "in;top:" & Text(0.5 + RoundDown(Mod(n - 1, 30) / 3, 0), "0.00") & "in'>" &
+                                                            "<div class='m'>" & fxHtml(Model) & "</div><div class='b'>" & fxCode128Svg(Tag) & "</div>" &
+                                                            "<div class='t'><span>" & fxHtml(Tag) & "</span><span>" & Acct & "</span></div></div>"
+                                                        ) &
+                                                        "</div>"
+                                                    ) &
+                                                    "</body></html>"
+                                                )
+                                            )})).response)},
+                                                    If(
+                                                        Text(raw.status) = "Success",
+                                                        Notify("Label sheet saved. Open it, then print at 100% with no margins.", NotificationType.Success); Launch(Text(raw.number)),
+                                                        Notify(Text(raw.message), NotificationType.Error)
+                                                    )
+                                                ),
+                                                Notify("The inventory service could not be reached. Try again.", NotificationType.Error)
+                                            );
+                                            UpdateContext({locBusy: false})
+                                          Text: ="Create label sheet"
+                                          Width: =200
+                        - conInvLblPrev:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.Semilight
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FillPortions: =0
+                              Height: =20 + 48 + 12 + Max(24, galInvLblList.Height) + 24
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =12
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              PaddingBottom: =24
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              PaddingTop: =20
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                              Visible: =fxIsInvStaff
+                            Children:
+                              - conInvLblPrevHead:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =48
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvLblPrevTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(36, 36, 36, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =26
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =16
+                                          Text: ="Preview"
+                                    - txtInvLblPrevDesc:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: ="Remove a label with its X. Add more from the Assets screen (select rows, then Print labels)."
+                                          Wrap: =false
+                              - txtInvLblNone:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(97, 97, 97, 1)
+                                    Height: =24
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =12
+                                    Text: ="No assets chosen yet. On Assets, tick the rows you want and click Print labels."
+                                    Visible: =IsEmpty(SortByColumns(Filter(gblInvAssets, ID in gblInvLabelIds.ID), "Title"))
+                                    Wrap: =false
+                              - galInvLblList:
+                                  Control: Gallery
+                                  Variant: Vertical
+                                  Properties:
+                                    AccessibleLabel: ="Labels"
+                                    FillPortions: =0
+                                    Height: =RoundUp(Self.AllItemsCount / If(App.Width >= 1250, 3, App.Width >= 900, 2, 1), 0) * 112
+                                    Items: =SortByColumns(Filter(gblInvAssets, ID in gblInvLabelIds.ID), "Title")
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    ShowScrollbar: =false
+                                    TabIndex: =0
+                                    TemplatePadding: =0
+                                    TemplateSize: =112
+                                    WrapCount: =If(App.Width >= 1250, 3, App.Width >= 900, 2, 1)
+                                  Children:
+                                    - conInvLblCard:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          BorderColor: =RGBA(225, 228, 232, 1)
+                                          BorderThickness: =1
+                                          DropShadow: =DropShadow.None
+                                          Fill: =RGBA(255, 255, 255, 1)
+                                          Height: =100
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          PaddingLeft: =12
+                                          PaddingTop: =6
+                                          Width: =270
+                                        Children:
+                                          - conInvLblLabel:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                FillPortions: =0
+                                                Height: =88
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutGap: =2
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                                Width: =226
+                                              Children:
+                                                - txtInvLblModel:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(36, 36, 36, 1)
+                                                      Height: =16
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =9
+                                                      Text: =Coalesce(Trim(ThisItem.Make & " " & ThisItem.Model), ThisItem.CatalogNameSnapshot, "")
+                                                      Wrap: =false
+                                                - imgInvLblBar:
+                                                    Control: Image
+                                                    Properties:
+                                                      AccessibleLabel: ="Barcode for " & ThisItem.Title
+                                                      Height: =44
+                                                      Image: =fxCode128Image(ThisItem.Title)
+                                                      ImagePosition: =ImagePosition.Stretch
+                                                      Width: =226
+                                                - conInvLblTagRow:
+                                                    Control: GroupContainer
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      DropShadow: =DropShadow.None
+                                                      FillPortions: =0
+                                                      Height: =18
+                                                      LayoutDirection: =LayoutDirection.Horizontal
+                                                      LayoutMinHeight: =0
+                                                      LayoutMinWidth: =0
+                                                    Children:
+                                                      - txtInvLblTag:
+                                                          Control: ModernText
+                                                          Properties:
+                                                            AccessibleLabel: =Self.Text
+                                                            Color: =RGBA(36, 36, 36, 1)
+                                                            FillPortions: =1
+                                                            FontWeight: =FontWeight.Bold
+                                                            Height: =18
+                                                            LayoutMinWidth: =0
+                                                            PaddingBottom: =0
+                                                            PaddingLeft: =0
+                                                            PaddingTop: =0
+                                                            Size: =10
+                                                            Text: =ThisItem.Title
+                                                            Wrap: =false
+                                                      - txtInvLblAcct:
+                                                          Control: ModernText
+                                                          Properties:
+                                                            AccessibleLabel: =Self.Text
+                                                            Align: =Align.Right
+                                                            Color: =RGBA(36, 36, 36, 1)
+                                                            FontWeight: =FontWeight.Bold
+                                                            Height: =18
+                                                            LayoutMinWidth: =0
+                                                            PaddingBottom: =0
+                                                            PaddingLeft: =0
+                                                            PaddingTop: =0
+                                                            Size: =10
+                                                            Text: =fxOrgAccount(ThisItem.Dept)
+                                                            Width: =60
+                                                            Wrap: =false
+                                          - btnInvLblRemove:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Remove the label for " & ThisItem.Title
+                                                Appearance: =ButtonAppearance.Subtle
+                                                Height: =28
+                                                Icon: ="Dismiss"
+                                                Layout: =ButtonLayout.IconOnly
+                                                LayoutMinWidth: =28
+                                                OnSelect: =Set(gblInvLabelIds, Filter(gblInvLabelIds, ID <> ThisItem.ID))
+                                                Text: ="Remove"
+                                                Width: =28
+                        - txtInvLblNoAccess:
+                            Control: ModernText
+                            Properties:
+                              AccessibleLabel: =Self.Text
+                              Color: =RGBA(164, 38, 44, 1)
+                              Fill: =RGBA(253, 231, 233, 1)
+                              Height: =48
+                              LayoutMinWidth: =0
+                              PaddingBottom: =0
+                              PaddingLeft: =12
+                              PaddingRight: =12
+                              PaddingTop: =0
+                              RadiusBottomLeft: =6
+                              RadiusBottomRight: =6
+                              RadiusTopLeft: =6
+                              RadiusTopRight: =6
+                              Size: =14
+                              Text: ="Labels are for AV and IT inventory staff."
+                              Visible: =!fxIsInvStaff

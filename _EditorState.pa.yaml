@@ -12,3 +12,4 @@ EditorState:
     - scrInvLocations
     - scrInvImport
     - scrInvRequests
+    - scrInvLabels

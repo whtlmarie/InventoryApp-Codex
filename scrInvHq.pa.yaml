@@ -426,6 +426,32 @@ Screens:
                                           Size: =12
                                           Text: |-
                                             =If(locHqDone, "HQ list: " & CountRows(colInvHqList) & " items  ·  ours for the same accounts: " & CountRows(colInvHqOurs) & "  ·  matched: " & (CountRows(colInvHqList) - CountRows(colInvHqOnlyHq)) & "  ·  compared " & Text(locHqWhen, "h:mm AM/PM"), "")
+                                    - btnInvHqExport:
+                                        Control: ModernButton
+                                        Properties:
+                                          AccessibleLabel: ="Export the comparison to Excel"
+                                          Appearance: =ButtonAppearance.Secondary
+                                          DisplayMode: =If(locBusy, DisplayMode.Disabled, DisplayMode.Edit)
+                                          Height: =36
+                                          Icon: ="Save"
+                                          LayoutMinWidth: =0
+                                          OnSelect: |-
+                                            =UpdateContext({locBusy: true});
+                                            IfError(
+                                                With(
+                                                    {raw: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "ExportCsv", name: "HQ comparison", csv: "Result,HQ Serial,HQ Custodian,HQ Item Desc,HQ Mfr,HQ Model,HQ Location,Our Tag,Our Location,Notes" & Char(13) & Char(10) & Concat(colInvHqOnlyHq, fxCsv("On the HQ list, not in our inventory") & "," & fxCsv(Serial) & "," & fxCsv(Custodian) & "," & fxCsv(Desc) & "," & fxCsv(Mfr) & "," & fxCsv(Model) & "," & fxCsv(Location) & "," & fxCsv("") & "," & fxCsv("") & "," & fxCsv("Find it, or add it to Assets") & Char(13) & Char(10)) & Concat(colInvHqDiff, fxCsv("On both lists, but different") & "," & fxCsv(Serial) & "," & fxCsv(Custodian) & "," & fxCsv(Desc) & "," & fxCsv(Mfr) & "," & fxCsv(Model) & "," & fxCsv(Location) & "," & fxCsv(Coalesce(OurTag, "")) & "," & fxCsv(Coalesce(OurLoc, "")) & "," & fxCsv(Coalesce(OurStatus, "") & If(Dept <> OurDept, " | account " & OurDept, "")) & Char(13) & Char(10)) & Concat(colInvHqMatch, fxCsv("On both lists and matching") & "," & fxCsv(Serial) & "," & fxCsv(Custodian) & "," & fxCsv(Desc) & "," & fxCsv(Mfr) & "," & fxCsv(Model) & "," & fxCsv(Location) & "," & fxCsv(Coalesce(OurTag, "")) & "," & fxCsv("") & "," & fxCsv(With({a: LookUp(gblInvAssets, ID = OurId)}, If(IsBlank(a.LastVerifiedDate), "Not counted yet", "Counted " & Text(a.LastVerifiedDate, "yyyy-mm-dd")))) & Char(13) & Char(10)) & Concat(colInvHqOnlyOurs, fxCsv("In our inventory, not on the HQ list") & "," & fxCsv(Coalesce(SerialNumber, "")) & "," & fxCsv(fxOrgAccount(Dept)) & "," & fxCsv(Coalesce(CatalogNameSnapshot, "")) & "," & fxCsv(Coalesce(Make, "")) & "," & fxCsv(Coalesce(Model, "")) & "," & fxCsv("") & "," & fxCsv(Title) & "," & fxCsv(Coalesce(HomeLocation, "")) & "," & fxCsv(Status & " | report to HQ") & Char(13) & Char(10))})).response)},
+                                                    If(
+                                                        Text(raw.status) = "Success",
+                                                        Notify(Text(raw.message) & " Opening it now.", NotificationType.Success); Launch(Text(raw.number)),
+                                                        Notify(Text(raw.message), NotificationType.Error)
+                                                    )
+                                                ),
+                                                Notify("The inventory service could not be reached. Try again.", NotificationType.Error)
+                                            );
+                                            UpdateContext({locBusy: false})
+                                          Text: ="Export to Excel"
+                                          Visible: =locHqDone
+                                          Width: =170
                                     - btnInvHqClear:
                                         Control: ModernButton
                                         Properties:
