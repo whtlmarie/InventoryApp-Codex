@@ -608,7 +608,7 @@ Screens:
                                                                         {kind: If(IsBlank(iK), "", IfError(Trim(Index(c, iK).Value), ""))},
                                                                         {
                                                                             Row: s.Value, Tag: If(IsBlank(iT), "", IfError(Trim(Index(c, iT).Value), "")), Serial: If(IsBlank(iS), "", IfError(Trim(Index(c, iS).Value), "")), Make: If(IsBlank(iM), "", IfError(Trim(Index(c, iM).Value), "")), Model: If(IsBlank(iMo), "", IfError(Trim(Index(c, iMo).Value), "")),
-                                                                            Dept: Upper(If(IsBlank(iD), "", IfError(Trim(Index(c, iD).Value), ""))), Kind: Coalesce(LookUp(["Tracked Asset", "Loaner Pool"], Lower(Value) = Lower(kind)).Value, If(IsBlank(kind), drpInvImpKind.Selected.Value, kind)),
+                                                                            Dept: Upper(If(IsBlank(iD), "", IfError(Trim(Index(c, iD).Value), ""))), Kind: Coalesce(LookUp(["Tracked Asset", "Loaner Pool", "Installed in Room"], Lower(Value) = Lower(kind)).Value, If(IsBlank(kind), drpInvImpKind.Selected.Value, kind)),
                                                                             Loc: With({lx: Lower(Trim(If(IsBlank(iL), "", IfError(Trim(Index(c, iL).Value), ""))))}, If(IsBlank(lx), If(drpInvImpLoc.Selected.Value = "(none)", "", drpInvImpLoc.Selected.Value), Coalesce(LookUp(fxInvLocations, Lower(Title) = lx || Lower(HqName) = lx).Title, Trim(If(IsBlank(iL), "", IfError(Trim(Index(c, iL).Value), "")))))), HqLoc: "",
                                                                             Purchase: With({d: If(IsBlank(iP), "", IfError(Trim(Index(c, iP).Value), ""))}, If(IsBlank(d), "", IfError(Text(DateValue(d), "yyyy-mm-dd"), "bad"))), Warranty: With({d: If(IsBlank(iW), "", IfError(Trim(Index(c, iW).Value), ""))}, If(IsBlank(d), "", IfError(Text(DateValue(d), "yyyy-mm-dd"), "bad"))), Notes: If(IsBlank(iN), "", IfError(Trim(Index(c, iN).Value), "")), Source: "the import template"
                                                                         }
@@ -633,7 +633,7 @@ Screens:
                                                                                         If(!fxCanManage(r.Dept), "Not your department"),
                                                                                         If(Lower(r.Tag) in tags.V || (!IsBlank(r.Serial) && Lower(r.Serial) in sers.V), "Already in inventory"),
                                                                                         If(CountRows(Filter(raw, Lower(Tag) = Lower(r.Tag) && Row < r.Row)) > 0, "Listed twice"),
-                                                                                        If(!(r.Kind in ["Tracked Asset", "Loaner Pool"]), "Kind must be Tracked Asset or Loaner Pool"),
+                                                                                        If(!(r.Kind in ["Tracked Asset", "Loaner Pool", "Installed in Room"]), "Kind must be Tracked Asset, Loaner Pool or Installed in Room"),
                                                                                         If(!IsBlank(r.Loc) && !(Lower(r.Loc) in locs.V), "Unknown location " & r.Loc & ". Add it under Locations first"),
                                                                                         If(r.Purchase = "bad" || r.Warranty = "bad", "Date not recognized")
                                                                                     )

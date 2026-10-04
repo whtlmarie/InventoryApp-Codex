@@ -945,7 +945,7 @@ Screens:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
-                                                Color: =RGBA(97, 97, 97, 1)
+                                                Color: =If(ThisItem.A.Status = "Issued", RGBA(164, 38, 44, 1), RGBA(97, 97, 97, 1))
                                                 FillPortions: =1
                                                 Height: =20
                                                 LayoutMinWidth: =0
@@ -953,8 +953,92 @@ Screens:
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
                                                 Size: =12
-                                                Text: =Trim(ThisItem.A.Make & " " & ThisItem.A.Model) & "  ·  " & Text(ThisItem.StartDate, "mmm d") & " – " & Text(ThisItem.EndDate, "mmm d, yyyy")
+                                                Text: |-
+                                                  =Trim(ThisItem.A.Make & " " & ThisItem.A.Model) & "  ·  " & Text(ThisItem.StartDate, "mmm d") & " – " & Text(ThisItem.EndDate, "mmm d, yyyy") & If(ThisItem.A.Status = "Issued", With({due: LookUp(gblInvOpenCheckouts, AssetId = ThisItem.AssetId).DueDate}, "  ·  Not back yet" & If(IsBlank(due), "", " (due " & Text(due, "mmm d") & ")")), "")
                                                 Wrap: =false
+                                          - btnInvReqMineSwap:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Swap " & ThisItem.AssetTagSnapshot & " for an available unit"
+                                                Appearance: =ButtonAppearance.Secondary
+                                                DisplayMode: |-
+                                                  =If(locBusy || IsEmpty(With(
+                                                      {s: dteInvReqStart.SelectedDate, e: dteInvReqEnd.SelectedDate, q: Lower(Trim(txtInvReqFind.Text))},
+                                                      SortByColumns(
+                                                          AddColumns(
+                                                              Filter(
+                                                                  gblInvAssets,
+                                                                  Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in locReqSel.Route && fxCanManage(Dept) &&
+                                                                      (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = locReqSel.CatalogId) &&
+                                                                      !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
+                                                                      (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                              ),
+                                                              Fit, If(CatalogItemId = locReqSel.CatalogId, 0, 1)
+                                                          ),
+                                                          "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
+                                                      )
+                                                  )), DisplayMode.Disabled, DisplayMode.Edit)
+                                                Height: =36
+                                                Icon: ="ArrowSwap"
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =UpdateContext({locBusy: true});
+                                                  With(
+                                                      {next: First(With(
+                                                      {s: dteInvReqStart.SelectedDate, e: dteInvReqEnd.SelectedDate, q: Lower(Trim(txtInvReqFind.Text))},
+                                                      SortByColumns(
+                                                          AddColumns(
+                                                              Filter(
+                                                                  gblInvAssets,
+                                                                  Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in locReqSel.Route && fxCanManage(Dept) &&
+                                                                      (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = locReqSel.CatalogId) &&
+                                                                      !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
+                                                                      (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                              ),
+                                                              Fit, If(CatalogItemId = locReqSel.CatalogId, 0, 1)
+                                                          ),
+                                                          "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
+                                                      )
+                                                  )), tag: ThisItem.AssetTagSnapshot},
+                                                      IfError(
+                                                          With(
+                                                              {rel: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "ReleaseReservation", reservationId: ThisItem.ID, note: "Swapped: not back in time"})).response)},
+                                                              If(
+                                                                  Text(rel.status) <> "Success",
+                                                                  Notify(Text(rel.message), NotificationType.Error),
+                                                                  With(
+                                                                      {res: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "Reserve", lineId: locReqSel.LineId, assetId: next.ID, startDate: Text(dteInvReqStart.SelectedDate, "yyyy-mm-dd"), endDate: Text(dteInvReqEnd.SelectedDate, "yyyy-mm-dd")})).response)},
+                                                                      Notify(
+                                                                          If(Text(res.status) = "Success", tag & " swapped for " & next.Title & ".", tag & " was released, but " & next.Title & " could not be reserved: " & Text(res.message)),
+                                                                          If(Text(res.status) = "Success", NotificationType.Success, NotificationType.Warning)
+                                                                      )
+                                                                  )
+                                                              )
+                                                          ),
+                                                          Notify("The inventory service could not be reached. Try again.", NotificationType.Error)
+                                                      )
+                                                  );
+                                                  UpdateContext({locBusy: false});
+                                                  Set(gblInvLoadedAt, Blank()); Select(btnInvReqReload); Select(btnInvReqLoad)
+                                                Text: |-
+                                                  =If(IsEmpty(With(
+                                                      {s: dteInvReqStart.SelectedDate, e: dteInvReqEnd.SelectedDate, q: Lower(Trim(txtInvReqFind.Text))},
+                                                      SortByColumns(
+                                                          AddColumns(
+                                                              Filter(
+                                                                  gblInvAssets,
+                                                                  Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in locReqSel.Route && fxCanManage(Dept) &&
+                                                                      (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = locReqSel.CatalogId) &&
+                                                                      !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
+                                                                      (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                              ),
+                                                              Fit, If(CatalogItemId = locReqSel.CatalogId, 0, 1)
+                                                          ),
+                                                          "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
+                                                      )
+                                                  )), "No other unit", "Swap")
+                                                Visible: =ThisItem.A.Status = "Issued"
+                                                Width: =140
                                           - btnInvReqMineRelease:
                                               Control: ModernButton
                                               Properties:
@@ -1508,7 +1592,7 @@ Screens:
                                                     AddColumns(
                                                         Filter(
                                                             gblInvAssets,
-                                                            Status = "Available" && IsActive && Dept in locReqSel.Route && fxCanManage(Dept) &&
+                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in locReqSel.Route && fxCanManage(Dept) &&
                                                                 (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = locReqSel.CatalogId) &&
                                                                 !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
                                                                 (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
@@ -1530,7 +1614,7 @@ Screens:
                                                     AddColumns(
                                                         Filter(
                                                             gblInvAssets,
-                                                            Status = "Available" && IsActive && Dept in locReqSel.Route && fxCanManage(Dept) &&
+                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in locReqSel.Route && fxCanManage(Dept) &&
                                                                 (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = locReqSel.CatalogId) &&
                                                                 !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
                                                                 (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
@@ -1553,7 +1637,7 @@ Screens:
                                                     AddColumns(
                                                         Filter(
                                                             gblInvAssets,
-                                                            Status = "Available" && IsActive && Dept in locReqSel.Route && fxCanManage(Dept) &&
+                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in locReqSel.Route && fxCanManage(Dept) &&
                                                                 (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = locReqSel.CatalogId) &&
                                                                 !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
                                                                 (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
@@ -1577,7 +1661,7 @@ Screens:
                                                     AddColumns(
                                                         Filter(
                                                             gblInvAssets,
-                                                            Status = "Available" && IsActive && Dept in locReqSel.Route && fxCanManage(Dept) &&
+                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in locReqSel.Route && fxCanManage(Dept) &&
                                                                 (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = locReqSel.CatalogId) &&
                                                                 !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
                                                                 (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
@@ -1602,7 +1686,7 @@ Screens:
                                               AddColumns(
                                                   Filter(
                                                       gblInvAssets,
-                                                      Status = "Available" && IsActive && Dept in locReqSel.Route && fxCanManage(Dept) &&
+                                                      Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in locReqSel.Route && fxCanManage(Dept) &&
                                                           (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = locReqSel.CatalogId) &&
                                                           !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
                                                           (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))

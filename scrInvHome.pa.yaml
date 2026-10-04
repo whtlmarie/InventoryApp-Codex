@@ -470,6 +470,212 @@ Screens:
                                                 Size: =12
                                                 Text: =ThisItem.Hint
                                                 Wrap: =false
+                        - conInvHomeRisk:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              BorderColor: =RGBA(164, 38, 44, 1)
+                              BorderThickness: =1
+                              DropShadow: =DropShadow.Semilight
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FillPortions: =0
+                              Height: |-
+                                =(20 + 48 + 12 + With({n: Min(CountRows(SortByColumns(
+                                    Filter(
+                                        ForAll(
+                                            Filter(gblInvOpenCheckouts, AssetId in Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID) As c,
+                                            {
+                                                Co: c, DueDate: c.DueDate,
+                                                Need: First(Sort(Filter(gblInvReserved As r, r.AssetId = c.AssetId && r.StartDate >= Today() && r.StartDate <= DateAdd(Today(), 7, TimeUnit.Days)), StartDate))
+                                            }
+                                        ),
+                                        !IsBlank(Need) && (IsBlank(DueDate) || DueDate < Today() || DueDate >= DateAdd(Need.StartDate, -Switch(Weekday(Need.StartDate), 2, 3, 1, 2, 1), TimeUnit.Days))
+                                    ),
+                                    "DueDate"
+                                )), 8)}, If(n = 0, 24, n * 72 + 12)) + 24)
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =12
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              PaddingBottom: =24
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              PaddingTop: =20
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                              Visible: |-
+                                =fxCanViewInventory && !IsEmpty(SortByColumns(
+                                    Filter(
+                                        ForAll(
+                                            Filter(gblInvOpenCheckouts, AssetId in Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID) As c,
+                                            {
+                                                Co: c, DueDate: c.DueDate,
+                                                Need: First(Sort(Filter(gblInvReserved As r, r.AssetId = c.AssetId && r.StartDate >= Today() && r.StartDate <= DateAdd(Today(), 7, TimeUnit.Days)), StartDate))
+                                            }
+                                        ),
+                                        !IsBlank(Need) && (IsBlank(DueDate) || DueDate < Today() || DueDate >= DateAdd(Need.StartDate, -Switch(Weekday(Need.StartDate), 2, 3, 1, 2, 1), TimeUnit.Days))
+                                    ),
+                                    "DueDate"
+                                ))
+                            Children:
+                              - conInvHomeRiskHead:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =48
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvHomeRiskTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(36, 36, 36, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =26
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =16
+                                          Text: |-
+                                            ="At risk: needed for a request soon"
+                                    - txtInvHomeRiskDesc:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: ="Out on loan and reserved for a request in the next 7 days, but not due back in time. Chase it or swap the unit on Request items."
+                                          Wrap: =false
+                              - txtInvHomeRiskEmpty:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(97, 97, 97, 1)
+                                    Height: =24
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =13
+                                    Text: =""
+                                    Visible: =galInvHomeRisk.AllItemsCount = 0
+                                    Wrap: =false
+                              - galInvHomeRisk:
+                                  Control: Gallery
+                                  Variant: Vertical
+                                  Properties:
+                                    AccessibleLabel: ="Loans at risk"
+                                    FillPortions: =0
+                                    Height: =Min(Self.AllItemsCount, 8) * 72 + 12
+                                    Items: |-
+                                      =SortByColumns(
+                                          Filter(
+                                              ForAll(
+                                                  Filter(gblInvOpenCheckouts, AssetId in Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID) As c,
+                                                  {
+                                                      Co: c, DueDate: c.DueDate,
+                                                      Need: First(Sort(Filter(gblInvReserved As r, r.AssetId = c.AssetId && r.StartDate >= Today() && r.StartDate <= DateAdd(Today(), 7, TimeUnit.Days)), StartDate))
+                                                  }
+                                              ),
+                                              !IsBlank(Need) && (IsBlank(DueDate) || DueDate < Today() || DueDate >= DateAdd(Need.StartDate, -Switch(Weekday(Need.StartDate), 2, 3, 1, 2, 1), TimeUnit.Days))
+                                          ),
+                                          "DueDate"
+                                      )
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    ShowScrollbar: =false
+                                    TabIndex: =0
+                                    TemplatePadding: =0
+                                    TemplateSize: =72
+                                  Children:
+                                    - conInvHomeRiskRow:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight - 4
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =12
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - conInvHomeRiskText:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                Height: =48
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutGap: =2
+                                                LayoutJustifyContent: =LayoutJustifyContent.Center
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                              Children:
+                                                - txtInvHomeRiskAsset:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(36, 36, 36, 1)
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =13
+                                                      Text: =ThisItem.Co.AssetTagSnapshot & "  ·  " & fxPersonName(ThisItem.Co.RecipientName)
+                                                      Wrap: =false
+                                                - txtInvHomeRiskNeed:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(97, 97, 97, 1)
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =12
+                                                      Text: ="Needed for " & ThisItem.Need.RequestNumber & " from " & Text(ThisItem.Need.StartDate, "mmm d") & "   ·   " & Coalesce(ThisItem.Co.ReceiptNumber, ThisItem.Co.Title)
+                                                      Wrap: =false
+                                          - txtInvHomeRiskWhen:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Align: =Align.Center
+                                                AlignInContainer: =AlignInContainer.Center
+                                                Color: =RGBA(164, 38, 44, 1)
+                                                Fill: =RGBA(253, 231, 233, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =24
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                RadiusBottomLeft: =12
+                                                RadiusBottomRight: =12
+                                                RadiusTopLeft: =12
+                                                RadiusTopRight: =12
+                                                Size: =12
+                                                Text: =If(IsBlank(ThisItem.DueDate), "No return date", ThisItem.DueDate < Today(), "Overdue " & Text(ThisItem.DueDate, "mmm d"), "Due " & Text(ThisItem.DueDate, "mmm d"))
+                                                Width: =130
+                                                Wrap: =false
                         - conInvHomeLists:
                             Control: GroupContainer
                             Variant: AutoLayout

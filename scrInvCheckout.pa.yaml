@@ -972,6 +972,7 @@ Screens:
                                                                   If(
                                                                   hit.ID in colInvCoItems.ID, UpdateContext({locScanMsg: hit.Title & " is already on this receipt."}),
                                                                   hit.Status <> "Available", UpdateContext({locScanMsg: hit.Title & " is " & hit.Status & " and can't be issued."}),
+                                                                  hit.Kind = "Installed in Room", UpdateContext({locScanMsg: hit.Title & " is installed in " & Coalesce(hit.HomeLocation, "a room") & " and is not loaned out."}),
                                                                   hit.Dept <> drpInvCoDept.Selected.Value, UpdateContext({locScanMsg: hit.Title & " is " & hit.Dept & " equipment. This receipt is for " & drpInvCoDept.Selected.Value & "."}),
                                                                   !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only issue " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),
                                                                   !IsEmpty(held), UpdateContext({locScanMsg: hit.Title & " is reserved for " & First(held).RequestNumber & " from " & Text(First(held).StartDate, "mmm d") & " to " & Text(First(held).EndDate, "mmm d") & ". Use another unit" & If(drpInvCoType.Selected.Value = "Long-term Assignment", ".", ", or set the return date before " & Text(First(held).StartDate, "mmm d") & ".")}),
@@ -991,6 +992,7 @@ Screens:
                                                                   If(
                                                                   hit.ID in colInvCoItems.ID, UpdateContext({locScanMsg: hit.Title & " is already on this receipt."}),
                                                                   hit.Status <> "Available", UpdateContext({locScanMsg: hit.Title & " is " & hit.Status & " and can't be issued."}),
+                                                                  hit.Kind = "Installed in Room", UpdateContext({locScanMsg: hit.Title & " is installed in " & Coalesce(hit.HomeLocation, "a room") & " and is not loaned out."}),
                                                                   hit.Dept <> drpInvCoDept.Selected.Value, UpdateContext({locScanMsg: hit.Title & " is " & hit.Dept & " equipment. This receipt is for " & drpInvCoDept.Selected.Value & "."}),
                                                                   !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only issue " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),
                                                                   !IsEmpty(held), UpdateContext({locScanMsg: hit.Title & " is reserved for " & First(held).RequestNumber & " from " & Text(First(held).StartDate, "mmm d") & " to " & Text(First(held).EndDate, "mmm d") & ". Use another unit" & If(drpInvCoType.Selected.Value = "Long-term Assignment", ".", ", or set the return date before " & Text(First(held).StartDate, "mmm d") & ".")}),
@@ -1043,6 +1045,7 @@ Screens:
                                                                   If(
                                                                   hit.ID in colInvCoItems.ID, UpdateContext({locScanMsg: hit.Title & " is already on this receipt."}),
                                                                   hit.Status <> "Available", UpdateContext({locScanMsg: hit.Title & " is " & hit.Status & " and can't be issued."}),
+                                                                  hit.Kind = "Installed in Room", UpdateContext({locScanMsg: hit.Title & " is installed in " & Coalesce(hit.HomeLocation, "a room") & " and is not loaned out."}),
                                                                   hit.Dept <> drpInvCoDept.Selected.Value, UpdateContext({locScanMsg: hit.Title & " is " & hit.Dept & " equipment. This receipt is for " & drpInvCoDept.Selected.Value & "."}),
                                                                   !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only issue " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),
                                                                   !IsEmpty(held), UpdateContext({locScanMsg: hit.Title & " is reserved for " & First(held).RequestNumber & " from " & Text(First(held).StartDate, "mmm d") & " to " & Text(First(held).EndDate, "mmm d") & ". Use another unit" & If(drpInvCoType.Selected.Value = "Long-term Assignment", ".", ", or set the return date before " & Text(First(held).StartDate, "mmm d") & ".")}),
