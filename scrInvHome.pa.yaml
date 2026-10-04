@@ -477,7 +477,21 @@ Screens:
                               DropShadow: =DropShadow.None
                               FillPortions: =0
                               Height: |-
-                                =With({l: IfError(conInvHomeLines.Height, 160), d: IfError(conInvHomeDue.Height, 160)}, If(App.Width >= 1250, Max(l, d), l + 16 + d))
+                                =With({l: (20 + 48 + 12 + With({n: Min(CountRows(SortByColumns(
+                                    Filter(
+                                        gblInvLines,
+                                        LineStatus.Value in ["Approved", "Fulfillment Pending"] &&
+                                        (locHomeDept = "All" || locHomeDept in Coalesce(DepartmentRoute.Value, ""))
+                                    ),
+                                    "Title"
+                                )), 8)}, If(n = 0, 24, n * 72 + 12)) + 24), d: (20 + 48 + 12 + With({n: Min(CountRows(SortByColumns(
+                                    Filter(
+                                        gblInvOpenCheckouts,
+                                        Status <> "Awaiting Acknowledgement" && !IsBlank(DueDate) && DueDate <= DateAdd(Today(), 7, TimeUnit.Days) &&
+                                        AssetId in Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID
+                                    ),
+                                    "DueDate"
+                                )), 8)}, If(n = 0, 24, n * 72 + 12)) + 24)}, If(App.Width >= 1250, Max(l, d), l + 16 + d))
                               LayoutAlignItems: =If(App.Width >= 1250, LayoutAlignItems.Start, LayoutAlignItems.Stretch)
                               LayoutDirection: =If(App.Width >= 1250, LayoutDirection.Horizontal, LayoutDirection.Vertical)
                               LayoutGap: =16
@@ -492,7 +506,15 @@ Screens:
                                     DropShadow: =DropShadow.Semilight
                                     Fill: =RGBA(255, 255, 255, 1)
                                     FillPortions: =If(App.Width >= 1250, 1, 0)
-                                    Height: =20 + 48 + 12 + Max(galInvHomeLines.Height, If(galInvHomeLines.AllItemsCount = 0, 24, 0)) + 24
+                                    Height: |-
+                                      =(20 + 48 + 12 + With({n: Min(CountRows(SortByColumns(
+                                          Filter(
+                                              gblInvLines,
+                                              LineStatus.Value in ["Approved", "Fulfillment Pending"] &&
+                                              (locHomeDept = "All" || locHomeDept in Coalesce(DepartmentRoute.Value, ""))
+                                          ),
+                                          "Title"
+                                      )), 8)}, If(n = 0, 24, n * 72 + 12)) + 24)
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =12
@@ -676,7 +698,15 @@ Screens:
                                     DropShadow: =DropShadow.Semilight
                                     Fill: =RGBA(255, 255, 255, 1)
                                     FillPortions: =If(App.Width >= 1250, 1, 0)
-                                    Height: =20 + 48 + 12 + Max(galInvHomeDue.Height, If(galInvHomeDue.AllItemsCount = 0, 24, 0)) + 24
+                                    Height: |-
+                                      =(20 + 48 + 12 + With({n: Min(CountRows(SortByColumns(
+                                          Filter(
+                                              gblInvOpenCheckouts,
+                                              Status <> "Awaiting Acknowledgement" && !IsBlank(DueDate) && DueDate <= DateAdd(Today(), 7, TimeUnit.Days) &&
+                                              AssetId in Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID
+                                          ),
+                                          "DueDate"
+                                      )), 8)}, If(n = 0, 24, n * 72 + 12)) + 24)
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =12
