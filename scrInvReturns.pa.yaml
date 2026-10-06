@@ -688,12 +688,11 @@ Screens:
                               - spnInvRetBusy:
                                   Control: ModernSpinner
                                   Properties:
-                                    Label: ="Checking in… about 10–20 seconds"
-                                    LabelPosition: =SpinnerLabelPosition.After
-                                    Width: =264
                                     AccessibleLabel: ="Checking in"
+                                    Label: ="Checking in… about 10–20 seconds"
                                     LayoutMinWidth: =0
                                     Visible: =locBusy
+                                    Width: =264
                               - btnInvRetClear:
                                   Control: ModernButton
                                   Properties:

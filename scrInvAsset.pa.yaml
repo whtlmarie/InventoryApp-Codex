@@ -916,12 +916,11 @@ Screens:
                                                 - spnInvAsdBusy:
                                                     Control: ModernSpinner
                                                     Properties:
-                                                      Label: ="Saving… about 10–20 seconds"
-                                                      LabelPosition: =SpinnerLabelPosition.After
-                                                      Width: =229
                                                       AccessibleLabel: ="Saving"
+                                                      Label: ="Saving… about 10–20 seconds"
                                                       LayoutMinWidth: =0
                                                       Visible: =locBusy
+                                                      Width: =229
                                                 - btnInvAsdLabel:
                                                     Control: ModernButton
                                                     Properties:

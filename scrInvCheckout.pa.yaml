@@ -1199,12 +1199,11 @@ Screens:
                               - spnInvCoBusy:
                                   Control: ModernSpinner
                                   Properties:
-                                    Label: ="Issuing… about 15–25 seconds"
-                                    LabelPosition: =SpinnerLabelPosition.After
-                                    Width: =236
                                     AccessibleLabel: ="Issuing"
+                                    Label: ="Issuing… about 15–25 seconds"
                                     LayoutMinWidth: =0
                                     Visible: =locBusy
+                                    Width: =236
                               - btnInvCoClear:
                                   Control: ModernButton
                                   Properties:

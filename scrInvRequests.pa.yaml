@@ -1330,12 +1330,11 @@ Screens:
                                     - spnInvReqBusy:
                                         Control: ModernSpinner
                                         Properties:
-                                          Label: ="Saving… about 15–25 seconds"
-                                          LabelPosition: =SpinnerLabelPosition.After
-                                          Width: =229
                                           AccessibleLabel: ="Working"
+                                          Label: ="Saving… about 15–25 seconds"
                                           LayoutMinWidth: =0
                                           Visible: =locBusy
+                                          Width: =229
                                     - btnInvReqIssueGo:
                                         Control: ModernButton
                                         Properties:

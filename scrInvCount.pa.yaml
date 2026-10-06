@@ -1123,12 +1123,11 @@ Screens:
                                     - spnInvCntBusy:
                                         Control: ModernSpinner
                                         Properties:
-                                          Label: ="Saving the count… about 10–20 seconds"
-                                          LabelPosition: =SpinnerLabelPosition.After
-                                          Width: =299
                                           AccessibleLabel: ="Saving"
+                                          Label: ="Saving the count… about 10–20 seconds"
                                           LayoutMinWidth: =0
                                           Visible: =locBusy
+                                          Width: =299
                                     - btnInvCntCancel:
                                         Control: ModernButton
                                         Properties:
