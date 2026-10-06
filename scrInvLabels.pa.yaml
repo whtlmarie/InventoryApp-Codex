@@ -446,6 +446,9 @@ Screens:
                                     - spnInvLblBusy:
                                         Control: ModernSpinner
                                         Properties:
+                                          Label: ="Preparing… about 10–20 seconds"
+                                          LabelPosition: =SpinnerLabelPosition.After
+                                          Width: =250
                                           AccessibleLabel: ="Working"
                                           LayoutMinWidth: =0
                                           Visible: =locBusy
