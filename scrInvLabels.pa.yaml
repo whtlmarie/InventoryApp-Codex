@@ -473,7 +473,7 @@ Screens:
                                             =UpdateContext({locBusy: true});
                                             IfError(
                                                 With(
-                                                    {raw: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "ExportCsv", name: "Labels", ext: "html", content: With(
+                                                    {raw: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "ExportCsv", name: "Labels", ext: "html", content: With(
                                                 {list: ForAll(Sequence(CountRows(SortByColumns(Filter(gblInvAssets, ID in gblInvLabelIds.ID), "Title"))) As s, With({a: Index(SortByColumns(Filter(gblInvAssets, ID in gblInvLabelIds.ID), "Title"), s.Value)}, {n: s.Value + Max(0, Min(29, RoundDown(IfError(Value(txtInvLblStart.Text), 1), 0) - 1)), Tag: a.Title, Model: Coalesce(Trim(a.Make & " " & a.Model), a.CatalogNameSnapshot, ""), Acct: fxOrgAccount(a.Dept)}))},
                                                 With(
                                                     {pages: RoundUp((CountRows(list) + Max(0, Min(29, RoundDown(IfError(Value(txtInvLblStart.Text), 1), 0) - 1))) / 30, 0)},
@@ -492,7 +492,7 @@ Screens:
                                                     ) &
                                                     "</body></html>"
                                                 )
-                                            )})).response)},
+                                            )})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                     If(
                                                         Text(raw.status) = "Success",
                                                         Notify("Label sheet saved. Open it, then print at 100% with no margins.", NotificationType.Success); Launch(Text(raw.number)),

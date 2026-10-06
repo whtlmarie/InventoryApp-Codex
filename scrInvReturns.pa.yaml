@@ -717,7 +717,7 @@ Screens:
                                       =// Check in every scanned item with its own condition (Damaged needs a note).
                                       UpdateContext({locBusy: true});
                                       With(
-                                          {results: ForAll(colInvRetItems As it, With({r: IfError(ParseJSON('Inventory-Action'.Run(fxInvReturnPayload(it.CheckoutId, it.Condition, it.Note)).response), Blank())}, {Tag: it.Tag, Ok: !IsBlank(r) && Text(r.status) = "Success", Message: If(IsBlank(r), "The service could not be reached.", Text(r.message))}))},
+                                          {results: ForAll(colInvRetItems As it, With({r: IfError(ParseJSON(With({invPl: fxInvReturnPayload(it.CheckoutId, it.Condition, it.Note)}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response), Blank())}, {Tag: it.Tag, Ok: !IsBlank(r) && Text(r.status) = "Success", Message: If(IsBlank(r), "The service could not be reached.", Text(r.message))}))},
                                           UpdateContext({locBusy: false});
                                           Notify(
                                               CountRows(Filter(results, Ok)) & " of " & CountRows(results) & " checked in." & If(CountRows(Filter(results, !Ok)) > 0, " Not checked in: " & Concat(Filter(results, !Ok), Tag & " (" & Message & ")", "; "), ""),

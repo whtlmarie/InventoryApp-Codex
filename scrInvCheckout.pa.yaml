@@ -1229,20 +1229,20 @@ Screens:
                                       UpdateContext({locBusy: true, locCoDone: Blank()});
                                       IfError(
                                           With(
-                                              {start: ParseJSON('Inventory-Action'.Run(fxInvStartReceiptPayload(
+                                              {start: ParseJSON(With({invPl: fxInvStartReceiptPayload(
                                                   Lower(cmbInvCoPerson.Selected.Mail), cmbInvCoPerson.Selected.DisplayName, "i:0#.f|membership|" & Lower(cmbInvCoPerson.Selected.UserPrincipalName),
                                                   Trim(txtInvCoPhone.Text), txtInvCoAcct.Text,
                                                   If(drpInvCoType.Selected.Value = "Long-term Assignment", "", Text(dteInvCoReturn.SelectedDate, "yyyy-mm-dd")), drpInvCoType.Selected.Value, drpInvCoDept.Selected.Value, drpInvCoSign.Selected.Value
-                                              )).response)},
+                                              )}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                               If(
                                                   Text(start.status) <> "Success",
                                                   UpdateContext({locCoDone: {Ok: false, Number: "", Message: Text(start.message), Issued: 0, Failed: FirstN(Table({Tag: "", Ok: true, Message: ""}), 0)}}),
                                                   With(
                                                       {rid: Value(start.id), num: Text(start.number)},
                                                       With(
-                                                          {results: ForAll(colInvCoItems As it, With({r: ParseJSON('Inventory-Action'.Run(fxInvIssuePayload(rid, it.ID, 0)).response)}, {Tag: it.Title, Ok: Text(r.status) = "Success", Message: Text(r.message)}))},
+                                                          {results: ForAll(colInvCoItems As it, With({r: ParseJSON(With({invPl: fxInvIssuePayload(rid, it.ID, 0)}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)}, {Tag: it.Title, Ok: Text(r.status) = "Success", Message: Text(r.message)}))},
                                                           With(
-                                                              {finish: ParseJSON('Inventory-Action'.Run(fxInvFinishPayload(rid)).response)},
+                                                              {finish: ParseJSON(With({invPl: fxInvFinishPayload(rid)}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                               UpdateContext({locCoDone: {
                                                                   Ok: CountRows(Filter(results, Ok)) > 0, Number: If(CountRows(Filter(results, Ok)) > 0, num, ""),
                                                                   Message: Text(finish.message), Issued: CountRows(Filter(results, Ok)), Failed: Filter(results, !Ok)

@@ -594,10 +594,10 @@ Screens:
                                             =UpdateContext({locBusy: true});
                                             IfError(
                                                 With(
-                                                    {raw: ParseJSON('Inventory-Action'.Run(JSON({
+                                                    {raw: ParseJSON(With({invPl: JSON({
                                                         actionVersion: fxInvActionVersion, action: "LocationSave", locationId: Coalesce(locLoc.ID, 0), name: Trim(txtInvLocName.Text),
                                                         department: drpInvLocDept.Selected.Value, kind: drpInvLocKind.Selected.Value, hqName: Trim(txtInvLocHq.Text), isActive: tglInvLocActive.Checked, notes: ""
-                                                    })).response)},
+                                                    })}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                     UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})
                                                 ),
                                                 UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})

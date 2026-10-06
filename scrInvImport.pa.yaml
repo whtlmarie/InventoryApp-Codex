@@ -762,10 +762,10 @@ Screens:
                                                                 {
                                                                     Rows: IfError(
                                                                         With(
-                                                                            {raw: ParseJSON('Inventory-Action'.Run(JSON({
+                                                                            {raw: ParseJSON(With({invPl: JSON({
                                                                                 actionVersion: fxInvActionVersion, action: "AssetImport",
                                                                                 rows: ForAll(batch, {row: Row, tag: Tag, serial: Serial, make: Make, model: Model, department: Dept, kind: Kind, homeLocation: Loc, purchaseDate: Purchase, warrantyEnd: Warranty, notes: Notes, source: Source})
-                                                                            })).response)},
+                                                                            })}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                                             If(
                                                                                 Text(raw.status) = "Success",
                                                                                 ForAll(Table(raw.results) As res, {Row: Value(res.Value.row), Status: Text(res.Value.status), Message: Text(res.Value.message)}),

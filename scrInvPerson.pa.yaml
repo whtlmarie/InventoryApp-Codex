@@ -787,7 +787,7 @@ Screens:
                                             =// Out-processing: check in every open item as returned in Good condition.
                                             UpdateContext({locBusy: true});
                                             With(
-                                                {results: ForAll(Filter(locPerItems, Status in ["Active", "Awaiting Acknowledgement", "Return Required"]) As it, With({r: IfError(ParseJSON('Inventory-Action'.Run(fxInvReturnPayload(it.ID, "Good", "Checked in during out-processing.")).response), Blank())}, {Tag: it.AssetTagSnapshot, Ok: !IsBlank(r) && Text(r.status) = "Success", Message: If(IsBlank(r), "The service could not be reached.", Text(r.message))}))},
+                                                {results: ForAll(Filter(locPerItems, Status in ["Active", "Awaiting Acknowledgement", "Return Required"]) As it, With({r: IfError(ParseJSON(With({invPl: fxInvReturnPayload(it.ID, "Good", "Checked in during out-processing.")}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response), Blank())}, {Tag: it.AssetTagSnapshot, Ok: !IsBlank(r) && Text(r.status) = "Success", Message: If(IsBlank(r), "The service could not be reached.", Text(r.message))}))},
                                                 UpdateContext({locBusy: false, locPerConfirmAll: false});
                                                 Notify(
                                                     CountRows(Filter(results, Ok)) & " of " & CountRows(results) & " items checked in." & If(CountRows(Filter(results, !Ok)) > 0, " Not checked in: " & Concat(Filter(results, !Ok), Tag & " (" & Message & ")", "; "), ""),
@@ -961,7 +961,7 @@ Screens:
                                                 OnSelect: |-
                                                   =UpdateContext({locBusy: true});
                                                   IfError(
-                                                      With({raw: ParseJSON('Inventory-Action'.Run(fxInvReturnPayload(locPerSel.ID, drpInvPerCond.Selected.Value, Trim(txtInvPerNote.Text))).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
+                                                      With({raw: ParseJSON(With({invPl: fxInvReturnPayload(locPerSel.ID, drpInvPerCond.Selected.Value, Trim(txtInvPerNote.Text))}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
                                                       UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
                                                   );
                                                   UpdateContext({locBusy: false});
@@ -1063,7 +1063,7 @@ Screens:
                                                 OnSelect: |-
                                                   =UpdateContext({locBusy: true});
                                                   IfError(
-                                                      With({raw: ParseJSON('Inventory-Action'.Run(fxInvExtendPayload(locPerSel.ID, Text(dteInvPerDue.SelectedDate, "yyyy-mm-dd"), Trim(txtInvPerDueNote.Text))).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
+                                                      With({raw: ParseJSON(With({invPl: fxInvExtendPayload(locPerSel.ID, Text(dteInvPerDue.SelectedDate, "yyyy-mm-dd"), Trim(txtInvPerDueNote.Text))}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
                                                       UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
                                                   );
                                                   UpdateContext({locBusy: false});
@@ -1213,19 +1213,19 @@ Screens:
                                                       {who: cmbInvPerXferTo.Selected, sel: locPerSel},
                                                       IfError(
                                                           With(
-                                                              {r1: ParseJSON('Inventory-Action'.Run(fxInvReturnPayload(sel.ID, "Good", "Transferred to " & who.DisplayName & ".")).response)},
+                                                              {r1: ParseJSON(With({invPl: fxInvReturnPayload(sel.ID, "Good", "Transferred to " & who.DisplayName & ".")}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                               If(
                                                                   Text(r1.status) <> "Success",
                                                                   UpdateContext({locResult: {Status: "Failed", Message: Text(r1.message)}}),
                                                                   With(
-                                                                      {st: ParseJSON('Inventory-Action'.Run(fxInvStartReceiptPayload(Lower(who.Mail), who.DisplayName, "i:0#.f|membership|" & Lower(who.UserPrincipalName), Coalesce(First(who.BusinessPhones).Value, who.mobilePhone, ""), "", If(drpInvPerXferType.Selected.Value = "Long-term Assignment", "", Text(dteInvPerXferDue.SelectedDate, "yyyy-mm-dd")), drpInvPerXferType.Selected.Value, sel.Dept, "Electronic")).response)},
+                                                                      {st: ParseJSON(With({invPl: fxInvStartReceiptPayload(Lower(who.Mail), who.DisplayName, "i:0#.f|membership|" & Lower(who.UserPrincipalName), Coalesce(First(who.BusinessPhones).Value, who.mobilePhone, ""), "", If(drpInvPerXferType.Selected.Value = "Long-term Assignment", "", Text(dteInvPerXferDue.SelectedDate, "yyyy-mm-dd")), drpInvPerXferType.Selected.Value, sel.Dept, "Electronic")}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                                       If(
                                                                           Text(st.status) <> "Success",
                                                                           UpdateContext({locResult: {Status: "Failed", Message: "Checked in, but the new receipt could not be started: " & Text(st.message)}}),
                                                                           With(
-                                                                              {iss: ParseJSON('Inventory-Action'.Run(fxInvIssuePayload(Value(st.id), sel.AssetId, 0)).response)},
+                                                                              {iss: ParseJSON(With({invPl: fxInvIssuePayload(Value(st.id), sel.AssetId, 0)}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                                               With(
-                                                                                  {fin: ParseJSON('Inventory-Action'.Run(fxInvFinishPayload(Value(st.id))).response)},
+                                                                                  {fin: ParseJSON(With({invPl: fxInvFinishPayload(Value(st.id))}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                                                   UpdateContext({locResult: If(
                                                                                       Text(iss.status) = "Success",
                                                                                       {Status: "Success", Message: sel.AssetTagSnapshot & " transferred to " & who.DisplayName & ". " & Text(fin.message)},
@@ -1538,7 +1538,7 @@ Screens:
                                                 OnSelect: |-
                                                   =UpdateContext({locBusy: true});
                                                   IfError(
-                                                      With({raw: ParseJSON('Inventory-Action'.Run(fxInvCacUploadPayload(locPerRcpt.ID, First(attInvPerCac.Attachments).Name, With({j: JSON(imgInvPerCacBlob.Image, JSONFormat.IncludeBinaryData)}, Mid(j, 2, Len(j) - 2)))).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
+                                                      With({raw: ParseJSON(With({invPl: fxInvCacUploadPayload(locPerRcpt.ID, First(attInvPerCac.Attachments).Name, With({j: JSON(imgInvPerCacBlob.Image, JSONFormat.IncludeBinaryData)}, Mid(j, 2, Len(j) - 2)))}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
                                                       UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
                                                   );
                                                   UpdateContext({locBusy: false});
@@ -1692,7 +1692,7 @@ Screens:
                                                 OnSelect: |-
                                                   =UpdateContext({locBusy: true});
                                                   IfError(
-                                                      With({raw: ParseJSON('Inventory-Action'.Run(fxInvReceiptPayload("ResendApproval", ThisItem.ID)).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
+                                                      With({raw: ParseJSON(With({invPl: fxInvReceiptPayload("ResendApproval", ThisItem.ID)}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
                                                       UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
                                                   );
                                                   UpdateContext({locBusy: false});
@@ -1713,7 +1713,7 @@ Screens:
                                                 OnSelect: |-
                                                   =UpdateContext({locBusy: true});
                                                   IfError(
-                                                      With({raw: ParseJSON('Inventory-Action'.Run(fxInvSwitchPayload(ThisItem.ID, If(Coalesce(ThisItem.SignatureMethod.Value, "Electronic") = "CAC", "Electronic", "CAC"))).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
+                                                      With({raw: ParseJSON(With({invPl: fxInvSwitchPayload(ThisItem.ID, If(Coalesce(ThisItem.SignatureMethod.Value, "Electronic") = "CAC", "Electronic", "CAC"))}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
                                                       UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
                                                   );
                                                   UpdateContext({locBusy: false});

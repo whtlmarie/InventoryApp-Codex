@@ -1002,12 +1002,12 @@ Screens:
                                                   )), tag: ThisItem.AssetTagSnapshot},
                                                       IfError(
                                                           With(
-                                                              {rel: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "ReleaseReservation", reservationId: ThisItem.ID, note: "Swapped: not back in time"})).response)},
+                                                              {rel: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "ReleaseReservation", reservationId: ThisItem.ID, note: "Swapped: not back in time"})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                               If(
                                                                   Text(rel.status) <> "Success",
                                                                   Notify(Text(rel.message), NotificationType.Error),
                                                                   With(
-                                                                      {res: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "Reserve", lineId: locReqSel.LineId, assetId: next.ID, startDate: Text(dteInvReqStart.SelectedDate, "yyyy-mm-dd"), endDate: Text(dteInvReqEnd.SelectedDate, "yyyy-mm-dd")})).response)},
+                                                                      {res: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "Reserve", lineId: locReqSel.LineId, assetId: next.ID, startDate: Text(dteInvReqStart.SelectedDate, "yyyy-mm-dd"), endDate: Text(dteInvReqEnd.SelectedDate, "yyyy-mm-dd")})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                                       Notify(
                                                                           If(Text(res.status) = "Success", tag & " swapped for " & next.Title & ".", tag & " was released, but " & next.Title & " could not be reserved: " & Text(res.message)),
                                                                           If(Text(res.status) = "Success", NotificationType.Success, NotificationType.Warning)
@@ -1052,7 +1052,7 @@ Screens:
                                                   =UpdateContext({locBusy: true});
                                                   IfError(
                                                       With(
-                                                          {raw: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "ReleaseReservation", reservationId: ThisItem.ID, note: ""})).response)},
+                                                          {raw: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "ReleaseReservation", reservationId: ThisItem.ID, note: ""})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                           UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})
                                                       ),
                                                       UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
@@ -1352,22 +1352,22 @@ Screens:
                                                     {dept: First(mine).A.Dept},
                                                     IfError(
                                                         With(
-                                                            {start: ParseJSON('Inventory-Action'.Run(JSON({
+                                                            {start: ParseJSON(With({invPl: JSON({
                                                                 actionVersion: fxInvActionVersion, action: "StartReceipt",
                                                                 recipient: {email: Lower(If(IsBlank(cmbInvReqWho.Selected), locReqSel.Req.RequesterEmail, cmbInvReqWho.Selected.Mail)), name: If(IsBlank(cmbInvReqWho.Selected), Coalesce(locReqSel.Req.RequesterName, locReqSel.Req.RequesterEmail), cmbInvReqWho.Selected.DisplayName), claims: "i:0#.f|membership|" & Lower(If(IsBlank(cmbInvReqWho.Selected), locReqSel.Req.RequesterEmail, cmbInvReqWho.Selected.Mail))},
                                                                 dutyPhone: Trim(txtInvReqPhone.Text), orgAccountNo: Switch(dept, "IT", "TSOS", "AV", "TSAV", ""),
                                                                 returnDate: Text(dteInvReqReturn.SelectedDate, "yyyy-mm-dd"), checkoutType: "Request Loan", department: dept,
                                                                 requestId: locReqSel.Req.ID, signatureMethod: drpInvReqSign.Selected.Value
-                                                            })).response)},
+                                                            })}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                             If(
                                                                 Text(start.status) <> "Success",
                                                                 Notify(Text(start.message), NotificationType.Error),
                                                                 With(
                                                                     {rid: Value(start.id)},
                                                                     With(
-                                                                        {results: ForAll(Filter(mine, A.Dept = dept) As m, With({r: ParseJSON('Inventory-Action'.Run(fxInvIssuePayload(rid, 0, m.ID)).response)}, {Ok: Text(r.status) = "Success", Message: m.AssetTagSnapshot & ": " & Text(r.message)}))},
+                                                                        {results: ForAll(Filter(mine, A.Dept = dept) As m, With({r: ParseJSON(With({invPl: fxInvIssuePayload(rid, 0, m.ID)}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)}, {Ok: Text(r.status) = "Success", Message: m.AssetTagSnapshot & ": " & Text(r.message)}))},
                                                                         With(
-                                                                            {finish: ParseJSON('Inventory-Action'.Run(fxInvFinishPayload(rid)).response)},
+                                                                            {finish: ParseJSON(With({invPl: fxInvFinishPayload(rid)}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                                             Notify(Text(finish.message) & If(IsEmpty(Filter(results, !Ok)), "", "  Not issued: " & Concat(Filter(results, !Ok), Message, "; ")), If(IsEmpty(Filter(results, !Ok)), NotificationType.Success, NotificationType.Warning))
                                                                         )
                                                                     )
@@ -1650,7 +1650,7 @@ Screens:
                                                 )
                                             ), Max(0, locReqSel.Qty - locReqSel.Reserved - locReqSel.Issued))},
                                                 With(
-                                                    {results: ForAll(picks As a, IfError(With({r: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "Reserve", lineId: locReqSel.LineId, assetId: a.ID, startDate: Text(dteInvReqStart.SelectedDate, "yyyy-mm-dd"), endDate: Text(dteInvReqEnd.SelectedDate, "yyyy-mm-dd")})).response)}, {Ok: Text(r.status) = "Success", Message: a.Title & ": " & Text(r.message)}), {Ok: false, Message: a.Title & ": the inventory service could not be reached."}))},
+                                                    {results: ForAll(picks As a, IfError(With({r: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "Reserve", lineId: locReqSel.LineId, assetId: a.ID, startDate: Text(dteInvReqStart.SelectedDate, "yyyy-mm-dd"), endDate: Text(dteInvReqEnd.SelectedDate, "yyyy-mm-dd")})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)}, {Ok: Text(r.status) = "Success", Message: a.Title & ": " & Text(r.message)}), {Ok: false, Message: a.Title & ": the inventory service could not be reached."}))},
                                                     Notify(CountRows(Filter(results, Ok)) & " reserved." & If(IsEmpty(Filter(results, !Ok)), "", "  Not reserved: " & Concat(Filter(results, !Ok), Message, "; ")), If(IsEmpty(Filter(results, !Ok)), NotificationType.Success, NotificationType.Warning))
                                                 )
                                             );
@@ -1765,7 +1765,7 @@ Screens:
                                                   =UpdateContext({locBusy: true});
                                                   IfError(
                                                       With(
-                                                          {raw: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "Reserve", lineId: locReqSel.LineId, assetId: ThisItem.ID, startDate: Text(dteInvReqStart.SelectedDate, "yyyy-mm-dd"), endDate: Text(dteInvReqEnd.SelectedDate, "yyyy-mm-dd")})).response)},
+                                                          {raw: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "Reserve", lineId: locReqSel.LineId, assetId: ThisItem.ID, startDate: Text(dteInvReqStart.SelectedDate, "yyyy-mm-dd"), endDate: Text(dteInvReqEnd.SelectedDate, "yyyy-mm-dd")})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                           UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})
                                                       ),
                                                       UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
@@ -1899,7 +1899,7 @@ Screens:
                                             =UpdateContext({locBusy: true});
                                             IfError(
                                                 With(
-                                                    {raw: ParseJSON('Inventory-Action'.Run(JSON({actionVersion: fxInvActionVersion, action: "CloseLine", lineId: locReqSel.LineId, note: Trim(txtInvReqNote.Text)})).response)},
+                                                    {raw: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "CloseLine", lineId: locReqSel.LineId, note: Trim(txtInvReqNote.Text)})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                     UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})
                                                 ),
                                                 UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
