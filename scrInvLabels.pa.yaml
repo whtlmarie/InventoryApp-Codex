@@ -447,10 +447,10 @@ Screens:
                                         Control: ModernSpinner
                                         Properties:
                                           AccessibleLabel: ="Working"
-                                          Label: ="Preparing… about 10–20 seconds"
+                                          Label: ="Preparing…"
                                           LayoutMinWidth: =0
                                           Visible: =locBusy
-                                          Width: =250
+                                          Width: =160
                                     - btnInvLblClear:
                                         Control: ModernButton
                                         Properties:

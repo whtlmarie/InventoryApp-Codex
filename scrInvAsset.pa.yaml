@@ -917,10 +917,10 @@ Screens:
                                                     Control: ModernSpinner
                                                     Properties:
                                                       AccessibleLabel: ="Saving"
-                                                      Label: ="Saving… about 10–20 seconds"
+                                                      Label: ="Saving…"
                                                       LayoutMinWidth: =0
                                                       Visible: =locBusy
-                                                      Width: =229
+                                                      Width: =160
                                                 - btnInvAsdLabel:
                                                     Control: ModernButton
                                                     Properties:

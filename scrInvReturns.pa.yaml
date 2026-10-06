@@ -689,10 +689,10 @@ Screens:
                                   Control: ModernSpinner
                                   Properties:
                                     AccessibleLabel: ="Checking in"
-                                    Label: ="Checking in… about 10–20 seconds"
+                                    Label: ="Checking in…"
                                     LayoutMinWidth: =0
                                     Visible: =locBusy
-                                    Width: =264
+                                    Width: =160
                               - btnInvRetClear:
                                   Control: ModernButton
                                   Properties:

@@ -1200,10 +1200,10 @@ Screens:
                                   Control: ModernSpinner
                                   Properties:
                                     AccessibleLabel: ="Issuing"
-                                    Label: ="Issuing… about 15–25 seconds"
+                                    Label: ="Issuing…"
                                     LayoutMinWidth: =0
                                     Visible: =locBusy
-                                    Width: =236
+                                    Width: =160
                               - btnInvCoClear:
                                   Control: ModernButton
                                   Properties:

@@ -1331,10 +1331,10 @@ Screens:
                                         Control: ModernSpinner
                                         Properties:
                                           AccessibleLabel: ="Working"
-                                          Label: ="Saving… about 15–25 seconds"
+                                          Label: ="Saving…"
                                           LayoutMinWidth: =0
                                           Visible: =locBusy
-                                          Width: =229
+                                          Width: =160
                                     - btnInvReqIssueGo:
                                         Control: ModernButton
                                         Properties:
