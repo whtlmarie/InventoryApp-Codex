@@ -1335,6 +1335,66 @@ Screens:
                                           LayoutMinWidth: =0
                                           Visible: =locBusy
                                           Width: =160
+                                    - btnInvReqIssueAll:
+                                        Control: ModernButton
+                                        Properties:
+                                          AccessibleLabel: ="Issue every unit reserved for this request, one receipt per department"
+                                          Appearance: =ButtonAppearance.Secondary
+                                          DisplayMode: =If(locBusy || IsBlank(dteInvReqReturn.SelectedDate) || IsBlank(If(IsBlank(cmbInvReqWho.Selected), locReqSel.Req.RequesterEmail, cmbInvReqWho.Selected.Mail)), DisplayMode.Disabled, DisplayMode.Edit)
+                                          Height: =36
+                                          Icon: ="Send"
+                                          LayoutMinWidth: =0
+                                          OnSelect: |-
+                                            =// Every unit reserved for this request, on one receipt per department: StartReceipt -> Issue each -> FinishReceipt.
+                                            UpdateContext({locBusy: true});
+                                            With(
+                                                {all: AddColumns(Filter(InventoryReservations, RequestId = locReqSel.Req.ID && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId))},
+                                                With(
+                                                    {
+                                                        byDept: ForAll(
+                                                            Distinct(all, A.Dept) As d,
+                                                            With(
+                                                                {dept: d.Value},
+                                                                IfError(
+                                                                    With(
+                                                                        {start: ParseJSON(With({invPl: JSON({
+                                                                            actionVersion: fxInvActionVersion, action: "StartReceipt",
+                                                                            recipient: {email: Lower(If(IsBlank(cmbInvReqWho.Selected), locReqSel.Req.RequesterEmail, cmbInvReqWho.Selected.Mail)), name: If(IsBlank(cmbInvReqWho.Selected), Coalesce(locReqSel.Req.RequesterName, locReqSel.Req.RequesterEmail), cmbInvReqWho.Selected.DisplayName), claims: "i:0#.f|membership|" & Lower(If(IsBlank(cmbInvReqWho.Selected), locReqSel.Req.RequesterEmail, cmbInvReqWho.Selected.Mail))},
+                                                                            dutyPhone: Trim(txtInvReqPhone.Text), orgAccountNo: Switch(dept, "IT", "TSOS", "AV", "TSAV", ""),
+                                                                            returnDate: Text(dteInvReqReturn.SelectedDate, "yyyy-mm-dd"), checkoutType: "Request Loan", department: dept,
+                                                                            requestId: locReqSel.Req.ID, signatureMethod: drpInvReqSign.Selected.Value
+                                                                        })}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
+                                                                        If(
+                                                                            Text(start.status) <> "Success",
+                                                                            {Ok: false, Msg: dept & ": " & Text(start.message)},
+                                                                            With(
+                                                                                {rid: Value(start.id)},
+                                                                                With(
+                                                                                    {results: ForAll(Filter(all, A.Dept = dept) As m, With({r: ParseJSON(With({invPl: fxInvIssuePayload(rid, 0, m.ID)}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)}, {Ok: Text(r.status) = "Success", Message: m.AssetTagSnapshot & ": " & Text(r.message)}))},
+                                                                                    With(
+                                                                                        {finish: ParseJSON(With({invPl: fxInvFinishPayload(rid)}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
+                                                                                        {
+                                                                                            Ok: IsEmpty(Filter(results, !Ok)),
+                                                                                            Msg: Text(finish.message) & If(IsEmpty(Filter(results, !Ok)), "", "  Not issued: " & Concat(Filter(results, !Ok), Message, "; "))
+                                                                                        }
+                                                                                    )
+                                                                                )
+                                                                            )
+                                                                        )
+                                                                    ),
+                                                                    {Ok: false, Msg: dept & ": the inventory service could not be reached. Check People before trying again."}
+                                                                )
+                                                            )
+                                                        )
+                                                    },
+                                                    Notify(Concat(byDept, Msg, "   "), If(IsEmpty(Filter(byDept, !Ok)), NotificationType.Success, NotificationType.Warning))
+                                                )
+                                            );
+                                            UpdateContext({locBusy: false});
+                                            Set(gblInvLoadedAt, Blank()); Select(btnInvReqReload); Select(btnInvReqLoad)
+                                          Text: ="Issue all reserved (" & CountRows(AddColumns(Filter(InventoryReservations, RequestId = locReqSel.Req.ID && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId))) & ")"
+                                          Visible: =CountRows(Distinct(AddColumns(Filter(InventoryReservations, RequestId = locReqSel.Req.ID && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId)), RequestEquipmentId)) > 1
+                                          Width: =210
                                     - btnInvReqIssueGo:
                                         Control: ModernButton
                                         Properties:
