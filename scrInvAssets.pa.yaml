@@ -549,7 +549,7 @@ Screens:
                                     Icon: ="Checkmark"
                                     LayoutMinWidth: =0
                                     OnSelect: |-
-                                      =ClearCollect(colInvAstSel, ForAll(FirstN(galInvAstList.AllItems, 50), {ID: ID}))
+                                      =ClearCollect(colInvAstSel, ForAll(FirstN(galInvAstList.AllItems, 500), {ID: ID}))
                                     Text: ="Select shown"
                                     Visible: =fxIsInvStaff
                                     Width: =150
@@ -589,7 +589,7 @@ Screens:
                                     PaddingLeft: =0
                                     PaddingTop: =0
                                     Size: =13
-                                    Text: =CountRows(colInvAstSel) & " selected" & If(CountRows(colInvAstSel) > 50, " (50 at a time)", "")
+                                    Text: =CountRows(colInvAstSel) & " selected" & If(CountRows(colInvAstSel) > 500, " (500 at a time)", "")
                                     Width: =170
                                     Wrap: =false
                               - drpInvAstBulkCat:
@@ -606,7 +606,7 @@ Screens:
                                   Control: ModernButton
                                   Properties:
                                     AccessibleLabel: =Self.Text
-                                    DisplayMode: =If(locBusy || IsBlank(drpInvAstBulkCat.Selected) || CountRows(colInvAstSel) > 50, DisplayMode.Disabled, DisplayMode.Edit)
+                                    DisplayMode: =If(locBusy || IsBlank(drpInvAstBulkCat.Selected) || CountRows(colInvAstSel) > 500, DisplayMode.Disabled, DisplayMode.Edit)
                                     Height: =36
                                     Icon: ="Link"
                                     LayoutMinWidth: =0
@@ -726,7 +726,7 @@ Screens:
                                   Properties:
                                     AccessibleLabel: ="Assets"
                                     FillPortions: =0
-                                    Height: =Min(Self.AllItemsCount, 50) * 56
+                                    Height: =Min(Self.AllItemsCount, 200) * 56
                                     Items: |-
                                       =SortByColumns(
                                           Filter(
