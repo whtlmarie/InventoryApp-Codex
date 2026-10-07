@@ -1322,7 +1322,7 @@ Screens:
                                           Icon: ="Add"
                                           LayoutMinWidth: =0
                                           OnSelect: |-
-                                            =// Reserve the first units still needed (best catalog match first), one flow call each.
+                                            =// Reserve the first units still needed (best catalog match first) in one ReserveBatch call (2026-10-07).
                                             UpdateContext({locBusy: true});
                                             With(
                                                 {picks: FirstN(With(
@@ -1341,9 +1341,12 @@ Screens:
                                                     "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                                 )
                                             ), Max(0, locReqSel.Qty - locReqSel.Reserved - locReqSel.Issued))},
-                                                With(
-                                                    {results: ForAll(picks As a, IfError(With({r: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "Reserve", lineId: locReqSel.LineId, assetId: a.ID, startDate: Text(dteInvRqStart.SelectedDate, "yyyy-mm-dd"), endDate: Text(dteInvRqEnd.SelectedDate, "yyyy-mm-dd")})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)}, {Ok: Text(r.status) = "Success", Message: a.Title & ": " & Text(r.message)}), {Ok: false, Message: a.Title & ": the inventory service could not be reached."}))},
-                                                    Notify(CountRows(Filter(results, Ok)) & " reserved." & If(IsEmpty(Filter(results, !Ok)), "", "  Not reserved: " & Concat(Filter(results, !Ok), Message, "; ")), If(IsEmpty(Filter(results, !Ok)), NotificationType.Success, NotificationType.Warning))
+                                                IfError(
+                                                    With(
+                                                        {r: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "ReserveBatch", lineId: locReqSel.LineId, assetIds: Concat(picks, Text(ID), ","), startDate: Text(dteInvRqStart.SelectedDate, "yyyy-mm-dd"), endDate: Text(dteInvRqEnd.SelectedDate, "yyyy-mm-dd")})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
+                                                        Notify(Text(r.message), If(Text(r.status) <> "Success" || "Not reserved" in Text(r.message), NotificationType.Warning, NotificationType.Success))
+                                                    ),
+                                                    Notify("The inventory service could not be reached. Try again.", NotificationType.Error)
                                                 )
                                             );
                                             UpdateContext({locBusy: false});
@@ -2030,12 +2033,13 @@ Screens:
                                                                             With(
                                                                                 {rid: Value(start.id)},
                                                                                 With(
-                                                                                    {results: ForAll(Filter(all, A.Dept = dept) As m, With({r: ParseJSON(With({invPl: fxInvIssuePayload(rid, 0, m.ID)}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)}, {Ok: Text(r.status) = "Success", Message: m.AssetTagSnapshot & ": " & Text(r.message)}))},
+                                                                                    // All of this department's ticked units in one IssueBatch call (2026-10-07).
+                                                                                    {batch: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "IssueBatch", receiptId: rid, reservationIds: Concat(Filter(all, A.Dept = dept), Text(ID), ",")})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                                                     With(
                                                                                         {finish: ParseJSON(With({invPl: fxInvFinishPayload(rid)}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                                                         {
-                                                                                            Ok: IsEmpty(Filter(results, !Ok)),
-                                                                                            Msg: Text(finish.message) & If(IsEmpty(Filter(results, !Ok)), "", "  Not issued: " & Concat(Filter(results, !Ok), Message, "; "))
+                                                                                            Ok: Text(batch.status) = "Success" && !("Not issued" in Text(batch.message)),
+                                                                                            Msg: Text(finish.message) & If(Text(batch.status) = "Success" && !("Not issued" in Text(batch.message)), "", "  " & Text(batch.message))
                                                                                         }
                                                                                     )
                                                                                 )

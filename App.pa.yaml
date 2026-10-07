@@ -23,8 +23,8 @@ App:
       fxInvActionVersion = "InventoryAction-v1";
       // Which Inventory flow handles an action (the single Inventory - Action flow was split on 2026-10-06).
       fxInvFlowFor(action: Text): Text = If(
-          action in ["Reserve", "ReleaseReservation", "CloseLine"], "Requests",
-          action in ["StartReceipt", "Issue", "FinishReceipt", "Acknowledge", "Return", "Extend", "ResendApproval", "CacUpload", "SwitchMethod"], "Checkout",
+          action in ["Reserve", "ReserveBatch", "ReleaseReservation", "CloseLine"], "Requests",
+          action in ["StartReceipt", "Issue", "IssueBatch", "FinishReceipt", "Acknowledge", "Return", "Extend", "ResendApproval", "CacUpload", "SwitchMethod"], "Checkout",
           "Assets"
       );
       // DAF Form 1297 (Temporary Issue Receipt) statement; electronic acknowledgement accepted locally (2026-10-02).
