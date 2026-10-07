@@ -607,7 +607,7 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =12
-                                          Text: =If(CountRows(colInvHqOnlyHq) > 50, "Showing the first 50.", "")
+                                          Text: =If(CountRows(colInvHqOnlyHq) > 12, "Scroll the list to see them all.", "")
                                           Wrap: =false
                               - txtInvHqOnlyHqNone:
                                   Control: ModernText
@@ -630,11 +630,10 @@ Screens:
                                   Properties:
                                     AccessibleLabel: ="On the HQ list, not in our inventory"
                                     FillPortions: =0
-                                    Height: =Self.AllItemsCount * 48
-                                    Items: =FirstN(colInvHqOnlyHq, 50)
+                                    Height: =Min(CountRows(colInvHqOnlyHq), 12) * 48
+                                    Items: =colInvHqOnlyHq
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
-                                    ShowScrollbar: =false
                                     TabIndex: =0
                                     TemplatePadding: =0
                                     TemplateSize: =48
@@ -656,7 +655,7 @@ Screens:
                                           RadiusBottomRight: =6
                                           RadiusTopLeft: =6
                                           RadiusTopRight: =6
-                                          Width: =Parent.TemplateWidth
+                                          Width: =Parent.TemplateWidth - 16
                                         Children:
                                           - conInvHqOnlyHqAccent:
                                               Control: GroupContainer
@@ -774,7 +773,7 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =12
-                                          Text: =If(CountRows(colInvHqOnlyOurs) > 50, "Showing the first 50.", "")
+                                          Text: =If(CountRows(colInvHqOnlyOurs) > 12, "Scroll the list to see them all.", "")
                                           Wrap: =false
                               - txtInvHqOnlyOursNone:
                                   Control: ModernText
@@ -797,11 +796,10 @@ Screens:
                                   Properties:
                                     AccessibleLabel: ="In our inventory, not on the HQ list"
                                     FillPortions: =0
-                                    Height: =Self.AllItemsCount * 48
-                                    Items: =FirstN(colInvHqOnlyOurs, 50)
+                                    Height: =Min(CountRows(colInvHqOnlyOurs), 12) * 48
+                                    Items: =colInvHqOnlyOurs
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
-                                    ShowScrollbar: =false
                                     TabIndex: =0
                                     TemplatePadding: =0
                                     TemplateSize: =48
@@ -823,7 +821,7 @@ Screens:
                                           RadiusBottomRight: =6
                                           RadiusTopLeft: =6
                                           RadiusTopRight: =6
-                                          Width: =Parent.TemplateWidth
+                                          Width: =Parent.TemplateWidth - 16
                                         Children:
                                           - conInvHqOnlyOursAccent:
                                               Control: GroupContainer
@@ -992,7 +990,7 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =12
-                                          Text: =If(CountRows(colInvHqMatch) > 50, "Showing the first 50.", "")
+                                          Text: =If(CountRows(colInvHqMatch) > 12, "Scroll the list to see them all.", "")
                                           Wrap: =false
                               - txtInvHqMatchNone:
                                   Control: ModernText
@@ -1015,11 +1013,10 @@ Screens:
                                   Properties:
                                     AccessibleLabel: ="On both lists and matching"
                                     FillPortions: =0
-                                    Height: =Self.AllItemsCount * 48
-                                    Items: =FirstN(colInvHqMatch, 50)
+                                    Height: =Min(CountRows(colInvHqMatch), 12) * 48
+                                    Items: =colInvHqMatch
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
-                                    ShowScrollbar: =false
                                     TabIndex: =0
                                     TemplatePadding: =0
                                     TemplateSize: =48
@@ -1041,7 +1038,7 @@ Screens:
                                           RadiusBottomRight: =6
                                           RadiusTopLeft: =6
                                           RadiusTopRight: =6
-                                          Width: =Parent.TemplateWidth
+                                          Width: =Parent.TemplateWidth - 16
                                         Children:
                                           - conInvHqMatchAccent:
                                               Control: GroupContainer
@@ -1160,7 +1157,7 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =12
-                                          Text: =If(CountRows(colInvHqDiff) > 50, "Showing the first 50.", "")
+                                          Text: =If(CountRows(colInvHqDiff) > 12, "Scroll the list to see them all.", "")
                                           Wrap: =false
                               - txtInvHqDiffNone:
                                   Control: ModernText
@@ -1183,11 +1180,10 @@ Screens:
                                   Properties:
                                     AccessibleLabel: ="On both lists, but different"
                                     FillPortions: =0
-                                    Height: =Self.AllItemsCount * 48
-                                    Items: =FirstN(colInvHqDiff, 50)
+                                    Height: =Min(CountRows(colInvHqDiff), 12) * 48
+                                    Items: =colInvHqDiff
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
-                                    ShowScrollbar: =false
                                     TabIndex: =0
                                     TemplatePadding: =0
                                     TemplateSize: =48
@@ -1209,7 +1205,7 @@ Screens:
                                           RadiusBottomRight: =6
                                           RadiusTopLeft: =6
                                           RadiusTopRight: =6
-                                          Width: =Parent.TemplateWidth
+                                          Width: =Parent.TemplateWidth - 16
                                         Children:
                                           - conInvHqDiffAccent:
                                               Control: GroupContainer

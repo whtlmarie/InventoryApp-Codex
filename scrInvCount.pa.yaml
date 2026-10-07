@@ -752,11 +752,10 @@ Screens:
                                               Properties:
                                                 AccessibleLabel: ="Missing"
                                                 FillPortions: =0
-                                                Height: =Min(Self.AllItemsCount, 25) * 40
-                                                Items: =FirstN(SortByColumns(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued"), "Title"), 25)
+                                                Height: =Min(CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued")), 12) * 40
+                                                Items: =SortByColumns(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued"), "Title")
                                                 LayoutMinHeight: =0
                                                 LayoutMinWidth: =0
-                                                ShowScrollbar: =false
                                                 TabIndex: =0
                                                 TemplatePadding: =0
                                                 TemplateSize: =40
@@ -770,7 +769,7 @@ Screens:
                                                       LayoutAlignItems: =LayoutAlignItems.Stretch
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutJustifyContent: =LayoutJustifyContent.Center
-                                                      Width: =Parent.TemplateWidth
+                                                      Width: =Parent.TemplateWidth - 16
                                                     Children:
                                                       - txtInvCntMissingTag:
                                                           Control: ModernText
@@ -854,11 +853,10 @@ Screens:
                                               Properties:
                                                 AccessibleLabel: ="Unexpected here"
                                                 FillPortions: =0
-                                                Height: =Min(Self.AllItemsCount, 25) * 40
-                                                Items: =FirstN(SortByColumns(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)).ID)), "Title"), 25)
+                                                Height: =Min(CountRows(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)).ID))), 12) * 40
+                                                Items: =SortByColumns(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)).ID)), "Title")
                                                 LayoutMinHeight: =0
                                                 LayoutMinWidth: =0
-                                                ShowScrollbar: =false
                                                 TabIndex: =0
                                                 TemplatePadding: =0
                                                 TemplateSize: =40
@@ -872,7 +870,7 @@ Screens:
                                                       LayoutAlignItems: =LayoutAlignItems.Stretch
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutJustifyContent: =LayoutJustifyContent.Center
-                                                      Width: =Parent.TemplateWidth
+                                                      Width: =Parent.TemplateWidth - 16
                                                     Children:
                                                       - txtInvCntUnexpTag:
                                                           Control: ModernText
@@ -957,11 +955,10 @@ Screens:
                                               Properties:
                                                 AccessibleLabel: ="Out with people"
                                                 FillPortions: =0
-                                                Height: =Min(Self.AllItemsCount, 25) * 40
-                                                Items: =FirstN(SortByColumns(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status = "Issued"), "Title"), 25)
+                                                Height: =Min(CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status = "Issued")), 12) * 40
+                                                Items: =SortByColumns(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status = "Issued"), "Title")
                                                 LayoutMinHeight: =0
                                                 LayoutMinWidth: =0
-                                                ShowScrollbar: =false
                                                 TabIndex: =0
                                                 TemplatePadding: =0
                                                 TemplateSize: =40
@@ -975,7 +972,7 @@ Screens:
                                                       LayoutAlignItems: =LayoutAlignItems.Stretch
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutJustifyContent: =LayoutJustifyContent.Center
-                                                      Width: =Parent.TemplateWidth
+                                                      Width: =Parent.TemplateWidth - 16
                                                     Children:
                                                       - txtInvCntOutTag:
                                                           Control: ModernText
@@ -1059,11 +1056,10 @@ Screens:
                                               Properties:
                                                 AccessibleLabel: ="Found"
                                                 FillPortions: =0
-                                                Height: =Min(Self.AllItemsCount, 25) * 40
-                                                Items: =FirstN(SortByColumns(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), ID in colInvCntScanned.ID), "Title"), 25)
+                                                Height: =Min(CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), ID in colInvCntScanned.ID)), 12) * 40
+                                                Items: =SortByColumns(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), ID in colInvCntScanned.ID), "Title")
                                                 LayoutMinHeight: =0
                                                 LayoutMinWidth: =0
-                                                ShowScrollbar: =false
                                                 TabIndex: =0
                                                 TemplatePadding: =0
                                                 TemplateSize: =40
@@ -1077,7 +1073,7 @@ Screens:
                                                       LayoutAlignItems: =LayoutAlignItems.Stretch
                                                       LayoutDirection: =LayoutDirection.Vertical
                                                       LayoutJustifyContent: =LayoutJustifyContent.Center
-                                                      Width: =Parent.TemplateWidth
+                                                      Width: =Parent.TemplateWidth - 16
                                                     Children:
                                                       - txtInvCntFoundTag:
                                                           Control: ModernText
