@@ -1065,7 +1065,7 @@ Screens:
                                         ),
                                         "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                     )
-                                )), 20) * 52) + 24
+                                )), 12) * 52) + 24
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =12
@@ -1279,7 +1279,22 @@ Screens:
                                                     ),
                                                     "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                                 )
-                                            )) & " available for these dates"
+                                            )) & " available for these dates" & If(CountRows(With(
+                                                {cl: locReqSel, s: dteInvRqStart.SelectedDate, e: dteInvRqEnd.SelectedDate, q: Lower(Trim(txtInvRqFind.Text))},
+                                                SortByColumns(
+                                                    AddColumns(
+                                                        Filter(
+                                                            gblInvAssets,
+                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
+                                                                !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
+                                                                (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                        ),
+                                                        Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                                    ),
+                                                    "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
+                                                )
+                                            )) > 12, "  ·  scroll the list to see them all", "")
                                           Wrap: =false
                                     - btnInvRqReserveN:
                                         Control: ModernButton
@@ -1375,9 +1390,8 @@ Screens:
                                   Properties:
                                     AccessibleLabel: ="Available units"
                                     FillPortions: =0
-                                    Height: =Min(Self.AllItemsCount, 20) * 52
-                                    Items: |-
-                                      =FirstN(With(
+                                    Height: |-
+                                      =Min(CountRows(With(
                                           {cl: locReqSel, s: dteInvRqStart.SelectedDate, e: dteInvRqEnd.SelectedDate, q: Lower(Trim(txtInvRqFind.Text))},
                                           SortByColumns(
                                               AddColumns(
@@ -1392,10 +1406,26 @@ Screens:
                                               ),
                                               "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                           )
-                                      ), 20)
+                                      )), 12) * 52
+                                    Items: |-
+                                      =With(
+                                          {cl: locReqSel, s: dteInvRqStart.SelectedDate, e: dteInvRqEnd.SelectedDate, q: Lower(Trim(txtInvRqFind.Text))},
+                                          SortByColumns(
+                                              AddColumns(
+                                                  Filter(
+                                                      gblInvAssets,
+                                                      Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                          (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
+                                                          !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
+                                                          (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                  ),
+                                                  Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                              ),
+                                              "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
+                                          )
+                                      )
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
-                                    ShowScrollbar: =false
                                     TabIndex: =0
                                     TemplatePadding: =0
                                     TemplateSize: =52
@@ -1417,7 +1447,7 @@ Screens:
                                           RadiusBottomRight: =6
                                           RadiusTopLeft: =6
                                           RadiusTopRight: =6
-                                          Width: =Parent.TemplateWidth
+                                          Width: =Parent.TemplateWidth - 16
                                         Children:
                                           - txtInvRqPickTag:
                                               Control: ModernText
