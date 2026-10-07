@@ -1284,7 +1284,23 @@ Screens:
                                     - btnInvRqReserveN:
                                         Control: ModernButton
                                         Properties:
-                                          AccessibleLabel: =Self.Text
+                                          AccessibleLabel: |-
+                                            ="Reserve the first " & Min(Max(0, locReqSel.Qty - locReqSel.Reserved - locReqSel.Issued), CountRows(With(
+                                                {cl: locReqSel, s: dteInvRqStart.SelectedDate, e: dteInvRqEnd.SelectedDate, q: Lower(Trim(txtInvRqFind.Text))},
+                                                SortByColumns(
+                                                    AddColumns(
+                                                        Filter(
+                                                            gblInvAssets,
+                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
+                                                                !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
+                                                                (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                        ),
+                                                        Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                                    ),
+                                                    "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
+                                                )
+                                            ))) & " available units"
                                           DisplayMode: |-
                                             =If(locBusy || IsEmpty(With(
                                                 {cl: locReqSel, s: dteInvRqStart.SelectedDate, e: dteInvRqEnd.SelectedDate, q: Lower(Trim(txtInvRqFind.Text))},
@@ -1333,7 +1349,7 @@ Screens:
                                             UpdateContext({locBusy: false});
                                             Set(gblInvLoadedAt, Blank()); Select(btnInvRqReload); Select(btnInvRqLoad)
                                           Text: |-
-                                            ="Reserve " & Min(Max(0, locReqSel.Qty - locReqSel.Reserved - locReqSel.Issued), CountRows(With(
+                                            ="Auto-pick " & Min(Max(0, locReqSel.Qty - locReqSel.Reserved - locReqSel.Issued), CountRows(With(
                                                 {cl: locReqSel, s: dteInvRqStart.SelectedDate, e: dteInvRqEnd.SelectedDate, q: Lower(Trim(txtInvRqFind.Text))},
                                                 SortByColumns(
                                                     AddColumns(
@@ -1348,8 +1364,8 @@ Screens:
                                                     ),
                                                     "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                                 )
-                                            ))) & " for me"
-                                          Width: =190
+                                            )))
+                                          Width: =160
                               - galInvRqPick:
                                   Control: Gallery
                                   Variant: Vertical
