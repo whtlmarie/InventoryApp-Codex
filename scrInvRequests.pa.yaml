@@ -681,7 +681,6 @@ Screens:
                                     LayoutGap: =24
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
-                                    LayoutWrap: =true
                                   Children:
                                     - conInvRqSelQty:
                                         Control: GroupContainer
