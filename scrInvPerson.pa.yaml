@@ -787,11 +787,11 @@ Screens:
                                             =// Out-processing: check in every open item as returned in Good condition.
                                             UpdateContext({locBusy: true});
                                             With(
-                                                {results: ForAll(Filter(locPerItems, Status in ["Active", "Awaiting Acknowledgement", "Return Required"]) As it, With({r: IfError(ParseJSON(With({invPl: fxInvReturnPayload(it.ID, "Good", "Checked in during out-processing.")}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response), Blank())}, {Tag: it.AssetTagSnapshot, Ok: !IsBlank(r) && Text(r.status) = "Success", Message: If(IsBlank(r), "The service could not be reached.", Text(r.message))}))},
+                                                {r: IfError(ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "ReturnBatch", items: ForAll(Filter(locPerItems, Status in ["Active", "Awaiting Acknowledgement", "Return Required"]) As it, {checkoutId: it.ID, condition: "Good", note: "Checked in during out-processing."})})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response), Blank())},
                                                 UpdateContext({locBusy: false, locPerConfirmAll: false});
-                                                Notify(
-                                                    CountRows(Filter(results, Ok)) & " of " & CountRows(results) & " items checked in." & If(CountRows(Filter(results, !Ok)) > 0, " Not checked in: " & Concat(Filter(results, !Ok), Tag & " (" & Message & ")", "; "), ""),
-                                                    If(CountRows(Filter(results, !Ok)) = 0, NotificationType.Success, NotificationType.Warning)
+                                                If(
+                                                    IsBlank(r), Notify("The service could not be reached. Reload to see what was checked in.", NotificationType.Error),
+                                                    Notify(Text(r.message), If(Text(r.status) = "Success" && IsEmpty(Table(r.failed)), NotificationType.Success, NotificationType.Warning))
                                                 )
                                             );
                                             Set(gblInvLoadedAt, Blank()); Select(btnInvPerLoad)
