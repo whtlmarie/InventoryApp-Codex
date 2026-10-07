@@ -5,10 +5,10 @@ Screens:
       LoadingSpinnerColor: =RGBA(15, 76, 129, 1)
       OnVisible: |-
         =UpdateContext({locBusy: false});
-        If(IsBlank(gblInvLoadedAt) || DateDiff(gblInvLoadedAt, Now(), TimeUnit.Minutes) >= 2, Select(btnInvReqReload));
-        Select(btnInvReqLoad)
+        If(IsBlank(gblInvLoadedAt) || DateDiff(gblInvLoadedAt, Now(), TimeUnit.Minutes) >= 2, Select(btnInvRqReload));
+        Select(btnInvRqLoad)
     Children:
-      - conInvReqRoot:
+      - conInvRqRoot:
           Control: GroupContainer
           Variant: AutoLayout
           Properties:
@@ -23,7 +23,7 @@ Screens:
             RadiusTopRight: =0
             Width: =Parent.Width
           Children:
-            - conInvReqHeader:
+            - conInvRqHeader:
                 Control: GroupContainer
                 Variant: AutoLayout
                 Properties:
@@ -43,7 +43,7 @@ Screens:
                   RadiusTopLeft: =0
                   RadiusTopRight: =0
                 Children:
-                  - btnInvReqNavToggle:
+                  - btnInvRqNavToggle:
                       Control: ModernButton
                       Properties:
                         AccessibleLabel: =If(varNavCollapsed, "Expand navigation", "Collapse navigation")
@@ -57,7 +57,7 @@ Screens:
                         Text: =If(varNavCollapsed, "Expand navigation", "Collapse navigation")
                         Tooltip: =If(varNavCollapsed, "Expand navigation", "Collapse navigation")
                         Width: =40
-                  - txtInvReqAppTitle:
+                  - txtInvRqAppTitle:
                       Control: ModernText
                       Properties:
                         AccessibleLabel: ="Inventory"
@@ -72,7 +72,7 @@ Screens:
                         Size: =18
                         Text: ="Inventory"
                         Wrap: =false
-                  - txtInvReqUserName:
+                  - txtInvRqUserName:
                       Control: ModernText
                       Properties:
                         AccessibleLabel: ="Signed in as " & User().FullName
@@ -88,7 +88,7 @@ Screens:
                         Visible: =App.Width >= 640
                         Width: =240
                         Wrap: =false
-            - conInvReqBody:
+            - conInvRqBody:
                 Control: GroupContainer
                 Variant: AutoLayout
                 Properties:
@@ -102,7 +102,7 @@ Screens:
                   RadiusTopLeft: =0
                   RadiusTopRight: =0
                 Children:
-                  - conInvReqNav:
+                  - conInvRqNav:
                       Control: GroupContainer
                       Variant: AutoLayout
                       Properties:
@@ -123,7 +123,7 @@ Screens:
                         RadiusTopRight: =0
                         Width: =If(varNavCollapsed, 56, 240)
                       Children:
-                        - galInvReqNav:
+                        - galInvRqNav:
                             Control: Gallery
                             Variant: Vertical
                             Properties:
@@ -138,7 +138,7 @@ Screens:
                               TemplatePadding: =2
                               TemplateSize: =44
                             Children:
-                              - conInvReqNavRow:
+                              - conInvRqNavRow:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
@@ -153,7 +153,7 @@ Screens:
                                     RadiusTopRight: =6
                                     Width: =Parent.TemplateWidth
                                   Children:
-                                    - btnInvReqNavItem:
+                                    - btnInvRqNavItem:
                                         Control: ModernButton
                                         Properties:
                                           AccessibleLabel: =ThisItem.Label
@@ -170,7 +170,7 @@ Screens:
                                           OnSelect: =Navigate(ThisItem.Target, ScreenTransition.None)
                                           Text: =ThisItem.Label
                                           Tooltip: =ThisItem.Label
-                  - conInvReqMain:
+                  - conInvRqMain:
                       Control: GroupContainer
                       Variant: AutoLayout
                       Properties:
@@ -190,7 +190,7 @@ Screens:
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
                       Children:
-                        - btnInvReqReload:
+                        - btnInvRqReload:
                             Control: ModernButton
                             Properties:
                               AccessibleLabel: ="Reload inventory data"
@@ -212,7 +212,7 @@ Screens:
                               Text: ="Reload"
                               Visible: =false
                               Width: =10
-                        - btnInvReqLoad:
+                        - btnInvRqLoad:
                             Control: ModernButton
                             Properties:
                               AccessibleLabel: ="Load request items"
@@ -231,7 +231,7 @@ Screens:
                                                     With(
                                                         {course: With({rnum: req.Title}, LookUp(CourseSupportDetails, Title = rnum))},
                                                         {
-                                                            LineId: ln.ID, Req: req, Course: course, Route: Upper(Coalesce(ln.DepartmentRoute.Value, "")),
+                                                            LineId: ln.ID, Req: req, ReqId: req.ID, Course: course, Route: Upper(Coalesce(ln.DepartmentRoute.Value, "")),
                                                             Item: Coalesce(ln.EquipmentNameSnapshot, "Equipment"), CatalogId: ln.Equipment.Id,
                                                             Qty: Coalesce(ln.QuantityApproved, ln.QuantityRequested, 1),
                                                             Start: Coalesce(course.CourseStartDate, Today()), End: Coalesce(course.CourseEndDate, course.CourseStartDate, Today()),
@@ -248,13 +248,35 @@ Screens:
                                         SortOrder.Ascending
                                     )
                                 );
-                                // Opened from a Home row: select that line once.
-                                UpdateContext({locReqSel: If(!IsBlank(gblInvReqOpenLine), LookUp(gblInvReqLines, LineId = gblInvReqOpenLine), IsBlank(locReqSel), Blank(), LookUp(gblInvReqLines, LineId = locReqSel.LineId))});
+                                Set(
+                                    gblInvReqReqs,
+                                    SortByColumns(
+                                        ForAll(
+                                            Distinct(gblInvReqLines, ReqId) As g,
+                                            With(
+                                                {ls: Filter(gblInvReqLines, ReqId = g.Value)},
+                                                {
+                                                    ReqId: g.Value, Req: First(ls).Req, Course: First(ls).Course, Start: First(ls).Start, End: First(ls).End,
+                                                    Items: CountRows(ls), Qty: Sum(ls, Qty), Reserved: Sum(ls, Reserved), Issued: Sum(ls, Issued),
+                                                    Routes: Concat(Distinct(ls, Route), Value, ", "), ItemNames: Concat(ls, Item & If(Qty > 1, " ×" & Qty, ""), ", ")
+                                                }
+                                            )
+                                        ),
+                                        "Start",
+                                        SortOrder.Ascending
+                                    )
+                                );
+                                // Opened from a Home row: open that item's request, with the item selected, once.
+                                If(
+                                    !IsBlank(gblInvReqOpenLine),
+                                    With({ln: LookUp(gblInvReqLines, LineId = gblInvReqOpenLine)}, UpdateContext({locReqRid: ln.ReqId, locReqSel: ln}); Clear(colReqSkip)),
+                                    UpdateContext({locReqSel: If(IsBlank(locReqSel), Blank(), LookUp(gblInvReqLines, LineId = locReqSel.LineId))})
+                                );
                                 Set(gblInvReqOpenLine, Blank())
                               Text: ="Load"
                               Visible: =false
                               Width: =10
-                        - conInvReqPageHeader:
+                        - conInvRqPageHeader:
                             Control: GroupContainer
                             Variant: AutoLayout
                             Properties:
@@ -267,7 +289,7 @@ Screens:
                               LayoutMinHeight: =0
                               LayoutMinWidth: =0
                             Children:
-                              - conInvReqTitles:
+                              - conInvRqTitles:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
@@ -280,7 +302,7 @@ Screens:
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                   Children:
-                                    - txtInvReqPageTitle:
+                                    - txtInvRqPageTitle:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
@@ -292,9 +314,9 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =24
-                                          Text: =If(IsBlank(locReqSel), "Request items", locReqSel.Req.Title)
+                                          Text: =If(IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid)), "Request items", LookUp(gblInvReqReqs, ReqId = locReqRid).Req.Title)
                                           Wrap: =false
-                                    - txtInvReqPageSubtitle:
+                                    - txtInvRqPageSubtitle:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
@@ -305,22 +327,22 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =13
-                                          Text: =If(IsBlank(locReqSel), "Reserve and issue equipment approved on Support Requests.", "Reserve units for the course dates, then issue them on one receipt.")
+                                          Text: =If(IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid)), "Reserve and issue equipment approved on Support Requests.", "Reserve units for each item, then issue them together.")
                                           Wrap: =false
-                              - btnInvReqBack:
+                              - btnInvRqBack:
                                   Control: ModernButton
                                   Properties:
-                                    AccessibleLabel: ="Back to all request items"
+                                    AccessibleLabel: ="Back to all requests"
                                     Appearance: =ButtonAppearance.Subtle
                                     Height: =36
                                     Icon: ="ArrowLeft"
                                     LayoutMinWidth: =0
                                     OnSelect: |-
-                                      =UpdateContext({locReqSel: Blank()})
-                                    Text: ="All request items"
-                                    Visible: =!IsBlank(locReqSel)
-                                    Width: =180
-                              - txtInvReqUpdated:
+                                      =UpdateContext({locReqRid: Blank(), locReqSel: Blank()})
+                                    Text: ="All requests"
+                                    Visible: =!IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid))
+                                    Width: =160
+                              - txtInvRqUpdated:
                                   Control: ModernText
                                   Properties:
                                     AccessibleLabel: =Self.Text
@@ -336,7 +358,7 @@ Screens:
                                     Visible: =App.Width >= 900
                                     Width: =120
                                     Wrap: =false
-                              - btnInvReqRefresh:
+                              - btnInvRqRefresh:
                                   Control: ModernButton
                                   Properties:
                                     AccessibleLabel: ="Refresh"
@@ -345,17 +367,17 @@ Screens:
                                     Height: =36
                                     Icon: ="ArrowClockwise"
                                     LayoutMinWidth: =0
-                                    OnSelect: =Select(btnInvReqReload)
+                                    OnSelect: =Select(btnInvRqReload)
                                     Text: ="Refresh"
                                     Width: =120
-                        - conInvReqList:
+                        - conInvRqList:
                             Control: GroupContainer
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.Semilight
                               Fill: =RGBA(255, 255, 255, 1)
                               FillPortions: =0
-                              Height: =20 + 48 + 12 + Max(24, galInvReqList.Height) + 24
+                              Height: =20 + 48 + 12 + Max(24, CountRows(gblInvReqReqs) * 84) + 24
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =12
@@ -369,9 +391,9 @@ Screens:
                               RadiusBottomRight: =8
                               RadiusTopLeft: =8
                               RadiusTopRight: =8
-                              Visible: =IsBlank(locReqSel) && fxIsInvStaff
+                              Visible: =IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid)) && fxIsInvStaff
                             Children:
-                              - conInvReqListHead:
+                              - conInvRqListHead:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
@@ -384,7 +406,7 @@ Screens:
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                   Children:
-                                    - txtInvReqListTitle:
+                                    - txtInvRqListTitle:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
@@ -396,8 +418,8 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =16
-                                          Text: ="Request items to fill (" & CountRows(gblInvReqLines) & ")"
-                                    - txtInvReqListDesc:
+                                          Text: ="Requests to fill (" & CountRows(gblInvReqReqs) & ")"
+                                    - txtInvRqListDesc:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
@@ -408,9 +430,9 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =12
-                                          Text: ="Approved Support Request items for your department. Soonest course first."
+                                          Text: ="Approved Support Requests with equipment for your department. Soonest course first."
                                           Wrap: =false
-                              - txtInvReqNone:
+                              - txtInvRqNone:
                                   Control: ModernText
                                   Properties:
                                     AccessibleLabel: =Self.Text
@@ -422,24 +444,24 @@ Screens:
                                     PaddingTop: =0
                                     Size: =12
                                     Text: =If(locBusy, "Loading…", "Nothing to fill. Approved inventory items appear here once a request reaches fulfillment.")
-                                    Visible: =IsEmpty(gblInvReqLines)
+                                    Visible: =IsEmpty(gblInvReqReqs)
                                     Wrap: =false
-                              - galInvReqList:
+                              - galInvRqList:
                                   Control: Gallery
                                   Variant: Vertical
                                   Properties:
-                                    AccessibleLabel: ="Request items"
+                                    AccessibleLabel: ="Requests to fill"
                                     FillPortions: =0
-                                    Height: =Self.AllItemsCount * 80
-                                    Items: =gblInvReqLines
+                                    Height: =Self.AllItemsCount * 84
+                                    Items: =gblInvReqReqs
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                     ShowScrollbar: =false
                                     TabIndex: =0
                                     TemplatePadding: =0
-                                    TemplateSize: =80
+                                    TemplateSize: =84
                                   Children:
-                                    - conInvReqRow:
+                                    - conInvRqRow:
                                         Control: GroupContainer
                                         Variant: AutoLayout
                                         Properties:
@@ -458,7 +480,7 @@ Screens:
                                           RadiusTopRight: =6
                                           Width: =Parent.TemplateWidth
                                         Children:
-                                          - conInvReqRowAccent:
+                                          - conInvRqRowAccent:
                                               Control: GroupContainer
                                               Variant: AutoLayout
                                               Properties:
@@ -475,19 +497,19 @@ Screens:
                                                 RadiusTopLeft: =2
                                                 RadiusTopRight: =2
                                                 Width: =4
-                                          - conInvReqRowText:
+                                          - conInvRqRowText:
                                               Control: GroupContainer
                                               Variant: AutoLayout
                                               Properties:
                                                 DropShadow: =DropShadow.None
-                                                Height: =70
+                                                Height: =74
                                                 LayoutAlignItems: =LayoutAlignItems.Stretch
                                                 LayoutDirection: =LayoutDirection.Vertical
                                                 LayoutJustifyContent: =LayoutJustifyContent.Center
                                                 LayoutMinHeight: =0
                                                 LayoutMinWidth: =0
                                               Children:
-                                                - txtInvReqRowL1:
+                                                - txtInvRqRowL1:
                                                     Control: ModernText
                                                     Properties:
                                                       AccessibleLabel: =Self.Text
@@ -501,7 +523,7 @@ Screens:
                                                       Size: =13
                                                       Text: =ThisItem.Req.Title & "   " & Coalesce(ThisItem.Req.RequestSubject, "(No subject)")
                                                       Wrap: =false
-                                                - txtInvReqRowL2:
+                                                - txtInvRqRowL2:
                                                     Control: ModernText
                                                     Properties:
                                                       AccessibleLabel: =Self.Text
@@ -512,9 +534,10 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =12
-                                                      Text: =ThisItem.Item & "  ·  qty " & ThisItem.Qty & "  ·  " & ThisItem.Route & "  ·  " & If(IsBlank(ThisItem.Course), "No course dates", "Course " & Text(ThisItem.Start, "mmm d") & " – " & Text(ThisItem.End, "mmm d, yyyy"))
+                                                      Text: |-
+                                                        =ThisItem.Items & If(ThisItem.Items = 1, " item: ", " items: ") & ThisItem.ItemNames & "  ·  " & ThisItem.Routes
                                                       Wrap: =false
-                                                - txtInvReqRowL3:
+                                                - txtInvRqRowL3:
                                                     Control: ModernText
                                                     Properties:
                                                       AccessibleLabel: =Self.Text
@@ -525,9 +548,9 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =12
-                                                      Text: ="Requester " & fxPersonName(Coalesce(ThisItem.Req.RequesterName, ThisItem.Req.RequesterEmail)) & If(IsBlank(ThisItem.Course.Room), "", "  ·  " & ThisItem.Course.Room)
+                                                      Text: =If(IsBlank(ThisItem.Course), "No course dates", "Course " & Text(ThisItem.Start, "mmm d") & " – " & Text(ThisItem.End, "mmm d, yyyy")) & "  ·  Requester " & fxPersonName(Coalesce(ThisItem.Req.RequesterName, ThisItem.Req.RequesterEmail)) & If(IsBlank(ThisItem.Course.Room), "", "  ·  " & ThisItem.Course.Room)
                                                       Wrap: =false
-                                          - txtInvReqRowRes:
+                                          - txtInvRqRowRes:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
@@ -549,7 +572,7 @@ Screens:
                                                 Text: ="Reserved " & ThisItem.Reserved & " of " & ThisItem.Qty
                                                 Width: =130
                                                 Wrap: =false
-                                          - txtInvReqRowIss:
+                                          - txtInvRqRowIss:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
@@ -571,20 +594,20 @@ Screens:
                                                 Text: ="Issued " & ThisItem.Issued & " of " & ThisItem.Qty
                                                 Width: =120
                                                 Wrap: =false
-                                          - btnInvReqRowOpen:
+                                          - btnInvRqRowOpen:
                                               Control: ModernButton
                                               Properties:
-                                                AccessibleLabel: ="Fill " & ThisItem.Item & " on " & ThisItem.Req.Title
+                                                AccessibleLabel: ="Open " & ThisItem.Req.Title
                                                 Appearance: =ButtonAppearance.Secondary
                                                 Height: =36
                                                 Icon: ="ChevronRight"
                                                 Layout: =ButtonLayout.IconAfter
                                                 LayoutMinWidth: =0
                                                 OnSelect: |-
-                                                  =UpdateContext({locReqSel: ThisItem}); Reset(dteInvReqStart); Reset(dteInvReqEnd); Reset(txtInvReqFind); Reset(cmbInvReqWho); Reset(dteInvReqReturn); Reset(txtInvReqPhone)
-                                                Text: =If(Max(0, ThisItem.Qty - ThisItem.Reserved - ThisItem.Issued) > 0, "Reserve", "Issue")
-                                                Width: =120
-                        - conInvReqSel:
+                                                  =UpdateContext({locReqRid: ThisItem.ReqId, locReqSel: Blank()}); Clear(colReqSkip); Reset(cmbInvRqWho); Reset(dteInvRqReturn); Reset(txtInvRqPhone)
+                                                Text: ="Open"
+                                                Width: =110
+                        - conInvRqSel:
                             Control: GroupContainer
                             Variant: AutoLayout
                             Properties:
@@ -605,9 +628,9 @@ Screens:
                               RadiusBottomRight: =8
                               RadiusTopLeft: =8
                               RadiusTopRight: =8
-                              Visible: =!IsBlank(locReqSel) && fxIsInvStaff
+                              Visible: =!IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid)) && fxIsInvStaff
                             Children:
-                              - conInvReqSelHead:
+                              - conInvRqSelHead:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
@@ -620,7 +643,7 @@ Screens:
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                   Children:
-                                    - txtInvReqSelTitle:
+                                    - txtInvRqSelTitle:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
@@ -632,8 +655,8 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =16
-                                          Text: =locReqSel.Req.Title & "  ·  " & locReqSel.Item
-                                    - txtInvReqSelDesc:
+                                          Text: =LookUp(gblInvReqReqs, ReqId = locReqRid).Req.Title & "  ·  " & Coalesce(LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequestSubject, "")
+                                    - txtInvRqSelDesc:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
@@ -644,9 +667,9 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =12
-                                          Text: =Coalesce(locReqSel.Req.RequestSubject, "") & If(IsBlank(locReqSel.Course.CourseName), "", "  ·  " & locReqSel.Course.CourseName)
+                                          Text: =If(IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid).Course.CourseName), "", LookUp(gblInvReqReqs, ReqId = locReqRid).Course.CourseName & "  ·  ") & If(IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid).Course), "No course dates", "Course " & Text(LookUp(gblInvReqReqs, ReqId = locReqRid).Start, "mmm d") & " – " & Text(LookUp(gblInvReqReqs, ReqId = locReqRid).End, "mmm d, yyyy"))
                                           Wrap: =false
-                              - conInvReqSelStats:
+                              - conInvRqSelStats:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
@@ -660,7 +683,7 @@ Screens:
                                     LayoutMinWidth: =0
                                     LayoutWrap: =true
                                   Children:
-                                    - conInvReqSelQty:
+                                    - conInvRqSelQty:
                                         Control: GroupContainer
                                         Variant: AutoLayout
                                         Properties:
@@ -673,7 +696,7 @@ Screens:
                                           LayoutMinWidth: =0
                                           Width: =150
                                         Children:
-                                          - txtInvReqSelQtyL:
+                                          - txtInvRqSelQtyL:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
@@ -686,7 +709,7 @@ Screens:
                                                 Size: =12
                                                 Text: ="Approved"
                                                 Wrap: =false
-                                          - txtInvReqSelQtyV:
+                                          - txtInvRqSelQtyV:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
@@ -698,9 +721,9 @@ Screens:
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
                                                 Size: =16
-                                                Text: =locReqSel.Qty & " units"
+                                                Text: =LookUp(gblInvReqReqs, ReqId = locReqRid).Qty & If(LookUp(gblInvReqReqs, ReqId = locReqRid).Qty = 1, " unit", " units")
                                                 Wrap: =false
-                                    - conInvReqSelRes:
+                                    - conInvRqSelRes:
                                         Control: GroupContainer
                                         Variant: AutoLayout
                                         Properties:
@@ -713,7 +736,7 @@ Screens:
                                           LayoutMinWidth: =0
                                           Width: =150
                                         Children:
-                                          - txtInvReqSelResL:
+                                          - txtInvRqSelResL:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
@@ -726,7 +749,7 @@ Screens:
                                                 Size: =12
                                                 Text: ="Reserved"
                                                 Wrap: =false
-                                          - txtInvReqSelResV:
+                                          - txtInvRqSelResV:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
@@ -738,9 +761,9 @@ Screens:
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
                                                 Size: =16
-                                                Text: =locReqSel.Reserved & " of " & locReqSel.Qty
+                                                Text: =LookUp(gblInvReqReqs, ReqId = locReqRid).Reserved & " of " & LookUp(gblInvReqReqs, ReqId = locReqRid).Qty
                                                 Wrap: =false
-                                    - conInvReqSelIss:
+                                    - conInvRqSelIss:
                                         Control: GroupContainer
                                         Variant: AutoLayout
                                         Properties:
@@ -753,7 +776,7 @@ Screens:
                                           LayoutMinWidth: =0
                                           Width: =150
                                         Children:
-                                          - txtInvReqSelIssL:
+                                          - txtInvRqSelIssL:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
@@ -766,7 +789,7 @@ Screens:
                                                 Size: =12
                                                 Text: ="Issued"
                                                 Wrap: =false
-                                          - txtInvReqSelIssV:
+                                          - txtInvRqSelIssV:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
@@ -778,9 +801,9 @@ Screens:
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
                                                 Size: =16
-                                                Text: =locReqSel.Issued & " of " & locReqSel.Qty
+                                                Text: =LookUp(gblInvReqReqs, ReqId = locReqRid).Issued & " of " & LookUp(gblInvReqReqs, ReqId = locReqRid).Qty
                                                 Wrap: =false
-                                    - conInvReqSelWho:
+                                    - conInvRqSelWho:
                                         Control: GroupContainer
                                         Variant: AutoLayout
                                         Properties:
@@ -791,7 +814,7 @@ Screens:
                                           LayoutMinHeight: =0
                                           LayoutMinWidth: =220
                                         Children:
-                                          - txtInvReqSelWhoL:
+                                          - txtInvRqSelWhoL:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
@@ -804,7 +827,7 @@ Screens:
                                                 Size: =12
                                                 Text: ="Requester"
                                                 Wrap: =false
-                                          - txtInvReqSelWhoV:
+                                          - txtInvRqSelWhoV:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
@@ -815,16 +838,16 @@ Screens:
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
                                                 Size: =13
-                                                Text: =fxPersonName(Coalesce(locReqSel.Req.RequesterName, locReqSel.Req.RequesterEmail)) & If(IsBlank(locReqSel.Course.Room), "", "  ·  " & locReqSel.Course.Room)
+                                                Text: =fxPersonName(Coalesce(LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterName, LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterEmail)) & If(IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid).Course.Room), "", "  ·  " & LookUp(gblInvReqReqs, ReqId = locReqRid).Course.Room)
                                                 Wrap: =false
-                        - conInvReqMine:
+                        - conInvRqItems:
                             Control: GroupContainer
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.Semilight
                               Fill: =RGBA(255, 255, 255, 1)
                               FillPortions: =0
-                              Height: =20 + 48 + 12 + Max(24, galInvReqMine.Height) + 24
+                              Height: =20 + 48 + 12 + CountRows(Filter(gblInvReqLines, ReqId = locReqRid)) * 64 + 24
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =12
@@ -838,9 +861,9 @@ Screens:
                               RadiusBottomRight: =8
                               RadiusTopLeft: =8
                               RadiusTopRight: =8
-                              Visible: =!IsBlank(locReqSel) && fxIsInvStaff
+                              Visible: =!IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid)) && fxIsInvStaff
                             Children:
-                              - conInvReqMineHead:
+                              - conInvRqItemsHead:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
@@ -853,7 +876,7 @@ Screens:
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                   Children:
-                                    - txtInvReqMineTitle:
+                                    - txtInvRqItemsTitle:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
@@ -865,8 +888,8 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =16
-                                          Text: ="Reserved for this request (" & CountRows(AddColumns(Filter(InventoryReservations, RequestEquipmentId = locReqSel.LineId && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId))) & ")"
-                                    - txtInvReqMineDesc:
+                                          Text: ="Items (" & CountRows(Filter(gblInvReqLines, ReqId = locReqRid)) & ")"
+                                    - txtInvRqItemsDesc:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
@@ -877,30 +900,481 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =12
-                                          Text: ="Release a unit to free it for someone else."
+                                          Text: ="Reserve units for each item for the course dates. Close an item short if not every unit can be provided."
                                           Wrap: =false
-                              - txtInvReqMineNone:
-                                  Control: ModernText
-                                  Properties:
-                                    AccessibleLabel: =Self.Text
-                                    Color: =RGBA(97, 97, 97, 1)
-                                    Height: =24
-                                    LayoutMinWidth: =0
-                                    PaddingBottom: =0
-                                    PaddingLeft: =0
-                                    PaddingTop: =0
-                                    Size: =12
-                                    Text: ="Nothing reserved yet."
-                                    Visible: =IsEmpty(AddColumns(Filter(InventoryReservations, RequestEquipmentId = locReqSel.LineId && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId)))
-                                    Wrap: =false
-                              - galInvReqMine:
+                              - galInvRqItems:
                                   Control: Gallery
                                   Variant: Vertical
                                   Properties:
-                                    AccessibleLabel: ="Reserved units"
+                                    AccessibleLabel: ="Items on this request"
                                     FillPortions: =0
-                                    Height: =Self.AllItemsCount * 52
-                                    Items: =AddColumns(Filter(InventoryReservations, RequestEquipmentId = locReqSel.LineId && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId))
+                                    Height: =CountRows(Filter(gblInvReqLines, ReqId = locReqRid)) * 64
+                                    Items: =Filter(gblInvReqLines, ReqId = locReqRid)
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    ShowScrollbar: =false
+                                    TabIndex: =0
+                                    TemplatePadding: =0
+                                    TemplateSize: =64
+                                  Children:
+                                    - conInvRqItemRow:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          BorderColor: =If(ThisItem.LineId = locReqSel.LineId, RGBA(15, 76, 129, 1), RGBA(225, 228, 232, 1))
+                                          BorderThickness: =If(ThisItem.LineId = locReqSel.LineId, 2, 1)
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight - 6
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =12
+                                          PaddingLeft: =12
+                                          PaddingRight: =8
+                                          RadiusBottomLeft: =6
+                                          RadiusBottomRight: =6
+                                          RadiusTopLeft: =6
+                                          RadiusTopRight: =6
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - conInvRqItemText:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                Height: =50
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutJustifyContent: =LayoutJustifyContent.Center
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                              Children:
+                                                - txtInvRqItemName:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(36, 36, 36, 1)
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =22
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =13
+                                                      Text: =ThisItem.Item
+                                                      Wrap: =false
+                                                - txtInvRqItemInfo:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(97, 97, 97, 1)
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =12
+                                                      Text: ="qty " & ThisItem.Qty & "  ·  " & ThisItem.Route & If(Max(0, ThisItem.Qty - ThisItem.Reserved - ThisItem.Issued) > 0, "  ·  " & Max(0, ThisItem.Qty - ThisItem.Reserved - ThisItem.Issued) & " still to reserve", "")
+                                                      Wrap: =false
+                                          - txtInvRqItemRes:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Align: =Align.Center
+                                                AlignInContainer: =AlignInContainer.Center
+                                                Color: =RGBA(92, 45, 145, 1)
+                                                Fill: =RGBA(243, 238, 250, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =24
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                RadiusBottomLeft: =12
+                                                RadiusBottomRight: =12
+                                                RadiusTopLeft: =12
+                                                RadiusTopRight: =12
+                                                Size: =12
+                                                Text: ="Reserved " & ThisItem.Reserved & " of " & ThisItem.Qty
+                                                Width: =130
+                                                Wrap: =false
+                                          - txtInvRqItemIss:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Align: =Align.Center
+                                                AlignInContainer: =AlignInContainer.Center
+                                                Color: =If(ThisItem.Issued > 0, RGBA(16, 110, 16, 1), RGBA(97, 97, 97, 1))
+                                                Fill: =If(ThisItem.Issued > 0, RGBA(223, 246, 221, 1), RGBA(237, 239, 242, 1))
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =24
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                RadiusBottomLeft: =12
+                                                RadiusBottomRight: =12
+                                                RadiusTopLeft: =12
+                                                RadiusTopRight: =12
+                                                Size: =12
+                                                Text: ="Issued " & ThisItem.Issued & " of " & ThisItem.Qty
+                                                Width: =120
+                                                Wrap: =false
+                                          - btnInvRqItemReserve:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Reserve units for " & ThisItem.Item
+                                                Appearance: =If(ThisItem.LineId = locReqSel.LineId, ButtonAppearance.Primary, ButtonAppearance.Secondary)
+                                                Height: =36
+                                                Icon: ="Add"
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =UpdateContext({locReqSel: ThisItem}); Reset(dteInvRqStart); Reset(dteInvRqEnd); Reset(txtInvRqFind); Reset(txtInvRqNote)
+                                                Text: ="Reserve…"
+                                                Visible: =Max(0, ThisItem.Qty - ThisItem.Reserved - ThisItem.Issued) > 0
+                                                Width: =120
+                                          - btnInvRqItemShort:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Close " & ThisItem.Item & " short"
+                                                Appearance: =ButtonAppearance.Subtle
+                                                Height: =36
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =UpdateContext({locReqSel: ThisItem}); Reset(txtInvRqNote)
+                                                Text: ="Close short"
+                                                Width: =120
+                        - conInvRqPick:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.Semilight
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FillPortions: =0
+                              Height: |-
+                                =20 + 48 + 12 + If(App.Width >= 1000, 60, 3 * 60 + 24) + 12 + 40 + 12 + Max(24, Min(CountRows(With(
+                                    {cl: locReqSel, s: dteInvRqStart.SelectedDate, e: dteInvRqEnd.SelectedDate, q: Lower(Trim(txtInvRqFind.Text))},
+                                    SortByColumns(
+                                        AddColumns(
+                                            Filter(
+                                                gblInvAssets,
+                                                Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                    (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
+                                                    !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
+                                                    (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                            ),
+                                            Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                        ),
+                                        "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
+                                    )
+                                )), 20) * 52) + 24
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =12
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              PaddingBottom: =24
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              PaddingTop: =20
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                              Visible: =!IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid)) && !IsBlank(locReqSel) && fxIsInvStaff && Max(0, locReqSel.Qty - locReqSel.Reserved - locReqSel.Issued) > 0
+                            Children:
+                              - conInvRqPickHead:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =48
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvRqPickTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(36, 36, 36, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =26
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =16
+                                          Text: ="Reserve " & locReqSel.Item & " (" & Max(0, locReqSel.Qty - locReqSel.Reserved - locReqSel.Issued) & " still needed)"
+                                    - txtInvRqPickDesc:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: ="Available units of this department, best catalog match first."
+                                          Wrap: =false
+                              - conInvRqPickOpts:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =If(App.Width >= 1000, 60, 3 * 60 + 2 * 12)
+                                    LayoutAlignItems: =If(App.Width >= 1000, LayoutAlignItems.Start, LayoutAlignItems.Stretch)
+                                    LayoutDirection: =If(App.Width >= 1000, LayoutDirection.Horizontal, LayoutDirection.Vertical)
+                                    LayoutGap: =12
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - conInvRqFStart:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =60
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =4
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =170
+                                        Children:
+                                          - txtInvRqFStartLbl:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(66, 66, 66, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =20
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =13
+                                                Text: ="From"
+                                          - dteInvRqStart:
+                                              Control: ModernDatePicker
+                                              Properties:
+                                                AccessibleLabel: ="Reserve from"
+                                                AlignInContainer: =AlignInContainer.Stretch
+                                                Appearance: =Appearance.Outline
+                                                DefaultDate: =locReqSel.Start
+                                                Height: =36
+                                                LayoutMinWidth: =0
+                                                Width: =Parent.Width
+                                    - conInvRqFEnd:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =60
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =4
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =170
+                                        Children:
+                                          - txtInvRqFEndLbl:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(66, 66, 66, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =20
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =13
+                                                Text: ="To"
+                                          - dteInvRqEnd:
+                                              Control: ModernDatePicker
+                                              Properties:
+                                                AccessibleLabel: ="Reserve until"
+                                                AlignInContainer: =AlignInContainer.Stretch
+                                                Appearance: =Appearance.Outline
+                                                DefaultDate: =locReqSel.End
+                                                Height: =36
+                                                LayoutMinWidth: =0
+                                                Width: =Parent.Width
+                                    - conInvRqFFind:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          Height: =60
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =4
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =170
+                                        Children:
+                                          - txtInvRqFFindLbl:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(66, 66, 66, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =20
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =13
+                                                Text: ="Find"
+                                          - txtInvRqFind:
+                                              Control: ModernTextInput
+                                              Properties:
+                                                AccessibleLabel: ="Find a unit"
+                                                AlignInContainer: =AlignInContainer.Stretch
+                                                Appearance: =Appearance.Outline
+                                                Height: =36
+                                                LayoutMinWidth: =0
+                                                Placeholder: ="Tag, serial or model"
+                                                Width: =Parent.Width
+                              - conInvRqPickBtns:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =40
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =8
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvRqPickSum:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          FillPortions: =1
+                                          Height: =36
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: |-
+                                            =CountRows(With(
+                                                {cl: locReqSel, s: dteInvRqStart.SelectedDate, e: dteInvRqEnd.SelectedDate, q: Lower(Trim(txtInvRqFind.Text))},
+                                                SortByColumns(
+                                                    AddColumns(
+                                                        Filter(
+                                                            gblInvAssets,
+                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
+                                                                !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
+                                                                (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                        ),
+                                                        Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                                    ),
+                                                    "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
+                                                )
+                                            )) & " available for these dates"
+                                          Wrap: =false
+                                    - btnInvRqReserveN:
+                                        Control: ModernButton
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          DisplayMode: |-
+                                            =If(locBusy || IsEmpty(With(
+                                                {cl: locReqSel, s: dteInvRqStart.SelectedDate, e: dteInvRqEnd.SelectedDate, q: Lower(Trim(txtInvRqFind.Text))},
+                                                SortByColumns(
+                                                    AddColumns(
+                                                        Filter(
+                                                            gblInvAssets,
+                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
+                                                                !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
+                                                                (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                        ),
+                                                        Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                                    ),
+                                                    "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
+                                                )
+                                            )) || IsBlank(dteInvRqStart.SelectedDate) || IsBlank(dteInvRqEnd.SelectedDate), DisplayMode.Disabled, DisplayMode.Edit)
+                                          Height: =36
+                                          Icon: ="Add"
+                                          LayoutMinWidth: =0
+                                          OnSelect: |-
+                                            =// Reserve the first units still needed (best catalog match first), one flow call each.
+                                            UpdateContext({locBusy: true});
+                                            With(
+                                                {picks: FirstN(With(
+                                                {cl: locReqSel, s: dteInvRqStart.SelectedDate, e: dteInvRqEnd.SelectedDate, q: Lower(Trim(txtInvRqFind.Text))},
+                                                SortByColumns(
+                                                    AddColumns(
+                                                        Filter(
+                                                            gblInvAssets,
+                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
+                                                                !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
+                                                                (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                        ),
+                                                        Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                                    ),
+                                                    "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
+                                                )
+                                            ), Max(0, locReqSel.Qty - locReqSel.Reserved - locReqSel.Issued))},
+                                                With(
+                                                    {results: ForAll(picks As a, IfError(With({r: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "Reserve", lineId: locReqSel.LineId, assetId: a.ID, startDate: Text(dteInvRqStart.SelectedDate, "yyyy-mm-dd"), endDate: Text(dteInvRqEnd.SelectedDate, "yyyy-mm-dd")})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)}, {Ok: Text(r.status) = "Success", Message: a.Title & ": " & Text(r.message)}), {Ok: false, Message: a.Title & ": the inventory service could not be reached."}))},
+                                                    Notify(CountRows(Filter(results, Ok)) & " reserved." & If(IsEmpty(Filter(results, !Ok)), "", "  Not reserved: " & Concat(Filter(results, !Ok), Message, "; ")), If(IsEmpty(Filter(results, !Ok)), NotificationType.Success, NotificationType.Warning))
+                                                )
+                                            );
+                                            UpdateContext({locBusy: false});
+                                            Set(gblInvLoadedAt, Blank()); Select(btnInvRqReload); Select(btnInvRqLoad)
+                                          Text: |-
+                                            ="Reserve " & Min(Max(0, locReqSel.Qty - locReqSel.Reserved - locReqSel.Issued), CountRows(With(
+                                                {cl: locReqSel, s: dteInvRqStart.SelectedDate, e: dteInvRqEnd.SelectedDate, q: Lower(Trim(txtInvRqFind.Text))},
+                                                SortByColumns(
+                                                    AddColumns(
+                                                        Filter(
+                                                            gblInvAssets,
+                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
+                                                                !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
+                                                                (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                        ),
+                                                        Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                                    ),
+                                                    "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
+                                                )
+                                            ))) & " for me"
+                                          Width: =190
+                              - galInvRqPick:
+                                  Control: Gallery
+                                  Variant: Vertical
+                                  Properties:
+                                    AccessibleLabel: ="Available units"
+                                    FillPortions: =0
+                                    Height: =Min(Self.AllItemsCount, 20) * 52
+                                    Items: |-
+                                      =FirstN(With(
+                                          {cl: locReqSel, s: dteInvRqStart.SelectedDate, e: dteInvRqEnd.SelectedDate, q: Lower(Trim(txtInvRqFind.Text))},
+                                          SortByColumns(
+                                              AddColumns(
+                                                  Filter(
+                                                      gblInvAssets,
+                                                      Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                          (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
+                                                          !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
+                                                          (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                  ),
+                                                  Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                              ),
+                                              "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
+                                          )
+                                      ), 20)
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                     ShowScrollbar: =false
@@ -908,7 +1382,7 @@ Screens:
                                     TemplatePadding: =0
                                     TemplateSize: =52
                                   Children:
-                                    - conInvReqMineRow:
+                                    - conInvRqPickRow:
                                         Control: GroupContainer
                                         Variant: AutoLayout
                                         Properties:
@@ -927,7 +1401,179 @@ Screens:
                                           RadiusTopRight: =6
                                           Width: =Parent.TemplateWidth
                                         Children:
-                                          - txtInvReqMineTag:
+                                          - txtInvRqPickTag:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(36, 36, 36, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =20
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =13
+                                                Text: =ThisItem.Title
+                                                Wrap: =false
+                                          - txtInvRqPickInfo:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(97, 97, 97, 1)
+                                                FillPortions: =1
+                                                Height: =20
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =12
+                                                Text: =Coalesce(ThisItem.CatalogNameSnapshot, "No catalog item") & If(IsBlank(Trim(ThisItem.Make & ThisItem.Model)), "", "  ·  " & Trim(ThisItem.Make & " " & ThisItem.Model)) & If(IsBlank(ThisItem.HomeLocation), "", "  ·  " & ThisItem.HomeLocation)
+                                                Wrap: =false
+                                          - btnInvRqPickGo:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Reserve " & ThisItem.Title
+                                                Appearance: =ButtonAppearance.Secondary
+                                                DisplayMode: =If(locBusy || IsBlank(dteInvRqStart.SelectedDate) || IsBlank(dteInvRqEnd.SelectedDate), DisplayMode.Disabled, DisplayMode.Edit)
+                                                Height: =36
+                                                Icon: ="Add"
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =UpdateContext({locBusy: true});
+                                                  IfError(
+                                                      With(
+                                                          {raw: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "Reserve", lineId: locReqSel.LineId, assetId: ThisItem.ID, startDate: Text(dteInvRqStart.SelectedDate, "yyyy-mm-dd"), endDate: Text(dteInvRqEnd.SelectedDate, "yyyy-mm-dd")})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
+                                                          UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})
+                                                      ),
+                                                      UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
+                                                  );
+                                                  UpdateContext({locBusy: false});
+                                                  Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
+                                                  If(locResult.Status = "Success", Set(gblInvLoadedAt, Blank()); Select(btnInvRqReload); Select(btnInvRqLoad))
+                                                Text: ="Reserve"
+                                                Width: =120
+                        - conInvRqMine:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.Semilight
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FillPortions: =0
+                              Height: =20 + 48 + 12 + Max(24, CountRows(AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item"))) * 52) + 24
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =12
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              PaddingBottom: =24
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              PaddingTop: =20
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                              Visible: =!IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid)) && fxIsInvStaff
+                            Children:
+                              - conInvRqMineHead:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =48
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                  Children:
+                                    - txtInvRqMineTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(36, 36, 36, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =26
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =16
+                                          Text: ="Reserved for this request (" & CountRows(AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item"))) & ")"
+                                    - txtInvRqMineDesc:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =20
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: ="Ticked units are issued below. Untick a unit to keep it for later; Release frees it for someone else."
+                                          Wrap: =false
+                              - txtInvRqMineNone:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(97, 97, 97, 1)
+                                    Height: =24
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =12
+                                    Text: ="Nothing reserved yet. Use Reserve… on an item above."
+                                    Visible: =IsEmpty(AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item")))
+                                    Wrap: =false
+                              - galInvRqMine:
+                                  Control: Gallery
+                                  Variant: Vertical
+                                  Properties:
+                                    AccessibleLabel: ="Reserved units"
+                                    FillPortions: =0
+                                    Height: =Self.AllItemsCount * 52
+                                    Items: =AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item"))
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    ShowScrollbar: =false
+                                    TabIndex: =0
+                                    TemplatePadding: =0
+                                    TemplateSize: =52
+                                  Children:
+                                    - conInvRqMineRow:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          BorderColor: =RGBA(225, 228, 232, 1)
+                                          BorderThickness: =1
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight - 4
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =12
+                                          PaddingLeft: =8
+                                          PaddingRight: =4
+                                          RadiusBottomLeft: =6
+                                          RadiusBottomRight: =6
+                                          RadiusTopLeft: =6
+                                          RadiusTopRight: =6
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - chkInvRqMinePick:
+                                              Control: ModernCheckbox
+                                              Properties:
+                                                AccessibleLabel: ="Issue " & ThisItem.AssetTagSnapshot & " now"
+                                                Default: =!(ThisItem.ID in colReqSkip.Value)
+                                                Label: =""
+                                                LayoutMinWidth: =0
+                                                OnCheck: =RemoveIf(colReqSkip, Value = ThisItem.ID)
+                                                OnUncheck: |-
+                                                  =If(!(ThisItem.ID in colReqSkip.Value), Collect(colReqSkip, {Value: ThisItem.ID}))
+                                                Width: =32
+                                          - txtInvRqMineTag:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
@@ -941,7 +1587,7 @@ Screens:
                                                 Size: =13
                                                 Text: =ThisItem.AssetTagSnapshot
                                                 Wrap: =false
-                                          - txtInvReqMineInfo:
+                                          - txtInvRqMineInfo:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
@@ -954,26 +1600,26 @@ Screens:
                                                 PaddingTop: =0
                                                 Size: =12
                                                 Text: |-
-                                                  =Trim(ThisItem.A.Make & " " & ThisItem.A.Model) & "  ·  " & Text(ThisItem.StartDate, "mmm d") & " – " & Text(ThisItem.EndDate, "mmm d, yyyy") & If(ThisItem.A.Status = "Issued", With({due: LookUp(gblInvOpenCheckouts, AssetId = ThisItem.AssetId).DueDate}, "  ·  Not back yet" & If(IsBlank(due), "", " (due " & Text(due, "mmm d") & ")")), "")
+                                                  =ThisItem.ItemName & "  ·  " & Trim(ThisItem.A.Make & " " & ThisItem.A.Model) & "  ·  " & Text(ThisItem.StartDate, "mmm d") & " – " & Text(ThisItem.EndDate, "mmm d, yyyy") & If(ThisItem.A.Status = "Issued", With({due: LookUp(gblInvOpenCheckouts, AssetId = ThisItem.AssetId).DueDate}, "  ·  Not back yet" & If(IsBlank(due), "", " (due " & Text(due, "mmm d") & ")")), "")
                                                 Wrap: =false
-                                          - btnInvReqMineSwap:
+                                          - btnInvRqMineSwap:
                                               Control: ModernButton
                                               Properties:
                                                 AccessibleLabel: ="Swap " & ThisItem.AssetTagSnapshot & " for an available unit"
                                                 Appearance: =ButtonAppearance.Secondary
                                                 DisplayMode: |-
                                                   =If(locBusy || IsEmpty(With(
-                                                      {s: dteInvReqStart.SelectedDate, e: dteInvReqEnd.SelectedDate, q: Lower(Trim(txtInvReqFind.Text))},
+                                                      {cl: LookUp(gblInvReqLines, LineId = ThisItem.RequestEquipmentId), s: ThisItem.StartDate, e: ThisItem.EndDate, q: ""},
                                                       SortByColumns(
                                                           AddColumns(
                                                               Filter(
                                                                   gblInvAssets,
-                                                                  Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in locReqSel.Route && fxCanManage(Dept) &&
-                                                                      (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = locReqSel.CatalogId) &&
+                                                                  Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                      (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
                                                                       !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
                                                                       (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
                                                               ),
-                                                              Fit, If(CatalogItemId = locReqSel.CatalogId, 0, 1)
+                                                              Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
                                                           ),
                                                           "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                                       )
@@ -985,21 +1631,21 @@ Screens:
                                                   =UpdateContext({locBusy: true});
                                                   With(
                                                       {next: First(With(
-                                                      {s: dteInvReqStart.SelectedDate, e: dteInvReqEnd.SelectedDate, q: Lower(Trim(txtInvReqFind.Text))},
+                                                      {cl: LookUp(gblInvReqLines, LineId = ThisItem.RequestEquipmentId), s: ThisItem.StartDate, e: ThisItem.EndDate, q: ""},
                                                       SortByColumns(
                                                           AddColumns(
                                                               Filter(
                                                                   gblInvAssets,
-                                                                  Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in locReqSel.Route && fxCanManage(Dept) &&
-                                                                      (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = locReqSel.CatalogId) &&
+                                                                  Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                      (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
                                                                       !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
                                                                       (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
                                                               ),
-                                                              Fit, If(CatalogItemId = locReqSel.CatalogId, 0, 1)
+                                                              Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
                                                           ),
                                                           "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                                       )
-                                                  )), tag: ThisItem.AssetTagSnapshot},
+                                                  )), tag: ThisItem.AssetTagSnapshot, ln: LookUp(gblInvReqLines, LineId = ThisItem.RequestEquipmentId), s: ThisItem.StartDate, e: ThisItem.EndDate},
                                                       IfError(
                                                           With(
                                                               {rel: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "ReleaseReservation", reservationId: ThisItem.ID, note: "Swapped: not back in time"})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
@@ -1007,7 +1653,7 @@ Screens:
                                                                   Text(rel.status) <> "Success",
                                                                   Notify(Text(rel.message), NotificationType.Error),
                                                                   With(
-                                                                      {res: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "Reserve", lineId: locReqSel.LineId, assetId: next.ID, startDate: Text(dteInvReqStart.SelectedDate, "yyyy-mm-dd"), endDate: Text(dteInvReqEnd.SelectedDate, "yyyy-mm-dd")})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
+                                                                      {res: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "Reserve", lineId: ln.LineId, assetId: next.ID, startDate: Text(s, "yyyy-mm-dd"), endDate: Text(e, "yyyy-mm-dd")})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                                       Notify(
                                                                           If(Text(res.status) = "Success", tag & " swapped for " & next.Title & ".", tag & " was released, but " & next.Title & " could not be reserved: " & Text(res.message)),
                                                                           If(Text(res.status) = "Success", NotificationType.Success, NotificationType.Warning)
@@ -1019,27 +1665,27 @@ Screens:
                                                       )
                                                   );
                                                   UpdateContext({locBusy: false});
-                                                  Set(gblInvLoadedAt, Blank()); Select(btnInvReqReload); Select(btnInvReqLoad)
+                                                  Set(gblInvLoadedAt, Blank()); Select(btnInvRqReload); Select(btnInvRqLoad)
                                                 Text: |-
                                                   =If(IsEmpty(With(
-                                                      {s: dteInvReqStart.SelectedDate, e: dteInvReqEnd.SelectedDate, q: Lower(Trim(txtInvReqFind.Text))},
+                                                      {cl: LookUp(gblInvReqLines, LineId = ThisItem.RequestEquipmentId), s: ThisItem.StartDate, e: ThisItem.EndDate, q: ""},
                                                       SortByColumns(
                                                           AddColumns(
                                                               Filter(
                                                                   gblInvAssets,
-                                                                  Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in locReqSel.Route && fxCanManage(Dept) &&
-                                                                      (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = locReqSel.CatalogId) &&
+                                                                  Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                      (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
                                                                       !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
                                                                       (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
                                                               ),
-                                                              Fit, If(CatalogItemId = locReqSel.CatalogId, 0, 1)
+                                                              Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
                                                           ),
                                                           "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                                       )
                                                   )), "No other unit", "Swap")
                                                 Visible: =ThisItem.A.Status = "Issued"
                                                 Width: =140
-                                          - btnInvReqMineRelease:
+                                          - btnInvRqMineRelease:
                                               Control: ModernButton
                                               Properties:
                                                 AccessibleLabel: ="Release " & ThisItem.AssetTagSnapshot
@@ -1059,10 +1705,10 @@ Screens:
                                                   );
                                                   UpdateContext({locBusy: false});
                                                   Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
-                                                  If(locResult.Status = "Success", Set(gblInvLoadedAt, Blank()); Select(btnInvReqReload); Select(btnInvReqLoad))
+                                                  If(locResult.Status = "Success", Set(gblInvLoadedAt, Blank()); Select(btnInvRqReload); Select(btnInvRqLoad))
                                                 Text: ="Release"
                                                 Width: =110
-                        - conInvReqIssue:
+                        - conInvRqIssue:
                             Control: GroupContainer
                             Variant: AutoLayout
                             Properties:
@@ -1083,9 +1729,9 @@ Screens:
                               RadiusBottomRight: =8
                               RadiusTopLeft: =8
                               RadiusTopRight: =8
-                              Visible: =!IsBlank(locReqSel) && fxIsInvStaff && !IsEmpty(AddColumns(Filter(InventoryReservations, RequestEquipmentId = locReqSel.LineId && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId)))
+                              Visible: =!IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid)) && fxIsInvStaff && !IsEmpty(AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item")))
                             Children:
-                              - conInvReqIssueHead:
+                              - conInvRqIssueHead:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
@@ -1098,7 +1744,7 @@ Screens:
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                   Children:
-                                    - txtInvReqIssueTitle:
+                                    - txtInvRqIssueTitle:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
@@ -1110,8 +1756,8 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =16
-                                          Text: ="Issue the reserved units (" & CountRows(AddColumns(Filter(InventoryReservations, RequestEquipmentId = locReqSel.LineId && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId))) & ")"
-                                    - txtInvReqIssueDesc:
+                                          Text: ="Issue the ticked units (" & CountRows(Filter(AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item")), !(ID in colReqSkip.Value))) & " of " & CountRows(AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item"))) & ")"
+                                    - txtInvRqIssueDesc:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
@@ -1122,9 +1768,9 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =12
-                                          Text: ="All go on one DAF Form 1297 receipt for the person picking them up."
+                                          Text: ="One DAF Form 1297 receipt per department for the person picking them up."
                                           Wrap: =false
-                              - conInvReqIssR1:
+                              - conInvRqIssR1:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
@@ -1137,7 +1783,7 @@ Screens:
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                   Children:
-                                    - conInvReqFWho:
+                                    - conInvRqFWho:
                                         Control: GroupContainer
                                         Variant: AutoLayout
                                         Properties:
@@ -1149,7 +1795,7 @@ Screens:
                                           LayoutMinHeight: =0
                                           LayoutMinWidth: =170
                                         Children:
-                                          - txtInvReqFWhoLbl:
+                                          - txtInvRqFWhoLbl:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
@@ -1162,7 +1808,7 @@ Screens:
                                                 PaddingTop: =0
                                                 Size: =13
                                                 Text: ="Issued to (leave empty for the requester)"
-                                          - cmbInvReqWho:
+                                          - cmbInvRqWho:
                                               Control: ModernCombobox
                                               Properties:
                                                 AccessibleLabel: ="Person picking up the equipment"
@@ -1170,14 +1816,14 @@ Screens:
                                                 Appearance: =Appearance.Outline
                                                 DelayOutput: =true
                                                 Height: =36
-                                                InputTextPlaceholder: =fxPersonName(Coalesce(locReqSel.Req.RequesterName, locReqSel.Req.RequesterEmail))
+                                                InputTextPlaceholder: =fxPersonName(Coalesce(LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterName, LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterEmail))
                                                 ItemDisplayText: =ThisItem.DisplayName & "  (" & ThisItem.Mail & ")"
                                                 Items: |-
-                                                  =If(Len(Trim(cmbInvReqWho.SearchText)) >= 2, Filter(Office365Users.SearchUserV2({searchTerm: Trim(cmbInvReqWho.SearchText), top: 15, isSearchTermRequired: true}).value, AccountEnabled && !IsBlank(Mail)))
+                                                  =If(Len(Trim(cmbInvRqWho.SearchText)) >= 2, Filter(Office365Users.SearchUserV2({searchTerm: Trim(cmbInvRqWho.SearchText), top: 15, isSearchTermRequired: true}).value, AccountEnabled && !IsBlank(Mail)))
                                                 LayoutMinWidth: =0
                                                 SelectMultiple: =false
                                                 Width: =Parent.Width
-                                    - conInvReqFPhone:
+                                    - conInvRqFPhone:
                                         Control: GroupContainer
                                         Variant: AutoLayout
                                         Properties:
@@ -1189,7 +1835,7 @@ Screens:
                                           LayoutMinHeight: =0
                                           LayoutMinWidth: =170
                                         Children:
-                                          - txtInvReqFPhoneLbl:
+                                          - txtInvRqFPhoneLbl:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
@@ -1202,18 +1848,18 @@ Screens:
                                                 PaddingTop: =0
                                                 Size: =13
                                                 Text: ="Duty phone"
-                                          - txtInvReqPhone:
+                                          - txtInvRqPhone:
                                               Control: ModernTextInput
                                               Properties:
                                                 AccessibleLabel: ="Duty phone"
                                                 AlignInContainer: =AlignInContainer.Stretch
                                                 Appearance: =Appearance.Outline
-                                                Default: =If(IsBlank(locReqSel), "", IfError(Coalesce(First(Office365Users.UserProfileV2(If(IsBlank(cmbInvReqWho.Selected), locReqSel.Req.RequesterEmail, cmbInvReqWho.Selected.Mail)).businessPhones).Value, ""), ""))
+                                                Default: =If(IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid)), "", IfError(Coalesce(First(Office365Users.UserProfileV2(If(IsBlank(cmbInvRqWho.Selected), LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterEmail, cmbInvRqWho.Selected.Mail)).businessPhones).Value, ""), ""))
                                                 Height: =36
                                                 LayoutMinWidth: =0
                                                 Placeholder: ="From their profile"
                                                 Width: =Parent.Width
-                              - conInvReqIssR2:
+                              - conInvRqIssR2:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
@@ -1226,7 +1872,7 @@ Screens:
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                   Children:
-                                    - conInvReqFReturn:
+                                    - conInvRqFReturn:
                                         Control: GroupContainer
                                         Variant: AutoLayout
                                         Properties:
@@ -1238,7 +1884,7 @@ Screens:
                                           LayoutMinHeight: =0
                                           LayoutMinWidth: =170
                                         Children:
-                                          - txtInvReqFReturnLbl:
+                                          - txtInvRqFReturnLbl:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
@@ -1251,17 +1897,17 @@ Screens:
                                                 PaddingTop: =0
                                                 Size: =13
                                                 Text: ="Return date"
-                                          - dteInvReqReturn:
+                                          - dteInvRqReturn:
                                               Control: ModernDatePicker
                                               Properties:
                                                 AccessibleLabel: ="Return date"
                                                 AlignInContainer: =AlignInContainer.Stretch
                                                 Appearance: =Appearance.Outline
-                                                DefaultDate: =DateAdd(locReqSel.End, 1, TimeUnit.Days)
+                                                DefaultDate: =DateAdd(LookUp(gblInvReqReqs, ReqId = locReqRid).End, 1, TimeUnit.Days)
                                                 Height: =36
                                                 LayoutMinWidth: =0
                                                 Width: =Parent.Width
-                                    - conInvReqFSign:
+                                    - conInvRqFSign:
                                         Control: GroupContainer
                                         Variant: AutoLayout
                                         Properties:
@@ -1273,7 +1919,7 @@ Screens:
                                           LayoutMinHeight: =0
                                           LayoutMinWidth: =170
                                         Children:
-                                          - txtInvReqFSignLbl:
+                                          - txtInvRqFSignLbl:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
@@ -1286,7 +1932,7 @@ Screens:
                                                 PaddingTop: =0
                                                 Size: =13
                                                 Text: ="Signature method"
-                                          - drpInvReqSign:
+                                          - drpInvRqSign:
                                               Control: ModernDropdown
                                               Properties:
                                                 AccessibleLabel: ="How the person signs the receipt"
@@ -1300,7 +1946,7 @@ Screens:
                                                   =Table({Value: "Electronic", Label: "Electronic: approval in Outlook / Teams"}, {Value: "CAC", Label: "CAC: sign the PDF in Adobe, then upload it"})
                                                 LayoutMinWidth: =0
                                                 Width: =Parent.Width
-                              - conInvReqIssBtns:
+                              - conInvRqIssBtns:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
@@ -1314,7 +1960,7 @@ Screens:
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                   Children:
-                                    - txtInvReqIssHint:
+                                    - txtInvRqIssHint:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
@@ -1326,8 +1972,8 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =12
-                                          Text: =If(locReqSel.Reserved + locReqSel.Issued < locReqSel.Qty, "You can issue now and reserve the rest later.", "Issuing all approved units completes this item on the request.")
-                                    - spnInvReqBusy:
+                                          Text: =If(LookUp(gblInvReqReqs, ReqId = locReqRid).Reserved + LookUp(gblInvReqReqs, ReqId = locReqRid).Issued < LookUp(gblInvReqReqs, ReqId = locReqRid).Qty, "You can issue these now and reserve the rest later.", "Issuing every approved unit completes the request.")
+                                    - spnInvRqBusy:
                                         Control: ModernSpinner
                                         Properties:
                                           AccessibleLabel: ="Working"
@@ -1335,20 +1981,19 @@ Screens:
                                           LayoutMinWidth: =0
                                           Visible: =locBusy
                                           Width: =160
-                                    - btnInvReqIssueAll:
+                                    - btnInvRqIssueGo:
                                         Control: ModernButton
                                         Properties:
-                                          AccessibleLabel: ="Issue every unit reserved for this request, one receipt per department"
-                                          Appearance: =ButtonAppearance.Secondary
-                                          DisplayMode: =If(locBusy || IsBlank(dteInvReqReturn.SelectedDate) || IsBlank(If(IsBlank(cmbInvReqWho.Selected), locReqSel.Req.RequesterEmail, cmbInvReqWho.Selected.Mail)), DisplayMode.Disabled, DisplayMode.Edit)
+                                          AccessibleLabel: =Self.Text
+                                          DisplayMode: =If(locBusy || IsEmpty(Filter(AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item")), !(ID in colReqSkip.Value))) || IsBlank(dteInvRqReturn.SelectedDate) || IsBlank(If(IsBlank(cmbInvRqWho.Selected), LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterEmail, cmbInvRqWho.Selected.Mail)), DisplayMode.Disabled, DisplayMode.Edit)
                                           Height: =36
                                           Icon: ="Send"
                                           LayoutMinWidth: =0
                                           OnSelect: |-
-                                            =// Every unit reserved for this request, on one receipt per department: StartReceipt -> Issue each -> FinishReceipt.
+                                            =// The ticked units, on one receipt per department: StartReceipt -> Issue each -> FinishReceipt.
                                             UpdateContext({locBusy: true});
                                             With(
-                                                {all: AddColumns(Filter(InventoryReservations, RequestId = locReqSel.Req.ID && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId))},
+                                                {all: Filter(AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item")), !(ID in colReqSkip.Value))},
                                                 With(
                                                     {
                                                         byDept: ForAll(
@@ -1359,10 +2004,10 @@ Screens:
                                                                     With(
                                                                         {start: ParseJSON(With({invPl: JSON({
                                                                             actionVersion: fxInvActionVersion, action: "StartReceipt",
-                                                                            recipient: {email: Lower(If(IsBlank(cmbInvReqWho.Selected), locReqSel.Req.RequesterEmail, cmbInvReqWho.Selected.Mail)), name: If(IsBlank(cmbInvReqWho.Selected), Coalesce(locReqSel.Req.RequesterName, locReqSel.Req.RequesterEmail), cmbInvReqWho.Selected.DisplayName), claims: "i:0#.f|membership|" & Lower(If(IsBlank(cmbInvReqWho.Selected), locReqSel.Req.RequesterEmail, cmbInvReqWho.Selected.Mail))},
-                                                                            dutyPhone: Trim(txtInvReqPhone.Text), orgAccountNo: Switch(dept, "IT", "TSOS", "AV", "TSAV", ""),
-                                                                            returnDate: Text(dteInvReqReturn.SelectedDate, "yyyy-mm-dd"), checkoutType: "Request Loan", department: dept,
-                                                                            requestId: locReqSel.Req.ID, signatureMethod: drpInvReqSign.Selected.Value
+                                                                            recipient: {email: Lower(If(IsBlank(cmbInvRqWho.Selected), LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterEmail, cmbInvRqWho.Selected.Mail)), name: If(IsBlank(cmbInvRqWho.Selected), Coalesce(LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterName, LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterEmail), cmbInvRqWho.Selected.DisplayName), claims: "i:0#.f|membership|" & Lower(If(IsBlank(cmbInvRqWho.Selected), LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterEmail, cmbInvRqWho.Selected.Mail))},
+                                                                            dutyPhone: Trim(txtInvRqPhone.Text), orgAccountNo: Switch(dept, "IT", "TSOS", "AV", "TSAV", ""),
+                                                                            returnDate: Text(dteInvRqReturn.SelectedDate, "yyyy-mm-dd"), checkoutType: "Request Loan", department: dept,
+                                                                            requestId: locReqRid, signatureMethod: drpInvRqSign.Selected.Value
                                                                         })}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                                         If(
                                                                             Text(start.status) <> "Success",
@@ -1391,451 +2036,11 @@ Screens:
                                                 )
                                             );
                                             UpdateContext({locBusy: false});
-                                            Set(gblInvLoadedAt, Blank()); Select(btnInvReqReload); Select(btnInvReqLoad)
-                                          Text: ="Issue all reserved (" & CountRows(AddColumns(Filter(InventoryReservations, RequestId = locReqSel.Req.ID && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId))) & ")"
-                                          Visible: =CountRows(Distinct(AddColumns(Filter(InventoryReservations, RequestId = locReqSel.Req.ID && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId)), RequestEquipmentId)) > 1
-                                          Width: =210
-                                    - btnInvReqIssueGo:
-                                        Control: ModernButton
-                                        Properties:
-                                          AccessibleLabel: =Self.Text
-                                          DisplayMode: =If(locBusy || IsBlank(dteInvReqReturn.SelectedDate) || IsBlank(If(IsBlank(cmbInvReqWho.Selected), locReqSel.Req.RequesterEmail, cmbInvReqWho.Selected.Mail)), DisplayMode.Disabled, DisplayMode.Edit)
-                                          Height: =36
-                                          Icon: ="Send"
-                                          LayoutMinWidth: =0
-                                          OnSelect: |-
-                                            =// One receipt for this request's reserved units: StartReceipt (Request Loan) -> Issue each reservation -> FinishReceipt.
-                                            UpdateContext({locBusy: true});
-                                            With(
-                                                {mine: AddColumns(Filter(InventoryReservations, RequestEquipmentId = locReqSel.LineId && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId))},
-                                                With(
-                                                    {dept: First(mine).A.Dept},
-                                                    IfError(
-                                                        With(
-                                                            {start: ParseJSON(With({invPl: JSON({
-                                                                actionVersion: fxInvActionVersion, action: "StartReceipt",
-                                                                recipient: {email: Lower(If(IsBlank(cmbInvReqWho.Selected), locReqSel.Req.RequesterEmail, cmbInvReqWho.Selected.Mail)), name: If(IsBlank(cmbInvReqWho.Selected), Coalesce(locReqSel.Req.RequesterName, locReqSel.Req.RequesterEmail), cmbInvReqWho.Selected.DisplayName), claims: "i:0#.f|membership|" & Lower(If(IsBlank(cmbInvReqWho.Selected), locReqSel.Req.RequesterEmail, cmbInvReqWho.Selected.Mail))},
-                                                                dutyPhone: Trim(txtInvReqPhone.Text), orgAccountNo: Switch(dept, "IT", "TSOS", "AV", "TSAV", ""),
-                                                                returnDate: Text(dteInvReqReturn.SelectedDate, "yyyy-mm-dd"), checkoutType: "Request Loan", department: dept,
-                                                                requestId: locReqSel.Req.ID, signatureMethod: drpInvReqSign.Selected.Value
-                                                            })}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
-                                                            If(
-                                                                Text(start.status) <> "Success",
-                                                                Notify(Text(start.message), NotificationType.Error),
-                                                                With(
-                                                                    {rid: Value(start.id)},
-                                                                    With(
-                                                                        {results: ForAll(Filter(mine, A.Dept = dept) As m, With({r: ParseJSON(With({invPl: fxInvIssuePayload(rid, 0, m.ID)}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)}, {Ok: Text(r.status) = "Success", Message: m.AssetTagSnapshot & ": " & Text(r.message)}))},
-                                                                        With(
-                                                                            {finish: ParseJSON(With({invPl: fxInvFinishPayload(rid)}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
-                                                                            Notify(Text(finish.message) & If(IsEmpty(Filter(results, !Ok)), "", "  Not issued: " & Concat(Filter(results, !Ok), Message, "; ")), If(IsEmpty(Filter(results, !Ok)), NotificationType.Success, NotificationType.Warning))
-                                                                        )
-                                                                    )
-                                                                )
-                                                            )
-                                                        ),
-                                                        Notify("The inventory service could not be reached. Check People before trying again.", NotificationType.Error)
-                                                    )
-                                                )
-                                            );
-                                            UpdateContext({locBusy: false});
-                                            Set(gblInvLoadedAt, Blank()); Select(btnInvReqReload); Select(btnInvReqLoad)
-                                          Text: ="Issue " & CountRows(AddColumns(Filter(InventoryReservations, RequestEquipmentId = locReqSel.LineId && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId))) & If(CountRows(AddColumns(Filter(InventoryReservations, RequestEquipmentId = locReqSel.LineId && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId))) = 1, " unit", " units")
-                                          Width: =170
-                        - conInvReqPick:
-                            Control: GroupContainer
-                            Variant: AutoLayout
-                            Properties:
-                              DropShadow: =DropShadow.Semilight
-                              Fill: =RGBA(255, 255, 255, 1)
-                              FillPortions: =0
-                              Height: =20 + 48 + 12 + If(App.Width >= 1000, 60, 3 * 60 + 24) + 12 + 40 + 12 + Max(24, galInvReqPick.Height) + 24
-                              LayoutAlignItems: =LayoutAlignItems.Stretch
-                              LayoutDirection: =LayoutDirection.Vertical
-                              LayoutGap: =12
-                              LayoutMinHeight: =0
-                              LayoutMinWidth: =0
-                              PaddingBottom: =24
-                              PaddingLeft: =24
-                              PaddingRight: =24
-                              PaddingTop: =20
-                              RadiusBottomLeft: =8
-                              RadiusBottomRight: =8
-                              RadiusTopLeft: =8
-                              RadiusTopRight: =8
-                              Visible: =!IsBlank(locReqSel) && fxIsInvStaff && Max(0, locReqSel.Qty - locReqSel.Reserved - locReqSel.Issued) > 0
-                            Children:
-                              - conInvReqPickHead:
-                                  Control: GroupContainer
-                                  Variant: AutoLayout
-                                  Properties:
-                                    DropShadow: =DropShadow.None
-                                    FillPortions: =0
-                                    Height: =48
-                                    LayoutAlignItems: =LayoutAlignItems.Stretch
-                                    LayoutDirection: =LayoutDirection.Vertical
-                                    LayoutGap: =2
-                                    LayoutMinHeight: =0
-                                    LayoutMinWidth: =0
-                                  Children:
-                                    - txtInvReqPickTitle:
-                                        Control: ModernText
-                                        Properties:
-                                          AccessibleLabel: =Self.Text
-                                          Color: =RGBA(36, 36, 36, 1)
-                                          FontWeight: =FontWeight.Semibold
-                                          Height: =26
-                                          LayoutMinWidth: =0
-                                          PaddingBottom: =0
-                                          PaddingLeft: =0
-                                          PaddingTop: =0
-                                          Size: =16
-                                          Text: ="Reserve units (" & Max(0, locReqSel.Qty - locReqSel.Reserved - locReqSel.Issued) & " still needed)"
-                                    - txtInvReqPickDesc:
-                                        Control: ModernText
-                                        Properties:
-                                          AccessibleLabel: =Self.Text
-                                          Color: =RGBA(97, 97, 97, 1)
-                                          Height: =20
-                                          LayoutMinWidth: =0
-                                          PaddingBottom: =0
-                                          PaddingLeft: =0
-                                          PaddingTop: =0
-                                          Size: =12
-                                          Text: ="Available units of this department, best catalog match first."
-                                          Wrap: =false
-                              - conInvReqPickOpts:
-                                  Control: GroupContainer
-                                  Variant: AutoLayout
-                                  Properties:
-                                    DropShadow: =DropShadow.None
-                                    FillPortions: =0
-                                    Height: =If(App.Width >= 1000, 60, 3 * 60 + 2 * 12)
-                                    LayoutAlignItems: =If(App.Width >= 1000, LayoutAlignItems.Start, LayoutAlignItems.Stretch)
-                                    LayoutDirection: =If(App.Width >= 1000, LayoutDirection.Horizontal, LayoutDirection.Vertical)
-                                    LayoutGap: =12
-                                    LayoutMinHeight: =0
-                                    LayoutMinWidth: =0
-                                  Children:
-                                    - conInvReqFStart:
-                                        Control: GroupContainer
-                                        Variant: AutoLayout
-                                        Properties:
-                                          DropShadow: =DropShadow.None
-                                          Height: =60
-                                          LayoutAlignItems: =LayoutAlignItems.Stretch
-                                          LayoutDirection: =LayoutDirection.Vertical
-                                          LayoutGap: =4
-                                          LayoutMinHeight: =0
-                                          LayoutMinWidth: =170
-                                        Children:
-                                          - txtInvReqFStartLbl:
-                                              Control: ModernText
-                                              Properties:
-                                                AccessibleLabel: =Self.Text
-                                                Color: =RGBA(66, 66, 66, 1)
-                                                FontWeight: =FontWeight.Semibold
-                                                Height: =20
-                                                LayoutMinWidth: =0
-                                                PaddingBottom: =0
-                                                PaddingLeft: =0
-                                                PaddingTop: =0
-                                                Size: =13
-                                                Text: ="From"
-                                          - dteInvReqStart:
-                                              Control: ModernDatePicker
-                                              Properties:
-                                                AccessibleLabel: ="Reserve from"
-                                                AlignInContainer: =AlignInContainer.Stretch
-                                                Appearance: =Appearance.Outline
-                                                DefaultDate: =locReqSel.Start
-                                                Height: =36
-                                                LayoutMinWidth: =0
-                                                Width: =Parent.Width
-                                    - conInvReqFEnd:
-                                        Control: GroupContainer
-                                        Variant: AutoLayout
-                                        Properties:
-                                          DropShadow: =DropShadow.None
-                                          Height: =60
-                                          LayoutAlignItems: =LayoutAlignItems.Stretch
-                                          LayoutDirection: =LayoutDirection.Vertical
-                                          LayoutGap: =4
-                                          LayoutMinHeight: =0
-                                          LayoutMinWidth: =170
-                                        Children:
-                                          - txtInvReqFEndLbl:
-                                              Control: ModernText
-                                              Properties:
-                                                AccessibleLabel: =Self.Text
-                                                Color: =RGBA(66, 66, 66, 1)
-                                                FontWeight: =FontWeight.Semibold
-                                                Height: =20
-                                                LayoutMinWidth: =0
-                                                PaddingBottom: =0
-                                                PaddingLeft: =0
-                                                PaddingTop: =0
-                                                Size: =13
-                                                Text: ="To"
-                                          - dteInvReqEnd:
-                                              Control: ModernDatePicker
-                                              Properties:
-                                                AccessibleLabel: ="Reserve until"
-                                                AlignInContainer: =AlignInContainer.Stretch
-                                                Appearance: =Appearance.Outline
-                                                DefaultDate: =locReqSel.End
-                                                Height: =36
-                                                LayoutMinWidth: =0
-                                                Width: =Parent.Width
-                                    - conInvReqFFind:
-                                        Control: GroupContainer
-                                        Variant: AutoLayout
-                                        Properties:
-                                          DropShadow: =DropShadow.None
-                                          Height: =60
-                                          LayoutAlignItems: =LayoutAlignItems.Stretch
-                                          LayoutDirection: =LayoutDirection.Vertical
-                                          LayoutGap: =4
-                                          LayoutMinHeight: =0
-                                          LayoutMinWidth: =170
-                                        Children:
-                                          - txtInvReqFFindLbl:
-                                              Control: ModernText
-                                              Properties:
-                                                AccessibleLabel: =Self.Text
-                                                Color: =RGBA(66, 66, 66, 1)
-                                                FontWeight: =FontWeight.Semibold
-                                                Height: =20
-                                                LayoutMinWidth: =0
-                                                PaddingBottom: =0
-                                                PaddingLeft: =0
-                                                PaddingTop: =0
-                                                Size: =13
-                                                Text: ="Find"
-                                          - txtInvReqFind:
-                                              Control: ModernTextInput
-                                              Properties:
-                                                AccessibleLabel: ="Find a unit"
-                                                AlignInContainer: =AlignInContainer.Stretch
-                                                Appearance: =Appearance.Outline
-                                                Height: =36
-                                                LayoutMinWidth: =0
-                                                Placeholder: ="Tag, serial or model"
-                                                Width: =Parent.Width
-                              - conInvReqPickBtns:
-                                  Control: GroupContainer
-                                  Variant: AutoLayout
-                                  Properties:
-                                    DropShadow: =DropShadow.None
-                                    FillPortions: =0
-                                    Height: =40
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutGap: =8
-                                    LayoutMinHeight: =0
-                                    LayoutMinWidth: =0
-                                  Children:
-                                    - txtInvReqPickSum:
-                                        Control: ModernText
-                                        Properties:
-                                          AccessibleLabel: =Self.Text
-                                          Color: =RGBA(97, 97, 97, 1)
-                                          FillPortions: =1
-                                          Height: =36
-                                          LayoutMinWidth: =0
-                                          PaddingBottom: =0
-                                          PaddingLeft: =0
-                                          PaddingTop: =0
-                                          Size: =12
-                                          Text: |-
-                                            =CountRows(With(
-                                                {s: dteInvReqStart.SelectedDate, e: dteInvReqEnd.SelectedDate, q: Lower(Trim(txtInvReqFind.Text))},
-                                                SortByColumns(
-                                                    AddColumns(
-                                                        Filter(
-                                                            gblInvAssets,
-                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in locReqSel.Route && fxCanManage(Dept) &&
-                                                                (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = locReqSel.CatalogId) &&
-                                                                !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
-                                                                (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
-                                                        ),
-                                                        Fit, If(CatalogItemId = locReqSel.CatalogId, 0, 1)
-                                                    ),
-                                                    "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
-                                                )
-                                            )) & " available for these dates"
-                                          Wrap: =false
-                                    - btnInvReqReserveN:
-                                        Control: ModernButton
-                                        Properties:
-                                          AccessibleLabel: =Self.Text
-                                          DisplayMode: |-
-                                            =If(locBusy || IsEmpty(With(
-                                                {s: dteInvReqStart.SelectedDate, e: dteInvReqEnd.SelectedDate, q: Lower(Trim(txtInvReqFind.Text))},
-                                                SortByColumns(
-                                                    AddColumns(
-                                                        Filter(
-                                                            gblInvAssets,
-                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in locReqSel.Route && fxCanManage(Dept) &&
-                                                                (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = locReqSel.CatalogId) &&
-                                                                !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
-                                                                (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
-                                                        ),
-                                                        Fit, If(CatalogItemId = locReqSel.CatalogId, 0, 1)
-                                                    ),
-                                                    "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
-                                                )
-                                            )) || IsBlank(dteInvReqStart.SelectedDate) || IsBlank(dteInvReqEnd.SelectedDate), DisplayMode.Disabled, DisplayMode.Edit)
-                                          Height: =36
-                                          Icon: ="Add"
-                                          LayoutMinWidth: =0
-                                          OnSelect: |-
-                                            =// Reserve the first units still needed (best catalog match first), one flow call each.
-                                            UpdateContext({locBusy: true});
-                                            With(
-                                                {picks: FirstN(With(
-                                                {s: dteInvReqStart.SelectedDate, e: dteInvReqEnd.SelectedDate, q: Lower(Trim(txtInvReqFind.Text))},
-                                                SortByColumns(
-                                                    AddColumns(
-                                                        Filter(
-                                                            gblInvAssets,
-                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in locReqSel.Route && fxCanManage(Dept) &&
-                                                                (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = locReqSel.CatalogId) &&
-                                                                !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
-                                                                (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
-                                                        ),
-                                                        Fit, If(CatalogItemId = locReqSel.CatalogId, 0, 1)
-                                                    ),
-                                                    "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
-                                                )
-                                            ), Max(0, locReqSel.Qty - locReqSel.Reserved - locReqSel.Issued))},
-                                                With(
-                                                    {results: ForAll(picks As a, IfError(With({r: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "Reserve", lineId: locReqSel.LineId, assetId: a.ID, startDate: Text(dteInvReqStart.SelectedDate, "yyyy-mm-dd"), endDate: Text(dteInvReqEnd.SelectedDate, "yyyy-mm-dd")})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)}, {Ok: Text(r.status) = "Success", Message: a.Title & ": " & Text(r.message)}), {Ok: false, Message: a.Title & ": the inventory service could not be reached."}))},
-                                                    Notify(CountRows(Filter(results, Ok)) & " reserved." & If(IsEmpty(Filter(results, !Ok)), "", "  Not reserved: " & Concat(Filter(results, !Ok), Message, "; ")), If(IsEmpty(Filter(results, !Ok)), NotificationType.Success, NotificationType.Warning))
-                                                )
-                                            );
-                                            UpdateContext({locBusy: false});
-                                            Set(gblInvLoadedAt, Blank()); Select(btnInvReqReload); Select(btnInvReqLoad)
-                                          Text: |-
-                                            ="Reserve " & Min(Max(0, locReqSel.Qty - locReqSel.Reserved - locReqSel.Issued), CountRows(With(
-                                                {s: dteInvReqStart.SelectedDate, e: dteInvReqEnd.SelectedDate, q: Lower(Trim(txtInvReqFind.Text))},
-                                                SortByColumns(
-                                                    AddColumns(
-                                                        Filter(
-                                                            gblInvAssets,
-                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in locReqSel.Route && fxCanManage(Dept) &&
-                                                                (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = locReqSel.CatalogId) &&
-                                                                !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
-                                                                (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
-                                                        ),
-                                                        Fit, If(CatalogItemId = locReqSel.CatalogId, 0, 1)
-                                                    ),
-                                                    "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
-                                                )
-                                            ))) & " for me"
+                                            Clear(colReqSkip);
+                                            Set(gblInvLoadedAt, Blank()); Select(btnInvRqReload); Select(btnInvRqLoad)
+                                          Text: ="Issue selected (" & CountRows(Filter(AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item")), !(ID in colReqSkip.Value))) & ")"
                                           Width: =190
-                              - galInvReqPick:
-                                  Control: Gallery
-                                  Variant: Vertical
-                                  Properties:
-                                    AccessibleLabel: ="Available units"
-                                    FillPortions: =0
-                                    Height: =Min(Self.AllItemsCount, 20) * 52
-                                    Items: |-
-                                      =FirstN(With(
-                                          {s: dteInvReqStart.SelectedDate, e: dteInvReqEnd.SelectedDate, q: Lower(Trim(txtInvReqFind.Text))},
-                                          SortByColumns(
-                                              AddColumns(
-                                                  Filter(
-                                                      gblInvAssets,
-                                                      Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in locReqSel.Route && fxCanManage(Dept) &&
-                                                          (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = locReqSel.CatalogId) &&
-                                                          !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
-                                                          (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
-                                                  ),
-                                                  Fit, If(CatalogItemId = locReqSel.CatalogId, 0, 1)
-                                              ),
-                                              "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
-                                          )
-                                      ), 20)
-                                    LayoutMinHeight: =0
-                                    LayoutMinWidth: =0
-                                    ShowScrollbar: =false
-                                    TabIndex: =0
-                                    TemplatePadding: =0
-                                    TemplateSize: =52
-                                  Children:
-                                    - conInvReqPickRow:
-                                        Control: GroupContainer
-                                        Variant: AutoLayout
-                                        Properties:
-                                          BorderColor: =RGBA(225, 228, 232, 1)
-                                          BorderThickness: =1
-                                          DropShadow: =DropShadow.None
-                                          Height: =Parent.TemplateHeight - 4
-                                          LayoutAlignItems: =LayoutAlignItems.Center
-                                          LayoutDirection: =LayoutDirection.Horizontal
-                                          LayoutGap: =12
-                                          PaddingLeft: =12
-                                          PaddingRight: =4
-                                          RadiusBottomLeft: =6
-                                          RadiusBottomRight: =6
-                                          RadiusTopLeft: =6
-                                          RadiusTopRight: =6
-                                          Width: =Parent.TemplateWidth
-                                        Children:
-                                          - txtInvReqPickTag:
-                                              Control: ModernText
-                                              Properties:
-                                                AccessibleLabel: =Self.Text
-                                                Color: =RGBA(36, 36, 36, 1)
-                                                FontWeight: =FontWeight.Semibold
-                                                Height: =20
-                                                LayoutMinWidth: =0
-                                                PaddingBottom: =0
-                                                PaddingLeft: =0
-                                                PaddingTop: =0
-                                                Size: =13
-                                                Text: =ThisItem.Title
-                                                Wrap: =false
-                                          - txtInvReqPickInfo:
-                                              Control: ModernText
-                                              Properties:
-                                                AccessibleLabel: =Self.Text
-                                                Color: =RGBA(97, 97, 97, 1)
-                                                FillPortions: =1
-                                                Height: =20
-                                                LayoutMinWidth: =0
-                                                PaddingBottom: =0
-                                                PaddingLeft: =0
-                                                PaddingTop: =0
-                                                Size: =12
-                                                Text: =Coalesce(ThisItem.CatalogNameSnapshot, "No catalog item") & If(IsBlank(Trim(ThisItem.Make & ThisItem.Model)), "", "  ·  " & Trim(ThisItem.Make & " " & ThisItem.Model)) & If(IsBlank(ThisItem.HomeLocation), "", "  ·  " & ThisItem.HomeLocation)
-                                                Wrap: =false
-                                          - btnInvReqPickGo:
-                                              Control: ModernButton
-                                              Properties:
-                                                AccessibleLabel: ="Reserve " & ThisItem.Title
-                                                Appearance: =ButtonAppearance.Secondary
-                                                DisplayMode: =If(locBusy || IsBlank(dteInvReqStart.SelectedDate) || IsBlank(dteInvReqEnd.SelectedDate), DisplayMode.Disabled, DisplayMode.Edit)
-                                                Height: =36
-                                                Icon: ="Add"
-                                                LayoutMinWidth: =0
-                                                OnSelect: |-
-                                                  =UpdateContext({locBusy: true});
-                                                  IfError(
-                                                      With(
-                                                          {raw: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "Reserve", lineId: locReqSel.LineId, assetId: ThisItem.ID, startDate: Text(dteInvReqStart.SelectedDate, "yyyy-mm-dd"), endDate: Text(dteInvReqEnd.SelectedDate, "yyyy-mm-dd")})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
-                                                          UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})
-                                                      ),
-                                                      UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
-                                                  );
-                                                  UpdateContext({locBusy: false});
-                                                  Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
-                                                  If(locResult.Status = "Success", Set(gblInvLoadedAt, Blank()); Select(btnInvReqReload); Select(btnInvReqLoad))
-                                                Text: ="Reserve"
-                                                Width: =120
-                        - conInvReqShort:
+                        - conInvRqShort:
                             Control: GroupContainer
                             Variant: AutoLayout
                             Properties:
@@ -1856,9 +2061,9 @@ Screens:
                               RadiusBottomRight: =8
                               RadiusTopLeft: =8
                               RadiusTopRight: =8
-                              Visible: =!IsBlank(locReqSel) && fxIsInvStaff && locReqSel.Issued < locReqSel.Qty
+                              Visible: =!IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid)) && !IsBlank(locReqSel) && fxIsInvStaff && locReqSel.Issued < locReqSel.Qty
                             Children:
-                              - conInvReqShortHead:
+                              - conInvRqShortHead:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
@@ -1871,7 +2076,7 @@ Screens:
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                   Children:
-                                    - txtInvReqShortTitle:
+                                    - txtInvRqShortTitle:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
@@ -1883,8 +2088,8 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =16
-                                          Text: ="Cannot provide them all?"
-                                    - txtInvReqShortDesc:
+                                          Text: ="Cannot provide every " & locReqSel.Item & "?"
+                                    - txtInvRqShortDesc:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
@@ -1895,9 +2100,9 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =12
-                                          Text: ="Close this item with " & locReqSel.Issued & " of " & locReqSel.Qty & " provided. Units reserved but not issued are released."
+                                          Text: ="Close this item with " & locReqSel.Issued & " of " & locReqSel.Qty & " provided. Units reserved for it but not issued are released."
                                           Wrap: =false
-                              - conInvReqFNote:
+                              - conInvRqFNote:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
@@ -1910,7 +2115,7 @@ Screens:
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =170
                                   Children:
-                                    - txtInvReqFNoteLbl:
+                                    - txtInvRqFNoteLbl:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
@@ -1923,7 +2128,7 @@ Screens:
                                           PaddingTop: =0
                                           Size: =13
                                           Text: ="Message to the requester (required)"
-                                    - txtInvReqNote:
+                                    - txtInvRqNote:
                                         Control: ModernTextInput
                                         Properties:
                                           AccessibleLabel: ="Message to the requester"
@@ -1933,7 +2138,7 @@ Screens:
                                           LayoutMinWidth: =0
                                           Placeholder: ="e.g. Only one unit is available for these dates."
                                           Width: =Parent.Width
-                              - conInvReqShortBtns:
+                              - conInvRqShortBtns:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
@@ -1946,12 +2151,12 @@ Screens:
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                   Children:
-                                    - btnInvReqShortGo:
+                                    - btnInvRqShortGo:
                                         Control: ModernButton
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Appearance: =ButtonAppearance.Secondary
-                                          DisplayMode: =If(locBusy || IsBlank(Trim(txtInvReqNote.Text)), DisplayMode.Disabled, DisplayMode.Edit)
+                                          DisplayMode: =If(locBusy || IsBlank(Trim(txtInvRqNote.Text)), DisplayMode.Disabled, DisplayMode.Edit)
                                           Height: =36
                                           Icon: ="Checkmark"
                                           LayoutMinWidth: =0
@@ -1959,17 +2164,17 @@ Screens:
                                             =UpdateContext({locBusy: true});
                                             IfError(
                                                 With(
-                                                    {raw: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "CloseLine", lineId: locReqSel.LineId, note: Trim(txtInvReqNote.Text)})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
+                                                    {raw: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "CloseLine", lineId: locReqSel.LineId, note: Trim(txtInvRqNote.Text)})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                     UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})
                                                 ),
                                                 UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
                                             );
                                             UpdateContext({locBusy: false});
                                             Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
-                                            If(locResult.Status = "Success", Reset(txtInvReqNote); UpdateContext({locReqSel: Blank()}); Set(gblInvLoadedAt, Blank()); Select(btnInvReqReload); Select(btnInvReqLoad))
+                                            If(locResult.Status = "Success", Reset(txtInvRqNote); UpdateContext({locReqSel: Blank()}); Set(gblInvLoadedAt, Blank()); Select(btnInvRqReload); Select(btnInvRqLoad))
                                           Text: ="Close with " & locReqSel.Issued & " of " & locReqSel.Qty & " provided"
                                           Width: =260
-                        - txtInvReqNoAccess:
+                        - txtInvRqNoAccess:
                             Control: ModernText
                             Properties:
                               AccessibleLabel: =Self.Text
