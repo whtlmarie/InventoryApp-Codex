@@ -414,7 +414,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =12
-                                                      Text: ="They acknowledge by approval in Outlook or Teams."
+                                                      Text: ="They get an email and acknowledge in the Inventory app; the signed PDF is saved once they do."
                                                       Wrap: =false
                                           - conInvCoR1:
                                               Control: GroupContainer
@@ -792,11 +792,11 @@ Screens:
                                                             AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
                                                             Default: |-
-                                                              ={Value: "Electronic", Label: "Electronic: approval in Outlook / Teams"}
+                                                              ={Value: "Electronic", Label: "Electronic: they acknowledge in the Inventory app"}
                                                             Height: =36
                                                             ItemDisplayText: =ThisItem.Label
                                                             Items: |-
-                                                              =Table({Value: "Electronic", Label: "Electronic: approval in Outlook / Teams"}, {Value: "CAC", Label: "CAC: sign the PDF in Adobe, then upload it"})
+                                                              =Table({Value: "Electronic", Label: "Electronic: they acknowledge in the Inventory app"}, {Value: "CAC", Label: "CAC: sign the PDF in Adobe, then upload it"})
                                                             LayoutMinWidth: =0
                                                             Width: =Parent.Width
                                                 - conInvCoSignHelp:
@@ -822,7 +822,7 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =12
-                                                            Text: =If(drpInvCoSign.Selected.Value = "CAC", "No approval is sent. Print or open the unsigned PDF on People, have them sign with their CAC, then upload it.", "They get an approval to acknowledge; the signed PDF is emailed to them.")
+                                                            Text: =If(drpInvCoSign.Selected.Value = "CAC", "No acknowledgement email is sent. Print or open the unsigned PDF on People, have them sign with their CAC, then upload it.", "They get an email and acknowledge in the Inventory app; the signed PDF is then emailed to them.")
                               - conInvCoRight:
                                   Control: GroupContainer
                                   Variant: AutoLayout

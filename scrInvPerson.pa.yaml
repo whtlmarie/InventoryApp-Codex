@@ -1435,7 +1435,7 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =12
-                                          Text: ="Signed electronically (approval) or with a CAC (signed PDF uploaded)."
+                                          Text: ="Signed electronically (the recipient acknowledges in the Inventory app) or with a CAC (signed PDF uploaded)."
                                           Wrap: =false
                               - conInvPerUp:
                                   Control: GroupContainer
@@ -1638,7 +1638,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =12
-                                                      Text: ="Issued " & Text(ThisItem.'Issue Date', "mmm d, yyyy") & "  ·  " & If(Coalesce(ThisItem.'Signature Method'.Value, "Electronic") = "CAC", "CAC signature", "Electronic approval") & If(IsBlank(ThisItem.'Ack Date'), If(ThisItem.'Receipt Status'.Value = "Awaiting Acknowledgement", If(Coalesce(ThisItem.'Signature Method'.Value, "Electronic") = "CAC", ", waiting for the signed PDF", ", approval sent"), ""), ", signed " & Text(ThisItem.'Ack Date', "mmm d, yyyy"))
+                                                      Text: ="Issued " & Text(ThisItem.'Issue Date', "mmm d, yyyy") & "  ·  " & If(Coalesce(ThisItem.'Signature Method'.Value, "Electronic") = "CAC", "CAC signature", "Electronic (Inventory app)") & If(IsBlank(ThisItem.'Ack Date'), If(ThisItem.'Receipt Status'.Value = "Awaiting Acknowledgement", If(Coalesce(ThisItem.'Signature Method'.Value, "Electronic") = "CAC", ", waiting for the signed PDF", ", waiting for them to acknowledge; the signed PDF is saved once they do"), ""), ", signed " & Text(ThisItem.'Ack Date', "mmm d, yyyy"))
                                                       Wrap: =false
                                           - txtInvPerRcptStatus:
                                               Control: ModernText
@@ -1690,7 +1690,7 @@ Screens:
                                           - btnInvPerResend:
                                               Control: ModernButton
                                               Properties:
-                                                AccessibleLabel: ="Resend the approval for " & ThisItem.Title
+                                                AccessibleLabel: ="Resend the acknowledgement email for " & ThisItem.Title
                                                 Appearance: =ButtonAppearance.Subtle
                                                 DisplayMode: =If(locBusy, DisplayMode.Disabled, DisplayMode.Edit)
                                                 Height: =36
@@ -1726,7 +1726,7 @@ Screens:
                                                   UpdateContext({locBusy: false});
                                                   Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
                                                   If(locResult.Status = "Success", Set(gblInvLoadedAt, Blank()); Select(btnInvPerLoad))
-                                                Text: =If(Coalesce(ThisItem.'Signature Method'.Value, "Electronic") = "CAC", "Use approval", "Use CAC")
+                                                Text: =If(Coalesce(ThisItem.'Signature Method'.Value, "Electronic") = "CAC", "Use electronic", "Use CAC")
                                                 Visible: =ThisItem.'Receipt Status'.Value = "Awaiting Acknowledgement" && fxIsInvStaff
                                                 Width: =140
                         - conInvPerHist:

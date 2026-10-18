@@ -697,6 +697,7 @@ Screens:
                               RadiusBottomRight: =8
                               RadiusTopLeft: =8
                               RadiusTopRight: =8
+                              Visible: =IsEmpty(colInvRetBulk)
                             Children:
                               - conInvRetListHead:
                                   Control: GroupContainer

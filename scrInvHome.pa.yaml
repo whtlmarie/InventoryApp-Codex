@@ -5,7 +5,11 @@ Screens:
       LoadingSpinnerColor: =RGBA(15, 76, 129, 1)
       OnVisible: |-
         =UpdateContext({locHomeDept: Coalesce(locHomeDept, fxDefaultDept)});
-        If((IsBlank(gblInvLoadedAt) || DateDiff(gblInvLoadedAt, Now(), TimeUnit.Minutes) >= 2), Select(btnInvHomeReload))
+        If(
+            fxCanViewInventory,
+            If((IsBlank(gblInvLoadedAt) || DateDiff(gblInvLoadedAt, Now(), TimeUnit.Minutes) >= 2), Select(btnInvHomeReload)),
+            Select(btnInvHomeMineLoad)
+        )
     Children:
       - conInvHomeRoot:
           Control: GroupContainer
@@ -303,7 +307,7 @@ Screens:
                               PaddingLeft: =0
                               PaddingTop: =0
                               Size: =14
-                              Text: ="This app is for AV and IT inventory staff. Equipment receipts are acknowledged through the approval sent to you in Outlook or Teams."
+                              Text: ="Equipment issued to you. Select I acknowledge on each receipt to sign for it; your signed copy (PDF) is then emailed to you."
                               Visible: =!fxCanViewInventory
                         - conInvHomeFilters:
                             Control: GroupContainer
@@ -1076,3 +1080,183 @@ Screens:
                                                       Text: =If(ThisItem.'Due Date' < Today(), "Overdue " & Text(ThisItem.'Due Date', "mmm d"), "Due " & Text(ThisItem.'Due Date', "mmm d"))
                                                       Width: =130
                                                       Wrap: =false
+                        - btnInvHomeMineLoad:
+                            Control: ModernButton
+                            Properties:
+                              AccessibleLabel: ="Load your receipts"
+                              Height: =10
+                              LayoutMinWidth: =0
+                              OnSelect: |-
+                                =UpdateContext({locMineBusy: true, locMineMsg: ""});
+                                IfError(
+                                    With(
+                                        {raw: ParseJSON('Inventory-MyReceipts'.Run(JSON({action: "List"}, JSONFormat.Compact)).response)},
+                                        If(
+                                            Text(raw.status) = "Success",
+                                            Set(gblInvMyStatement, Text(raw.statement));
+                                            ClearCollect(colInvMyReceipts, ForAll(Table(raw.receipts), {Id: Value(ThisRecord.Value.id), Number: Text(ThisRecord.Value.number), IssuedBy: Text(ThisRecord.Value.issuedBy), Issued: Text(ThisRecord.Value.issued), ReturnDate: Text(ThisRecord.Value.returnDate)}));
+                                            ClearCollect(colInvMyItems, ForAll(Table(raw.items), {R: Value(ThisRecord.Value.r), Tag: Text(ThisRecord.Value.tag), Name: Text(ThisRecord.Value.name)})),
+                                            UpdateContext({locMineMsg: Text(raw.message)})
+                                        )
+                                    ),
+                                    UpdateContext({locMineMsg: "Your receipts couldn't be loaded. Try again."})
+                                );
+                                UpdateContext({locMineBusy: false})
+                              Text: ="Load"
+                              Visible: =false
+                              Width: =10
+                        - conInvHomeMine:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.Semilight
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FillPortions: =0
+                              Height: =20 + 30 + 8 + Max(galInvHomeMine.Height, 28) + 8 + 28 + 20
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutGap: =8
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              PaddingBottom: =20
+                              PaddingLeft: =24
+                              PaddingRight: =24
+                              PaddingTop: =20
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                              Visible: =!fxCanViewInventory
+                            Children:
+                              - txtInvHomeMineTitle:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =30
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =16
+                                    Text: =If(locMineBusy, "Loading your receipts…", "Receipts to acknowledge (" & CountRows(colInvMyReceipts) & ")")
+                              - galInvHomeMine:
+                                  Control: Gallery
+                                  Variant: Vertical
+                                  Properties:
+                                    AccessibleLabel: ="Receipts to acknowledge"
+                                    FillPortions: =0
+                                    Height: =CountRows(colInvMyReceipts) * 196
+                                    Items: =colInvMyReceipts
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    ShowScrollbar: =false
+                                    TemplatePadding: =6
+                                    TemplateSize: =184
+                                  Children:
+                                    - conInvHomeMineCard:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          BorderColor: =RGBA(200, 206, 214, 1)
+                                          BorderThickness: =1
+                                          DropShadow: =DropShadow.None
+                                          Height: =Parent.TemplateHeight
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =6
+                                          PaddingBottom: =12
+                                          PaddingLeft: =16
+                                          PaddingRight: =16
+                                          PaddingTop: =12
+                                          RadiusBottomLeft: =8
+                                          RadiusBottomRight: =8
+                                          RadiusTopLeft: =8
+                                          RadiusTopRight: =8
+                                          Width: =Parent.TemplateWidth
+                                        Children:
+                                          - txtInvHomeMineHead:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =22
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =14
+                                                Text: =ThisItem.Number & "  ·  issued by " & ThisItem.IssuedBy & " on " & ThisItem.Issued & If(IsBlank(ThisItem.ReturnDate), "  ·  long-term assignment", "  ·  return by " & ThisItem.ReturnDate)
+                                                Wrap: =false
+                                          - txtInvHomeMineItems:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Height: =22
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =13
+                                                Text: =Concat(Filter(colInvMyItems, R = ThisItem.Id), Tag & " " & Name, ",  ")
+                                                Wrap: =false
+                                          - txtInvHomeMineStatement:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(97, 97, 97, 1)
+                                                Height: =52
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =12
+                                                Text: =gblInvMyStatement
+                                          - btnInvHomeMineAck:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="I acknowledge receipt " & ThisItem.Number
+                                                AlignInContainer: =AlignInContainer.Start
+                                                DisplayMode: =If(locMineBusy, DisplayMode.Disabled, DisplayMode.Edit)
+                                                Height: =36
+                                                Icon: ="Checkmark"
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =UpdateContext({locMineBusy: true, locMineMsg: ""});
+                                                  IfError(
+                                                      With(
+                                                          {raw: ParseJSON('Inventory-MyReceipts'.Run(JSON({action: "Acknowledge", receiptId: ThisItem.Id}, JSONFormat.Compact)).response)},
+                                                          UpdateContext({locMineMsg: Text(raw.message), locMineOk: Text(raw.status) = "Success"})
+                                                      ),
+                                                      UpdateContext({locMineMsg: "Your acknowledgement couldn't be saved. Try again.", locMineOk: false})
+                                                  );
+                                                  UpdateContext({locMineBusy: false});
+                                                  Select(btnInvHomeMineLoad)
+                                                Text: ="I acknowledge"
+                                                Width: =170
+                              - txtInvHomeMineEmpty:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(97, 97, 97, 1)
+                                    Height: =28
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =13
+                                    Text: ="Nothing to acknowledge right now."
+                                    Visible: =IsEmpty(colInvMyReceipts) && !locMineBusy
+                              - txtInvHomeMineMsg:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =If(locMineOk, RGBA(16, 110, 16, 1), RGBA(164, 38, 44, 1))
+                                    Height: =28
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =13
+                                    Text: =Coalesce(locMineMsg, "")
+                                    Visible: =!IsBlank(locMineMsg)

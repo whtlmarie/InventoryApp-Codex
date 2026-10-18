@@ -1993,11 +1993,11 @@ Screens:
                                                 AlignInContainer: =AlignInContainer.Stretch
                                                 Appearance: =Appearance.Outline
                                                 Default: |-
-                                                  ={Value: "Electronic", Label: "Electronic: approval in Outlook / Teams"}
+                                                  ={Value: "Electronic", Label: "Electronic: they acknowledge in the Inventory app"}
                                                 Height: =36
                                                 ItemDisplayText: =ThisItem.Label
                                                 Items: |-
-                                                  =Table({Value: "Electronic", Label: "Electronic: approval in Outlook / Teams"}, {Value: "CAC", Label: "CAC: sign the PDF in Adobe, then upload it"})
+                                                  =Table({Value: "Electronic", Label: "Electronic: they acknowledge in the Inventory app"}, {Value: "CAC", Label: "CAC: sign the PDF in Adobe, then upload it"})
                                                 LayoutMinWidth: =0
                                                 Width: =Parent.Width
                               - conInvRqIssBtns:
