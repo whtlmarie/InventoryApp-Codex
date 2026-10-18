@@ -4,7 +4,14 @@ Screens:
       Fill: =RGBA(245, 246, 248, 1)
       LoadingSpinnerColor: =RGBA(15, 76, 129, 1)
       OnVisible: |-
-        =UpdateContext({locScanMsg: "", locScanMatches: Blank(), locBusy: false, locPerSel: Blank(), locPerRcpt: Blank(), locPerConfirmAll: false});
+        =// Opened from the Personnel Hub ("Open in Inventory"): show that person once (Param person = work email, name).
+        If(
+            !IsBlank(Param("person")) && !Coalesce(gblInvParamUsed, false),
+            Set(gblInvParamUsed, true);
+            Set(gblInvPersonEmail, Lower(Trim(Param("person"))));
+            Set(gblInvPersonName, Coalesce(Param("name"), Param("person")))
+        );
+        UpdateContext({locScanMsg: "", locScanMatches: Blank(), locBusy: false, locPerSel: Blank(), locPerRcpt: Blank(), locPerConfirmAll: false});
         If(IsBlank(gblInvLoadedAt) || DateDiff(gblInvLoadedAt, Now(), TimeUnit.Minutes) >= 2, Select(btnInvPerReload));
         Select(btnInvPerLoad)
     Children:
@@ -203,10 +210,10 @@ Screens:
                                 Refresh(InventoryCheckouts);
                                 Refresh(InventoryReservations);
                                 Refresh(InventoryReceipts);
-                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, AssetStatus.Value, Kind, AssetKind.Value));
-                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, CheckoutStatus.Value = "Active" || CheckoutStatus.Value = "Awaiting Acknowledgement" || CheckoutStatus.Value = "Return Required"), Status, CheckoutStatus.Value));
-                                Set(gblInvReserved, Filter(InventoryReservations, ReservationStatus.Value = "Reserved"));
-                                Set(gblInvLines, Filter(RequestEquipment, NeedsInventoryAction = true));
+                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, 'Asset Status'.Value, Kind, 'Asset Kind'.Value));
+                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, 'Checkout Status'.Value = "Active" || 'Checkout Status'.Value = "Awaiting Acknowledgement" || 'Checkout Status'.Value = "Return Required"), Status, 'Checkout Status'.Value));
+                                Set(gblInvReserved, Filter(InventoryReservations, 'Reservation Status'.Value = "Reserved"));
+                                Set(gblInvLines, Filter(RequestEquipment, 'Needs Inventory Action' = true));
                                 Set(gblInvLoadedAt, Now());
                                 Set(gblInvLoading, false)
                               Text: ="Reload"
@@ -226,13 +233,13 @@ Screens:
                                     Refresh(InventoryCheckouts); Refresh(InventoryReceipts);
                                     UpdateContext({
                                         locPerItems: AddColumns(
-                                            Sort(Filter(InventoryCheckouts, RecipientEmail = gblInvPersonEmail), ID, SortOrder.Descending),
-                                            Status, CheckoutStatus.Value,
-                                            Kind, CheckoutType.Value,
-                                            Desc, With({a: LookUp(gblInvAssets, ID = AssetId)}, Coalesce(a.CatalogNameSnapshot, "Equipment") & If(IsBlank(Trim(a.Make & a.Model)), "", " - " & Trim(a.Make & " " & a.Model))),
-                                            Dept, LookUp(gblInvAssets, ID = AssetId).Dept
+                                            Sort(Filter(InventoryCheckouts, 'Recipient Email' = gblInvPersonEmail), ID, SortOrder.Descending),
+                                            Status, 'Checkout Status'.Value,
+                                            Kind, 'Checkout Type'.Value,
+                                            Desc, With({a: LookUp(gblInvAssets, ID = 'Asset Id')}, Coalesce(a.'Catalog Name Snapshot', "Equipment") & If(IsBlank(Trim(a.Make & a.Model)), "", " - " & Trim(a.Make & " " & a.Model))),
+                                            Dept, LookUp(gblInvAssets, ID = 'Asset Id').Dept
                                         ),
-                                        locPerReceipts: Sort(Filter(InventoryReceipts, RecipientEmail = gblInvPersonEmail), ID, SortOrder.Descending)
+                                        locPerReceipts: Sort(Filter(InventoryReceipts, 'Recipient Email' = gblInvPersonEmail), ID, SortOrder.Descending)
                                     })
                                 );
                                 UpdateContext({locPerSel: Blank(), locPerConfirmAll: false})
@@ -300,7 +307,7 @@ Screens:
                                     Height: =36
                                     Icon: ="Print"
                                     LayoutMinWidth: =0
-                                    OnSelect: =Set(gblInvHandItems, Filter(locPerItems, Status in ["Active", "Awaiting Acknowledgement", "Return Required"])); Set(gblInvHandPhone, Coalesce(First(Filter(locPerReceipts, !IsBlank(DutyPhone))).DutyPhone, "")); Navigate(scrInvHandReceipt, ScreenTransition.None)
+                                    OnSelect: =Set(gblInvHandItems, Filter(locPerItems, Status in ["Active", "Awaiting Acknowledgement", "Return Required"])); Set(gblInvHandPhone, Coalesce(First(Filter(locPerReceipts, !IsBlank('Duty Phone'))).'Duty Phone', "")); Navigate(scrInvHandReceipt, ScreenTransition.None)
                                     Text: ="Hand receipt"
                                     Visible: =!IsBlank(gblInvPersonEmail)
                                     Width: =150
@@ -503,23 +510,23 @@ Screens:
                                                                   If(
                                                                       !IsBlank(code),
                                                                       With(
-                                                                          {exact: Coalesce(LookUp(gblInvAssets, Lower(Title) = code), LookUp(gblInvAssets, Lower(Coalesce(SerialNumber, "")) = code))},
+                                                                          {exact: Coalesce(LookUp(gblInvAssets, Lower('Asset Tag') = code), LookUp(gblInvAssets, Lower(Coalesce('Serial Number', "")) = code))},
                                                                           If(
                                                                               !IsBlank(exact),
                                                                               UpdateContext({locScanMsg: "", locScanMatches: Blank()});
                                                                               With({hit: exact}, If(
-                                                                  IsBlank(hit.CurrentHolderEmail),
-                                                                  UpdateContext({locScanMsg: hit.Title & " is not checked out to anyone."}),
-                                                                  Set(gblInvPersonEmail, Lower(hit.CurrentHolderEmail)); Set(gblInvPersonName, hit.CurrentHolderName); Select(btnInvPerLoad)
+                                                                  IsBlank(hit.'Current Holder Email'),
+                                                                  UpdateContext({locScanMsg: hit.'Asset Tag' & " is not checked out to anyone."}),
+                                                                  Set(gblInvPersonEmail, Lower(hit.'Current Holder Email')); Set(gblInvPersonName, hit.'Current Holder Name'); Select(btnInvPerLoad)
                                                               )),
                                                                               With(
-                                                                                  {m: FirstN(SortByColumns(Filter(gblInvAssets, code in Lower(Title) || code in Lower(Coalesce(SerialNumber, ""))), "Title"), 6)},
+                                                                                  {m: FirstN(SortByColumns(Filter(gblInvAssets, code in Lower('Asset Tag') || code in Lower(Coalesce('Serial Number', ""))), "Title"), 6)},
                                                                                   If(
                                                                                       IsEmpty(m), UpdateContext({locScanMsg: "No asset tag or serial number contains " & Trim(Self.Text) & ".", locScanMatches: Blank()}),
                                                                                       CountRows(m) = 1, UpdateContext({locScanMsg: "", locScanMatches: Blank()}); With({hit: First(m)}, If(
-                                                                  IsBlank(hit.CurrentHolderEmail),
-                                                                  UpdateContext({locScanMsg: hit.Title & " is not checked out to anyone."}),
-                                                                  Set(gblInvPersonEmail, Lower(hit.CurrentHolderEmail)); Set(gblInvPersonName, hit.CurrentHolderName); Select(btnInvPerLoad)
+                                                                  IsBlank(hit.'Current Holder Email'),
+                                                                  UpdateContext({locScanMsg: hit.'Asset Tag' & " is not checked out to anyone."}),
+                                                                  Set(gblInvPersonEmail, Lower(hit.'Current Holder Email')); Set(gblInvPersonName, hit.'Current Holder Name'); Select(btnInvPerLoad)
                                                               )),
                                                                                       UpdateContext({locScanMsg: "", locScanMatches: m})
                                                                                   )
@@ -551,7 +558,7 @@ Screens:
                                                       - btnInvPerScanPick:
                                                           Control: ModernButton
                                                           Properties:
-                                                            AccessibleLabel: ="Use " & ThisItem.Title
+                                                            AccessibleLabel: ="Use " & ThisItem.'Asset Tag'
                                                             Align: =Align.Left
                                                             Appearance: =ButtonAppearance.Secondary
                                                             Height: =34
@@ -559,11 +566,11 @@ Screens:
                                                             Layout: =ButtonLayout.IconAfter
                                                             OnSelect: |-
                                                               =UpdateContext({locScanMatches: Blank(), locScanMsg: ""}); With({hit: ThisItem}, If(
-                                                                  IsBlank(hit.CurrentHolderEmail),
-                                                                  UpdateContext({locScanMsg: hit.Title & " is not checked out to anyone."}),
-                                                                  Set(gblInvPersonEmail, Lower(hit.CurrentHolderEmail)); Set(gblInvPersonName, hit.CurrentHolderName); Select(btnInvPerLoad)
+                                                                  IsBlank(hit.'Current Holder Email'),
+                                                                  UpdateContext({locScanMsg: hit.'Asset Tag' & " is not checked out to anyone."}),
+                                                                  Set(gblInvPersonEmail, Lower(hit.'Current Holder Email')); Set(gblInvPersonName, hit.'Current Holder Name'); Select(btnInvPerLoad)
                                                               ))
-                                                            Text: =ThisItem.Title & "   ·   " & Coalesce(ThisItem.CatalogNameSnapshot, "Equipment") & "   ·   " & ThisItem.Status
+                                                            Text: =ThisItem.'Asset Tag' & "   ·   " & Coalesce(ThisItem.'Catalog Name Snapshot', "Equipment") & "   ·   " & ThisItem.Status
                                                             Width: =Parent.TemplateWidth - 4
                                                 - txtInvPerScanMsg:
                                                     Control: ModernText
@@ -658,7 +665,7 @@ Screens:
                                       =With(
                                           {h: Filter(locPerItems, Status in ["Active", "Awaiting Acknowledgement", "Return Required"])},
                                           CountRows(h) & " held  ·  " & CountRows(Filter(h, Kind = "Long-term Assignment")) & " long-term  ·  " &
-                                          CountRows(Filter(h, !IsBlank(DueDate) && DueDate < Today())) & " overdue  ·  " &
+                                          CountRows(Filter(h, !IsBlank('Due Date') && 'Due Date' < Today())) & " overdue  ·  " &
                                           CountRows(Filter(h, Status = "Awaiting Acknowledgement")) & " awaiting acknowledgement"
                                       )
                         - conInvPerHeld:
@@ -850,7 +857,7 @@ Screens:
                                                 PaddingTop: =0
                                                 Size: =13
                                                 Text: |-
-                                                  ="Check in, extend or transfer: " & locPerSel.AssetTagSnapshot & "  ·  " & locPerSel.Desc
+                                                  ="Check in, extend or transfer: " & locPerSel.'Asset Tag Snapshot' & "  ·  " & locPerSel.Desc
                                                 Wrap: =false
                                           - btnInvPerActClose:
                                               Control: ModernButton
@@ -1013,7 +1020,7 @@ Screens:
                                                       AccessibleLabel: ="New return date"
                                                       AlignInContainer: =AlignInContainer.Stretch
                                                       Appearance: =Appearance.Outline
-                                                      DefaultDate: =DateAdd(Coalesce(locPerSel.DueDate, Today()), 7, TimeUnit.Days)
+                                                      DefaultDate: =DateAdd(Coalesce(locPerSel.'Due Date', Today()), 7, TimeUnit.Days)
                                                       Height: =36
                                                       LayoutMinWidth: =0
                                                       Width: =Parent.Width
@@ -1193,7 +1200,7 @@ Screens:
                                                       AccessibleLabel: ="Return date for the receiver"
                                                       AlignInContainer: =AlignInContainer.Stretch
                                                       Appearance: =Appearance.Outline
-                                                      DefaultDate: =Coalesce(locPerSel.DueDate, DateAdd(Today(), 7, TimeUnit.Days))
+                                                      DefaultDate: =Coalesce(locPerSel.'Due Date', DateAdd(Today(), 7, TimeUnit.Days))
                                                       DisplayMode: =If(drpInvPerXferType.Selected.Value = "Long-term Assignment", DisplayMode.Disabled, DisplayMode.Edit)
                                                       Height: =36
                                                       LayoutMinWidth: =0
@@ -1223,12 +1230,12 @@ Screens:
                                                                           Text(st.status) <> "Success",
                                                                           UpdateContext({locResult: {Status: "Failed", Message: "Checked in, but the new receipt could not be started: " & Text(st.message)}}),
                                                                           With(
-                                                                              {iss: ParseJSON(With({invPl: fxInvIssuePayload(Value(st.id), sel.AssetId, 0)}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
+                                                                              {iss: ParseJSON(With({invPl: fxInvIssuePayload(Value(st.id), sel.'Asset Id', 0)}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                                               With(
                                                                                   {fin: ParseJSON(With({invPl: fxInvFinishPayload(Value(st.id))}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                                                   UpdateContext({locResult: If(
                                                                                       Text(iss.status) = "Success",
-                                                                                      {Status: "Success", Message: sel.AssetTagSnapshot & " transferred to " & who.DisplayName & ". " & Text(fin.message)},
+                                                                                      {Status: "Success", Message: sel.'Asset Tag Snapshot' & " transferred to " & who.DisplayName & ". " & Text(fin.message)},
                                                                                       {Status: "Failed", Message: "Checked in, but not issued to " & who.DisplayName & ": " & Text(iss.message)}
                                                                                   )})
                                                                               )
@@ -1317,7 +1324,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =13
-                                                      Text: =ThisItem.AssetTagSnapshot & "  ·  " & ThisItem.Desc
+                                                      Text: =ThisItem.'Asset Tag Snapshot' & "  ·  " & ThisItem.Desc
                                                       Wrap: =false
                                                 - txtInvPerHeldMeta:
                                                     Control: ModernText
@@ -1330,7 +1337,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =12
-                                                      Text: =ThisItem.Kind & "  ·  " & ThisItem.ReceiptNumber & "  ·  issued " & Text(ThisItem.IssuedDate, "mmm d, yyyy") & If(IsBlank(ThisItem.DueDate), "", "  ·  due " & Text(ThisItem.DueDate, "mmm d, yyyy"))
+                                                      Text: =ThisItem.Kind & "  ·  " & ThisItem.'Receipt Number' & "  ·  issued " & Text(ThisItem.'Issued Date', "mmm d, yyyy") & If(IsBlank(ThisItem.'Due Date'), "", "  ·  due " & Text(ThisItem.'Due Date', "mmm d, yyyy"))
                                                       Wrap: =false
                                           - txtInvPerHeldStatus:
                                               Control: ModernText
@@ -1338,8 +1345,8 @@ Screens:
                                                 AccessibleLabel: =Self.Text
                                                 Align: =Align.Center
                                                 AlignInContainer: =AlignInContainer.Center
-                                                Color: =Switch(If(ThisItem.Status = "Active" && !IsBlank(ThisItem.DueDate) && ThisItem.DueDate < Today(), "Overdue", ThisItem.Status), "Overdue", RGBA(164, 38, 44, 1), "Awaiting Acknowledgement", RGBA(92, 45, 145, 1), "Return Required", RGBA(131, 82, 0, 1), "Returned", RGBA(16, 110, 16, 1), "Lost", RGBA(164, 38, 44, 1), RGBA(15, 76, 129, 1))
-                                                Fill: =Switch(If(ThisItem.Status = "Active" && !IsBlank(ThisItem.DueDate) && ThisItem.DueDate < Today(), "Overdue", ThisItem.Status), "Overdue", RGBA(253, 231, 233, 1), "Awaiting Acknowledgement", RGBA(243, 238, 250, 1), "Return Required", RGBA(255, 244, 206, 1), "Returned", RGBA(223, 246, 221, 1), "Lost", RGBA(253, 231, 233, 1), RGBA(230, 240, 250, 1))
+                                                Color: =Switch(If(ThisItem.Status = "Active" && !IsBlank(ThisItem.'Due Date') && ThisItem.'Due Date' < Today(), "Overdue", ThisItem.Status), "Overdue", RGBA(164, 38, 44, 1), "Awaiting Acknowledgement", RGBA(92, 45, 145, 1), "Return Required", RGBA(131, 82, 0, 1), "Returned", RGBA(16, 110, 16, 1), "Lost", RGBA(164, 38, 44, 1), RGBA(15, 76, 129, 1))
+                                                Fill: =Switch(If(ThisItem.Status = "Active" && !IsBlank(ThisItem.'Due Date') && ThisItem.'Due Date' < Today(), "Overdue", ThisItem.Status), "Overdue", RGBA(253, 231, 233, 1), "Awaiting Acknowledgement", RGBA(243, 238, 250, 1), "Return Required", RGBA(255, 244, 206, 1), "Returned", RGBA(223, 246, 221, 1), "Lost", RGBA(253, 231, 233, 1), RGBA(230, 240, 250, 1))
                                                 FontWeight: =FontWeight.Semibold
                                                 Height: =24
                                                 LayoutMinWidth: =0
@@ -1351,13 +1358,13 @@ Screens:
                                                 RadiusTopLeft: =12
                                                 RadiusTopRight: =12
                                                 Size: =12
-                                                Text: =If(ThisItem.Status = "Active" && !IsBlank(ThisItem.DueDate) && ThisItem.DueDate < Today(), "Overdue", ThisItem.Status)
+                                                Text: =If(ThisItem.Status = "Active" && !IsBlank(ThisItem.'Due Date') && ThisItem.'Due Date' < Today(), "Overdue", ThisItem.Status)
                                                 Width: =170
                                                 Wrap: =false
                                           - btnInvPerHeldPick:
                                               Control: ModernButton
                                               Properties:
-                                                AccessibleLabel: ="Select " & ThisItem.AssetTagSnapshot
+                                                AccessibleLabel: ="Select " & ThisItem.'Asset Tag Snapshot'
                                                 Appearance: =If(locPerSel.ID = ThisItem.ID, ButtonAppearance.Primary, ButtonAppearance.Subtle)
                                                 Height: =36
                                                 Icon: ="ChevronRight"
@@ -1480,7 +1487,7 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =12
-                                          Text: ="Open the unsigned PDF, have " & fxPersonName(locPerRcpt.RecipientName) & " sign it with their CAC in Adobe, save it, then attach it here."
+                                          Text: ="Open the unsigned PDF, have " & fxPersonName(locPerRcpt.'Recipient Name') & " sign it with their CAC in Adobe, save it, then attach it here."
                                           Wrap: =false
                                     - attInvPerCac:
                                         Control: Attachments
@@ -1618,7 +1625,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =13
-                                                      Text: =ThisItem.Title & "  ·  " & ThisItem.ItemCount & If(ThisItem.ItemCount = 1, " item", " items") & "  ·  " & ThisItem.Department.Value
+                                                      Text: =ThisItem.Title & "  ·  " & ThisItem.'Item Count' & If(ThisItem.'Item Count' = 1, " item", " items") & "  ·  " & ThisItem.Department.Value
                                                       Wrap: =false
                                                 - txtInvPerRcptMeta:
                                                     Control: ModernText
@@ -1631,7 +1638,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =12
-                                                      Text: ="Issued " & Text(ThisItem.IssueDate, "mmm d, yyyy") & "  ·  " & If(Coalesce(ThisItem.SignatureMethod.Value, "Electronic") = "CAC", "CAC signature", "Electronic approval") & If(IsBlank(ThisItem.AckDate), If(ThisItem.ReceiptStatus.Value = "Awaiting Acknowledgement", If(Coalesce(ThisItem.SignatureMethod.Value, "Electronic") = "CAC", ", waiting for the signed PDF", ", approval sent"), ""), ", signed " & Text(ThisItem.AckDate, "mmm d, yyyy"))
+                                                      Text: ="Issued " & Text(ThisItem.'Issue Date', "mmm d, yyyy") & "  ·  " & If(Coalesce(ThisItem.'Signature Method'.Value, "Electronic") = "CAC", "CAC signature", "Electronic approval") & If(IsBlank(ThisItem.'Ack Date'), If(ThisItem.'Receipt Status'.Value = "Awaiting Acknowledgement", If(Coalesce(ThisItem.'Signature Method'.Value, "Electronic") = "CAC", ", waiting for the signed PDF", ", approval sent"), ""), ", signed " & Text(ThisItem.'Ack Date', "mmm d, yyyy"))
                                                       Wrap: =false
                                           - txtInvPerRcptStatus:
                                               Control: ModernText
@@ -1639,8 +1646,8 @@ Screens:
                                                 AccessibleLabel: =Self.Text
                                                 Align: =Align.Center
                                                 AlignInContainer: =AlignInContainer.Center
-                                                Color: =Switch(ThisItem.ReceiptStatus.Value, "Overdue", RGBA(164, 38, 44, 1), "Awaiting Acknowledgement", RGBA(92, 45, 145, 1), "Return Required", RGBA(131, 82, 0, 1), "Returned", RGBA(16, 110, 16, 1), "Lost", RGBA(164, 38, 44, 1), RGBA(15, 76, 129, 1))
-                                                Fill: =Switch(ThisItem.ReceiptStatus.Value, "Overdue", RGBA(253, 231, 233, 1), "Awaiting Acknowledgement", RGBA(243, 238, 250, 1), "Return Required", RGBA(255, 244, 206, 1), "Returned", RGBA(223, 246, 221, 1), "Lost", RGBA(253, 231, 233, 1), RGBA(230, 240, 250, 1))
+                                                Color: =Switch(ThisItem.'Receipt Status'.Value, "Overdue", RGBA(164, 38, 44, 1), "Awaiting Acknowledgement", RGBA(92, 45, 145, 1), "Return Required", RGBA(131, 82, 0, 1), "Returned", RGBA(16, 110, 16, 1), "Lost", RGBA(164, 38, 44, 1), RGBA(15, 76, 129, 1))
+                                                Fill: =Switch(ThisItem.'Receipt Status'.Value, "Overdue", RGBA(253, 231, 233, 1), "Awaiting Acknowledgement", RGBA(243, 238, 250, 1), "Return Required", RGBA(255, 244, 206, 1), "Returned", RGBA(223, 246, 221, 1), "Lost", RGBA(253, 231, 233, 1), RGBA(230, 240, 250, 1))
                                                 FontWeight: =FontWeight.Semibold
                                                 Height: =24
                                                 LayoutMinWidth: =0
@@ -1652,7 +1659,7 @@ Screens:
                                                 RadiusTopLeft: =12
                                                 RadiusTopRight: =12
                                                 Size: =12
-                                                Text: =ThisItem.ReceiptStatus.Value
+                                                Text: =ThisItem.'Receipt Status'.Value
                                                 Width: =170
                                                 Wrap: =false
                                           - btnInvPerPdf:
@@ -1663,9 +1670,9 @@ Screens:
                                                 Height: =36
                                                 Icon: ="DocumentPdf"
                                                 LayoutMinWidth: =0
-                                                OnSelect: =Launch(ThisItem.PdfUrl)
-                                                Text: =If(ThisItem.ReceiptStatus.Value = "Awaiting Acknowledgement" && Coalesce(ThisItem.SignatureMethod.Value, "Electronic") = "CAC", "Unsigned PDF", "PDF")
-                                                Visible: =!IsBlank(ThisItem.PdfUrl)
+                                                OnSelect: =Launch(ThisItem.'PDF Url')
+                                                Text: =If(ThisItem.'Receipt Status'.Value = "Awaiting Acknowledgement" && Coalesce(ThisItem.'Signature Method'.Value, "Electronic") = "CAC", "Unsigned PDF", "PDF")
+                                                Visible: =!IsBlank(ThisItem.'PDF Url')
                                                 Width: =140
                                           - btnInvPerUpload:
                                               Control: ModernButton
@@ -1677,8 +1684,8 @@ Screens:
                                                 LayoutMinWidth: =0
                                                 OnSelect: |-
                                                   =UpdateContext({locPerRcpt: ThisItem})
-                                                Text: =If(ThisItem.ReceiptStatus.Value = "Awaiting Acknowledgement", "Upload signed", "Replace signed")
-                                                Visible: =fxIsInvStaff && Coalesce(ThisItem.SignatureMethod.Value, "Electronic") = "CAC" && ThisItem.ReceiptStatus.Value in ["Awaiting Acknowledgement", "Acknowledged", "Closed"]
+                                                Text: =If(ThisItem.'Receipt Status'.Value = "Awaiting Acknowledgement", "Upload signed", "Replace signed")
+                                                Visible: =fxIsInvStaff && Coalesce(ThisItem.'Signature Method'.Value, "Electronic") = "CAC" && ThisItem.'Receipt Status'.Value in ["Awaiting Acknowledgement", "Acknowledged", "Closed"]
                                                 Width: =150
                                           - btnInvPerResend:
                                               Control: ModernButton
@@ -1699,7 +1706,7 @@ Screens:
                                                   Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
                                                   If(locResult.Status = "Success", Set(gblInvLoadedAt, Blank()); Select(btnInvPerLoad))
                                                 Text: ="Resend"
-                                                Visible: =ThisItem.ReceiptStatus.Value = "Awaiting Acknowledgement" && Coalesce(ThisItem.SignatureMethod.Value, "Electronic") = "Electronic" && fxIsInvStaff
+                                                Visible: =ThisItem.'Receipt Status'.Value = "Awaiting Acknowledgement" && Coalesce(ThisItem.'Signature Method'.Value, "Electronic") = "Electronic" && fxIsInvStaff
                                                 Width: =110
                                           - btnInvPerSwitch:
                                               Control: ModernButton
@@ -1713,14 +1720,14 @@ Screens:
                                                 OnSelect: |-
                                                   =UpdateContext({locBusy: true});
                                                   IfError(
-                                                      With({raw: ParseJSON(With({invPl: fxInvSwitchPayload(ThisItem.ID, If(Coalesce(ThisItem.SignatureMethod.Value, "Electronic") = "CAC", "Electronic", "CAC"))}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
+                                                      With({raw: ParseJSON(With({invPl: fxInvSwitchPayload(ThisItem.ID, If(Coalesce(ThisItem.'Signature Method'.Value, "Electronic") = "CAC", "Electronic", "CAC"))}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
                                                       UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
                                                   );
                                                   UpdateContext({locBusy: false});
                                                   Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
                                                   If(locResult.Status = "Success", Set(gblInvLoadedAt, Blank()); Select(btnInvPerLoad))
-                                                Text: =If(Coalesce(ThisItem.SignatureMethod.Value, "Electronic") = "CAC", "Use approval", "Use CAC")
-                                                Visible: =ThisItem.ReceiptStatus.Value = "Awaiting Acknowledgement" && fxIsInvStaff
+                                                Text: =If(Coalesce(ThisItem.'Signature Method'.Value, "Electronic") = "CAC", "Use approval", "Use CAC")
+                                                Visible: =ThisItem.'Receipt Status'.Value = "Awaiting Acknowledgement" && fxIsInvStaff
                                                 Width: =140
                         - conInvPerHist:
                             Control: GroupContainer
@@ -1835,7 +1842,7 @@ Screens:
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
                                                 Size: =13
-                                                Text: =ThisItem.AssetTagSnapshot & "  ·  " & ThisItem.Desc & "  ·  " & ThisItem.Status
+                                                Text: =ThisItem.'Asset Tag Snapshot' & "  ·  " & ThisItem.Desc & "  ·  " & ThisItem.Status
                                                 Wrap: =false
                                           - txtInvPerHistWhen:
                                               Control: ModernText
@@ -1848,7 +1855,7 @@ Screens:
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
                                                 Size: =12
-                                                Text: ="Issued " & Text(ThisItem.IssuedDate, "mmm d, yyyy") & If(IsBlank(ThisItem.ReturnedDate), "", "  ·  returned " & Text(ThisItem.ReturnedDate, "mmm d, yyyy") & If(IsBlank(ThisItem.ReturnCondition.Value), "", " (" & ThisItem.ReturnCondition.Value & ")")) & "  ·  " & ThisItem.ReceiptNumber
+                                                Text: ="Issued " & Text(ThisItem.'Issued Date', "mmm d, yyyy") & If(IsBlank(ThisItem.'Returned Date'), "", "  ·  returned " & Text(ThisItem.'Returned Date', "mmm d, yyyy") & If(IsBlank(ThisItem.'Return Condition'.Value), "", " (" & ThisItem.'Return Condition'.Value & ")")) & "  ·  " & ThisItem.'Receipt Number'
                                                 Wrap: =false
                         - txtInvPerNoAccess:
                             Control: ModernText

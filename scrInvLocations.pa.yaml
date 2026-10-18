@@ -202,10 +202,10 @@ Screens:
                                 Refresh(InventoryCheckouts);
                                 Refresh(InventoryReservations);
                                 Refresh(InventoryReceipts);
-                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, AssetStatus.Value, Kind, AssetKind.Value));
-                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, CheckoutStatus.Value = "Active" || CheckoutStatus.Value = "Awaiting Acknowledgement" || CheckoutStatus.Value = "Return Required"), Status, CheckoutStatus.Value));
-                                Set(gblInvReserved, Filter(InventoryReservations, ReservationStatus.Value = "Reserved"));
-                                Set(gblInvLines, Filter(RequestEquipment, NeedsInventoryAction = true));
+                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, 'Asset Status'.Value, Kind, 'Asset Kind'.Value));
+                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, 'Checkout Status'.Value = "Active" || 'Checkout Status'.Value = "Awaiting Acknowledgement" || 'Checkout Status'.Value = "Return Required"), Status, 'Checkout Status'.Value));
+                                Set(gblInvReserved, Filter(InventoryReservations, 'Reservation Status'.Value = "Reserved"));
+                                Set(gblInvLines, Filter(RequestEquipment, 'Needs Inventory Action' = true));
                                 Set(gblInvLoadedAt, Now());
                                 Set(gblInvLoading, false)
                               Text: ="Reload"
@@ -352,7 +352,7 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =16
-                                          Text: =If(IsBlank(locLoc), "Add a location", "Edit " & locLoc.Title)
+                                          Text: =If(IsBlank(locLoc), "Add a location", "Edit " & locLoc.Location)
                                     - txtInvLocEditDesc:
                                         Control: ModernText
                                         Properties:
@@ -409,7 +409,7 @@ Screens:
                                                 AccessibleLabel: ="Location name"
                                                 AlignInContainer: =AlignInContainer.Stretch
                                                 Appearance: =Appearance.Outline
-                                                Default: =locLoc.Title
+                                                Default: =locLoc.Location
                                                 Height: =36
                                                 LayoutMinWidth: =0
                                                 Placeholder: ="e.g. IT Maintenance Room"
@@ -445,7 +445,7 @@ Screens:
                                                 AccessibleLabel: ="HQ name"
                                                 AlignInContainer: =AlignInContainer.Stretch
                                                 Appearance: =Appearance.Outline
-                                                Default: =locLoc.HqName
+                                                Default: =locLoc.'HQ Name'
                                                 Height: =36
                                                 LayoutMinWidth: =0
                                                 Placeholder: ="e.g. RM 108"
@@ -532,7 +532,7 @@ Screens:
                                                 AlignInContainer: =AlignInContainer.Stretch
                                                 Appearance: =Appearance.Outline
                                                 Default: |-
-                                                  ={Value: Coalesce(locLoc.LocationKind.Value, "Room")}
+                                                  ={Value: Coalesce(locLoc.'Location Kind'.Value, "Room")}
                                                 Height: =36
                                                 ItemDisplayText: =ThisItem.Value
                                                 Items: =["Room", "Storage", "Cabinet", "Other"]
@@ -554,7 +554,7 @@ Screens:
                                               Control: ModernToggle
                                               Properties:
                                                 AccessibleLabel: ="Active"
-                                                Default: =Coalesce(locLoc.IsActive, true)
+                                                Default: =Coalesce(locLoc.'Is Active', true)
                                                 Height: =36
                                                 Label: ="Active (offered in pick lists)"
                                                 LayoutMinWidth: =0
@@ -675,7 +675,7 @@ Screens:
                                     AccessibleLabel: ="Locations"
                                     FillPortions: =0
                                     Height: =Self.AllItemsCount * 56
-                                    Items: =Sort(InventoryLocations, Title)
+                                    Items: =Sort(InventoryLocations, Location)
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                     ShowScrollbar: =false
@@ -718,7 +718,7 @@ Screens:
                                                     Control: ModernText
                                                     Properties:
                                                       AccessibleLabel: =Self.Text
-                                                      Color: =If(ThisItem.IsActive, RGBA(36, 36, 36, 1), RGBA(97, 97, 97, 1))
+                                                      Color: =If(ThisItem.'Is Active', RGBA(36, 36, 36, 1), RGBA(97, 97, 97, 1))
                                                       FontWeight: =FontWeight.Semibold
                                                       Height: =20
                                                       LayoutMinWidth: =0
@@ -726,7 +726,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =13
-                                                      Text: =ThisItem.Title
+                                                      Text: =ThisItem.Location
                                                       Wrap: =false
                                                 - txtInvLocRowMeta:
                                                     Control: ModernText
@@ -740,12 +740,12 @@ Screens:
                                                       PaddingTop: =0
                                                       Size: =12
                                                       Text: |-
-                                                        =ThisItem.LocationKind.Value & "  ·  " & If(ThisItem.Department.Value = "Both", "AV and IT", ThisItem.Department.Value) & If(IsBlank(ThisItem.HqName), "", "  ·  HQ: " & ThisItem.HqName) & "  ·  " & CountRows(Filter(gblInvAssets, HomeLocation = ThisItem.Title)) & " assets" & If(ThisItem.IsActive, "", "  ·  inactive")
+                                                        =ThisItem.'Location Kind'.Value & "  ·  " & If(ThisItem.Department.Value = "Both", "AV and IT", ThisItem.Department.Value) & If(IsBlank(ThisItem.'HQ Name'), "", "  ·  HQ: " & ThisItem.'HQ Name') & "  ·  " & CountRows(Filter(gblInvAssets, 'Home Location' = ThisItem.Location)) & " assets" & If(ThisItem.'Is Active', "", "  ·  inactive")
                                                       Wrap: =false
                                           - btnInvLocRowEdit:
                                               Control: ModernButton
                                               Properties:
-                                                AccessibleLabel: ="Edit " & ThisItem.Title
+                                                AccessibleLabel: ="Edit " & ThisItem.Location
                                                 Appearance: =ButtonAppearance.Subtle
                                                 Height: =36
                                                 Icon: ="Edit"

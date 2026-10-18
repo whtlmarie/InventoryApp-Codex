@@ -202,10 +202,10 @@ Screens:
                                 Refresh(InventoryCheckouts);
                                 Refresh(InventoryReservations);
                                 Refresh(InventoryReceipts);
-                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, AssetStatus.Value, Kind, AssetKind.Value));
-                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, CheckoutStatus.Value = "Active" || CheckoutStatus.Value = "Awaiting Acknowledgement" || CheckoutStatus.Value = "Return Required"), Status, CheckoutStatus.Value));
-                                Set(gblInvReserved, Filter(InventoryReservations, ReservationStatus.Value = "Reserved"));
-                                Set(gblInvLines, Filter(RequestEquipment, NeedsInventoryAction = true));
+                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, 'Asset Status'.Value, Kind, 'Asset Kind'.Value));
+                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, 'Checkout Status'.Value = "Active" || 'Checkout Status'.Value = "Awaiting Acknowledgement" || 'Checkout Status'.Value = "Return Required"), Status, 'Checkout Status'.Value));
+                                Set(gblInvReserved, Filter(InventoryReservations, 'Reservation Status'.Value = "Reserved"));
+                                Set(gblInvLines, Filter(RequestEquipment, 'Needs Inventory Action' = true));
                                 Set(gblInvLoadedAt, Now());
                                 Set(gblInvLoading, false)
                               Text: ="Reload"
@@ -371,10 +371,10 @@ Screens:
                                     Table(
                                         {Key: "Available", Label: "Available", Count: CountRows(Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept) && Status = "Available")), Hint: "Ready to reserve or issue", Accent: RGBA(16, 110, 16, 1)},
                                         {Key: "Issued", Label: "Issued", Count: CountRows(Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept) && Status = "Issued")), Hint: "Out with someone now", Accent: RGBA(15, 76, 129, 1)},
-                                        {Key: "Ack", Label: "Awaiting acknowledgement", Count: CountRows(Filter(gblInvOpenCheckouts, Status = "Awaiting Acknowledgement" && AssetId in ids)), Hint: "Issued, not yet acknowledged", Accent: RGBA(92, 45, 145, 1)},
-                                        {Key: "DueSoon", Label: "Due in 3 days", Count: CountRows(Filter(gblInvOpenCheckouts, Status <> "Awaiting Acknowledgement" && !IsBlank(DueDate) && DueDate >= Today() && DueDate <= DateAdd(Today(), 3, TimeUnit.Days) && AssetId in ids)), Hint: "Call ahead to arrange return", Accent: RGBA(131, 82, 0, 1)},
-                                        {Key: "Overdue", Label: "Overdue", Count: CountRows(Filter(gblInvOpenCheckouts, Status <> "Awaiting Acknowledgement" && !IsBlank(DueDate) && DueDate < Today() && AssetId in ids)), Hint: "Past the return date", Accent: RGBA(164, 38, 44, 1)},
-                                        {Key: "Reserved", Label: "Reserved, next 7 days", Count: CountRows(Filter(gblInvReserved, StartDate <= DateAdd(Today(), 7, TimeUnit.Days) && EndDate >= Today() && AssetId in ids)), Hint: "Held for request items", Accent: RGBA(131, 82, 0, 1)},
+                                        {Key: "Ack", Label: "Awaiting acknowledgement", Count: CountRows(Filter(gblInvOpenCheckouts, Status = "Awaiting Acknowledgement" && 'Asset Id' in ids)), Hint: "Issued, not yet acknowledged", Accent: RGBA(92, 45, 145, 1)},
+                                        {Key: "DueSoon", Label: "Due in 3 days", Count: CountRows(Filter(gblInvOpenCheckouts, Status <> "Awaiting Acknowledgement" && !IsBlank('Due Date') && 'Due Date' >= Today() && 'Due Date' <= DateAdd(Today(), 3, TimeUnit.Days) && 'Asset Id' in ids)), Hint: "Call ahead to arrange return", Accent: RGBA(131, 82, 0, 1)},
+                                        {Key: "Overdue", Label: "Overdue", Count: CountRows(Filter(gblInvOpenCheckouts, Status <> "Awaiting Acknowledgement" && !IsBlank('Due Date') && 'Due Date' < Today() && 'Asset Id' in ids)), Hint: "Past the return date", Accent: RGBA(164, 38, 44, 1)},
+                                        {Key: "Reserved", Label: "Reserved, next 7 days", Count: CountRows(Filter(gblInvReserved, 'Start Date' <= DateAdd(Today(), 7, TimeUnit.Days) && 'End Date' >= Today() && 'Asset Id' in ids)), Hint: "Held for request items", Accent: RGBA(131, 82, 0, 1)},
                                         {Key: "Repair", Label: "In repair", Count: CountRows(Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept) && Status = "In Repair")), Hint: "Not available to issue", Accent: RGBA(97, 97, 97, 1)}
                                     )
                                 )
@@ -483,13 +483,13 @@ Screens:
                                 =(20 + 48 + 12 + With({n: Min(CountRows(SortByColumns(
                                     Filter(
                                         ForAll(
-                                            Filter(gblInvOpenCheckouts, AssetId in Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID) As c,
+                                            Filter(gblInvOpenCheckouts, 'Asset Id' in Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID) As c,
                                             {
-                                                Co: c, DueDate: c.DueDate,
-                                                Need: First(Sort(Filter(gblInvReserved As r, r.AssetId = c.AssetId && r.StartDate >= Today() && r.StartDate <= DateAdd(Today(), 7, TimeUnit.Days)), StartDate))
+                                                Co: c, DueDate: c.'Due Date',
+                                                Need: First(Sort(Filter(gblInvReserved As r, r.'Asset Id' = c.'Asset Id' && r.'Start Date' >= Today() && r.'Start Date' <= DateAdd(Today(), 7, TimeUnit.Days)), 'Start Date'))
                                             }
                                         ),
-                                        !IsBlank(Need) && (IsBlank(DueDate) || DueDate < Today() || DueDate >= DateAdd(Need.StartDate, -Switch(Weekday(Need.StartDate), 2, 3, 1, 2, 1), TimeUnit.Days))
+                                        !IsBlank(Need) && (IsBlank(DueDate) || DueDate < Today() || DueDate >= DateAdd(Need.'Start Date', -Switch(Weekday(Need.'Start Date'), 2, 3, 1, 2, 1), TimeUnit.Days))
                                     ),
                                     "DueDate"
                                 )), 8)}, If(n = 0, 24, n * 72 + 12)) + 24)
@@ -510,13 +510,13 @@ Screens:
                                 =fxCanViewInventory && !IsEmpty(SortByColumns(
                                     Filter(
                                         ForAll(
-                                            Filter(gblInvOpenCheckouts, AssetId in Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID) As c,
+                                            Filter(gblInvOpenCheckouts, 'Asset Id' in Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID) As c,
                                             {
-                                                Co: c, DueDate: c.DueDate,
-                                                Need: First(Sort(Filter(gblInvReserved As r, r.AssetId = c.AssetId && r.StartDate >= Today() && r.StartDate <= DateAdd(Today(), 7, TimeUnit.Days)), StartDate))
+                                                Co: c, DueDate: c.'Due Date',
+                                                Need: First(Sort(Filter(gblInvReserved As r, r.'Asset Id' = c.'Asset Id' && r.'Start Date' >= Today() && r.'Start Date' <= DateAdd(Today(), 7, TimeUnit.Days)), 'Start Date'))
                                             }
                                         ),
-                                        !IsBlank(Need) && (IsBlank(DueDate) || DueDate < Today() || DueDate >= DateAdd(Need.StartDate, -Switch(Weekday(Need.StartDate), 2, 3, 1, 2, 1), TimeUnit.Days))
+                                        !IsBlank(Need) && (IsBlank(DueDate) || DueDate < Today() || DueDate >= DateAdd(Need.'Start Date', -Switch(Weekday(Need.'Start Date'), 2, 3, 1, 2, 1), TimeUnit.Days))
                                     ),
                                     "DueDate"
                                 ))
@@ -586,13 +586,13 @@ Screens:
                                       =SortByColumns(
                                           Filter(
                                               ForAll(
-                                                  Filter(gblInvOpenCheckouts, AssetId in Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID) As c,
+                                                  Filter(gblInvOpenCheckouts, 'Asset Id' in Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID) As c,
                                                   {
-                                                      Co: c, DueDate: c.DueDate,
-                                                      Need: First(Sort(Filter(gblInvReserved As r, r.AssetId = c.AssetId && r.StartDate >= Today() && r.StartDate <= DateAdd(Today(), 7, TimeUnit.Days)), StartDate))
+                                                      Co: c, DueDate: c.'Due Date',
+                                                      Need: First(Sort(Filter(gblInvReserved As r, r.'Asset Id' = c.'Asset Id' && r.'Start Date' >= Today() && r.'Start Date' <= DateAdd(Today(), 7, TimeUnit.Days)), 'Start Date'))
                                                   }
                                               ),
-                                              !IsBlank(Need) && (IsBlank(DueDate) || DueDate < Today() || DueDate >= DateAdd(Need.StartDate, -Switch(Weekday(Need.StartDate), 2, 3, 1, 2, 1), TimeUnit.Days))
+                                              !IsBlank(Need) && (IsBlank(DueDate) || DueDate < Today() || DueDate >= DateAdd(Need.'Start Date', -Switch(Weekday(Need.'Start Date'), 2, 3, 1, 2, 1), TimeUnit.Days))
                                           ),
                                           "DueDate"
                                       )
@@ -639,7 +639,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =13
-                                                      Text: =ThisItem.Co.AssetTagSnapshot & "  ·  " & fxPersonName(ThisItem.Co.RecipientName)
+                                                      Text: =ThisItem.Co.'Asset Tag Snapshot' & "  ·  " & fxPersonName(ThisItem.Co.'Recipient Name')
                                                       Wrap: =false
                                                 - txtInvHomeRiskNeed:
                                                     Control: ModernText
@@ -652,7 +652,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =12
-                                                      Text: ="Needed for " & ThisItem.Need.RequestNumber & " from " & Text(ThisItem.Need.StartDate, "mmm d") & "   ·   " & Coalesce(ThisItem.Co.ReceiptNumber, ThisItem.Co.Title)
+                                                      Text: ="Needed for " & ThisItem.Need.'Request Number' & " from " & Text(ThisItem.Need.'Start Date', "mmm d") & "   ·   " & Coalesce(ThisItem.Co.'Receipt Number', ThisItem.Co.Title)
                                                       Wrap: =false
                                           - txtInvHomeRiskWhen:
                                               Control: ModernText
@@ -686,15 +686,15 @@ Screens:
                                 =With({l: (20 + 48 + 12 + With({n: Min(CountRows(SortByColumns(
                                     Filter(
                                         gblInvLines,
-                                        LineStatus.Value in ["Approved", "Fulfillment Pending"] &&
-                                        (locHomeDept = "All" || locHomeDept in Coalesce(DepartmentRoute.Value, ""))
+                                        'Line Status'.Value in ["Approved", "Fulfillment Pending"] &&
+                                        (locHomeDept = "All" || locHomeDept in Coalesce('Department Route'.Value, ""))
                                     ),
                                     "Title"
                                 )), 8)}, If(n = 0, 24, n * 72 + 12)) + 24), d: (20 + 48 + 12 + With({n: Min(CountRows(SortByColumns(
                                     Filter(
                                         gblInvOpenCheckouts,
-                                        Status <> "Awaiting Acknowledgement" && !IsBlank(DueDate) && DueDate <= DateAdd(Today(), 7, TimeUnit.Days) &&
-                                        AssetId in Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID
+                                        Status <> "Awaiting Acknowledgement" && !IsBlank('Due Date') && 'Due Date' <= DateAdd(Today(), 7, TimeUnit.Days) &&
+                                        'Asset Id' in Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID
                                     ),
                                     "DueDate"
                                 )), 8)}, If(n = 0, 24, n * 72 + 12)) + 24)}, If(App.Width >= 1250, Max(l, d), l + 16 + d))
@@ -716,8 +716,8 @@ Screens:
                                       =(20 + 48 + 12 + With({n: Min(CountRows(SortByColumns(
                                           Filter(
                                               gblInvLines,
-                                              LineStatus.Value in ["Approved", "Fulfillment Pending"] &&
-                                              (locHomeDept = "All" || locHomeDept in Coalesce(DepartmentRoute.Value, ""))
+                                              'Line Status'.Value in ["Approved", "Fulfillment Pending"] &&
+                                              (locHomeDept = "All" || locHomeDept in Coalesce('Department Route'.Value, ""))
                                           ),
                                           "Title"
                                       )), 8)}, If(n = 0, 24, n * 72 + 12)) + 24)
@@ -799,8 +799,8 @@ Screens:
                                             =SortByColumns(
                                                 Filter(
                                                     gblInvLines,
-                                                    LineStatus.Value in ["Approved", "Fulfillment Pending"] &&
-                                                    (locHomeDept = "All" || locHomeDept in Coalesce(DepartmentRoute.Value, ""))
+                                                    'Line Status'.Value in ["Approved", "Fulfillment Pending"] &&
+                                                    (locHomeDept = "All" || locHomeDept in Coalesce('Department Route'.Value, ""))
                                                 ),
                                                 "Title"
                                             )
@@ -847,7 +847,7 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =13
-                                                            Text: =Coalesce(ThisItem.EquipmentNameSnapshot, "Item") & "  ·  " & Text(Coalesce(ThisItem.QuantityApproved, ThisItem.QuantityRequested, 1)) & " needed"
+                                                            Text: =Coalesce(ThisItem.'Equipment Name Snapshot', "Item") & "  ·  " & Text(Coalesce(ThisItem.'Quantity Approved', ThisItem.'Quantity Requested', 1)) & " needed"
                                                             Wrap: =false
                                                       - txtInvHomeLineReq:
                                                           Control: ModernText
@@ -860,7 +860,7 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =12
-                                                            Text: =First(Split(ThisItem.Title, " - ")).Value & "   ·   " & Coalesce(ThisItem.DepartmentRoute.Value, "") & "   ·   Reserved " & Coalesce(ThisItem.ReservedQuantity, 0) & ", issued " & Coalesce(ThisItem.QuantityFulfilled, 0)
+                                                            Text: =First(Split(ThisItem.'Request Equipment Record', " - ")).Value & "   ·   " & Coalesce(ThisItem.'Department Route'.Value, "") & "   ·   Reserved " & Coalesce(ThisItem.'Reserved Quantity', 0) & ", issued " & Coalesce(ThisItem.'Quantity Fulfilled', 0)
                                                             Wrap: =false
                                                 - txtInvHomeLineStatus:
                                                     Control: ModernText
@@ -868,8 +868,8 @@ Screens:
                                                       AccessibleLabel: =Self.Text
                                                       Align: =Align.Center
                                                       AlignInContainer: =AlignInContainer.Center
-                                                      Color: =If(Coalesce(ThisItem.ReservedQuantity, 0) = 0, RGBA(131, 82, 0, 1), RGBA(15, 76, 129, 1))
-                                                      Fill: =If(Coalesce(ThisItem.ReservedQuantity, 0) = 0, RGBA(255, 244, 206, 1), RGBA(230, 240, 250, 1))
+                                                      Color: =If(Coalesce(ThisItem.'Reserved Quantity', 0) = 0, RGBA(131, 82, 0, 1), RGBA(15, 76, 129, 1))
+                                                      Fill: =If(Coalesce(ThisItem.'Reserved Quantity', 0) = 0, RGBA(255, 244, 206, 1), RGBA(230, 240, 250, 1))
                                                       FontWeight: =FontWeight.Semibold
                                                       Height: =24
                                                       LayoutMinWidth: =0
@@ -881,13 +881,13 @@ Screens:
                                                       RadiusTopLeft: =12
                                                       RadiusTopRight: =12
                                                       Size: =12
-                                                      Text: =If(Coalesce(ThisItem.ReservedQuantity, 0) = 0, "To reserve", "In progress")
+                                                      Text: =If(Coalesce(ThisItem.'Reserved Quantity', 0) = 0, "To reserve", "In progress")
                                                       Width: =110
                                                       Wrap: =false
                                                 - btnInvHomeLineOpen:
                                                     Control: ModernButton
                                                     Properties:
-                                                      AccessibleLabel: ="Open " & Coalesce(ThisItem.EquipmentNameSnapshot, "item") & " in Request items"
+                                                      AccessibleLabel: ="Open " & Coalesce(ThisItem.'Equipment Name Snapshot', "item") & " in Request items"
                                                       Appearance: =ButtonAppearance.Subtle
                                                       Height: =36
                                                       Icon: ="ChevronRight"
@@ -908,8 +908,8 @@ Screens:
                                       =(20 + 48 + 12 + With({n: Min(CountRows(SortByColumns(
                                           Filter(
                                               gblInvOpenCheckouts,
-                                              Status <> "Awaiting Acknowledgement" && !IsBlank(DueDate) && DueDate <= DateAdd(Today(), 7, TimeUnit.Days) &&
-                                              AssetId in Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID
+                                              Status <> "Awaiting Acknowledgement" && !IsBlank('Due Date') && 'Due Date' <= DateAdd(Today(), 7, TimeUnit.Days) &&
+                                              'Asset Id' in Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID
                                           ),
                                           "DueDate"
                                       )), 8)}, If(n = 0, 24, n * 72 + 12)) + 24)
@@ -991,8 +991,8 @@ Screens:
                                             =SortByColumns(
                                                 Filter(
                                                     gblInvOpenCheckouts,
-                                                    Status <> "Awaiting Acknowledgement" && !IsBlank(DueDate) && DueDate <= DateAdd(Today(), 7, TimeUnit.Days) &&
-                                                    AssetId in Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID
+                                                    Status <> "Awaiting Acknowledgement" && !IsBlank('Due Date') && 'Due Date' <= DateAdd(Today(), 7, TimeUnit.Days) &&
+                                                    'Asset Id' in Filter(gblInvAssets, (locHomeDept = "All" || Dept = locHomeDept)).ID
                                                 ),
                                                 "DueDate"
                                             )
@@ -1039,7 +1039,7 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =13
-                                                            Text: =ThisItem.AssetTagSnapshot & "  ·  " & fxPersonName(ThisItem.RecipientName)
+                                                            Text: =ThisItem.'Asset Tag Snapshot' & "  ·  " & fxPersonName(ThisItem.'Recipient Name')
                                                             Wrap: =false
                                                       - txtInvHomeDueInfo:
                                                           Control: ModernText
@@ -1052,7 +1052,7 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =12
-                                                            Text: =Coalesce(ThisItem.ReceiptNumber, ThisItem.Title) & If(IsBlank(ThisItem.RequestNumber), "", "   ·   " & ThisItem.RequestNumber)
+                                                            Text: =Coalesce(ThisItem.'Receipt Number', ThisItem.Title) & If(IsBlank(ThisItem.'Request Number'), "", "   ·   " & ThisItem.'Request Number')
                                                             Wrap: =false
                                                 - txtInvHomeDueWhen:
                                                     Control: ModernText
@@ -1060,8 +1060,8 @@ Screens:
                                                       AccessibleLabel: =Self.Text
                                                       Align: =Align.Center
                                                       AlignInContainer: =AlignInContainer.Center
-                                                      Color: =If(ThisItem.DueDate < Today(), RGBA(164, 38, 44, 1), RGBA(97, 97, 97, 1))
-                                                      Fill: =If(ThisItem.DueDate < Today(), RGBA(253, 231, 233, 1), RGBA(237, 239, 242, 1))
+                                                      Color: =If(ThisItem.'Due Date' < Today(), RGBA(164, 38, 44, 1), RGBA(97, 97, 97, 1))
+                                                      Fill: =If(ThisItem.'Due Date' < Today(), RGBA(253, 231, 233, 1), RGBA(237, 239, 242, 1))
                                                       FontWeight: =FontWeight.Semibold
                                                       Height: =24
                                                       LayoutMinWidth: =0
@@ -1073,6 +1073,6 @@ Screens:
                                                       RadiusTopLeft: =12
                                                       RadiusTopRight: =12
                                                       Size: =12
-                                                      Text: =If(ThisItem.DueDate < Today(), "Overdue " & Text(ThisItem.DueDate, "mmm d"), "Due " & Text(ThisItem.DueDate, "mmm d"))
+                                                      Text: =If(ThisItem.'Due Date' < Today(), "Overdue " & Text(ThisItem.'Due Date', "mmm d"), "Due " & Text(ThisItem.'Due Date', "mmm d"))
                                                       Width: =130
                                                       Wrap: =false

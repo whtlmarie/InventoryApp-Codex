@@ -4,7 +4,13 @@ Screens:
       Fill: =RGBA(245, 246, 248, 1)
       LoadingSpinnerColor: =RGBA(15, 76, 129, 1)
       OnVisible: |-
-        =UpdateContext({locBusy: false});
+        =// Opened from the Support Request Work Center ("Open in Inventory"): show that request line once (Param line = RequestEquipment ID).
+        If(
+            !IsBlank(Param("line")) && !Coalesce(gblInvLineParamUsed, false),
+            Set(gblInvLineParamUsed, true);
+            Set(gblInvReqOpenLine, Value(Param("line")))
+        );
+        UpdateContext({locBusy: false});
         If(IsBlank(gblInvLoadedAt) || DateDiff(gblInvLoadedAt, Now(), TimeUnit.Minutes) >= 2, Select(btnInvRqReload));
         Select(btnInvRqLoad)
     Children:
@@ -203,10 +209,10 @@ Screens:
                                 Refresh(InventoryCheckouts);
                                 Refresh(InventoryReservations);
                                 Refresh(InventoryReceipts);
-                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, AssetStatus.Value, Kind, AssetKind.Value));
-                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, CheckoutStatus.Value = "Active" || CheckoutStatus.Value = "Awaiting Acknowledgement" || CheckoutStatus.Value = "Return Required"), Status, CheckoutStatus.Value));
-                                Set(gblInvReserved, Filter(InventoryReservations, ReservationStatus.Value = "Reserved"));
-                                Set(gblInvLines, Filter(RequestEquipment, NeedsInventoryAction = true));
+                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, 'Asset Status'.Value, Kind, 'Asset Kind'.Value));
+                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, 'Checkout Status'.Value = "Active" || 'Checkout Status'.Value = "Awaiting Acknowledgement" || 'Checkout Status'.Value = "Return Required"), Status, 'Checkout Status'.Value));
+                                Set(gblInvReserved, Filter(InventoryReservations, 'Reservation Status'.Value = "Reserved"));
+                                Set(gblInvLines, Filter(RequestEquipment, 'Needs Inventory Action' = true));
                                 Set(gblInvLoadedAt, Now());
                                 Set(gblInvLoading, false)
                               Text: ="Reload"
@@ -225,23 +231,23 @@ Screens:
                                     SortByColumns(
                                         Filter(
                                             ForAll(
-                                                Filter(RequestEquipment, NeedsInventoryAction = true && (LineStatus.Value = "Approved" || LineStatus.Value = "Fulfillment Pending")) As ln,
+                                                Filter(RequestEquipment, 'Needs Inventory Action' = true && ('Line Status'.Value = "Approved" || 'Line Status'.Value = "Fulfillment Pending")) As ln,
                                                 With(
                                                     {req: With({rid: ln.Request.Id}, LookUp(Requests, ID = rid))},
                                                     With(
-                                                        {course: With({rnum: req.Title}, LookUp(CourseSupportDetails, Title = rnum))},
+                                                        {course: With({rnum: req.'Request Number'}, LookUp(CourseSupportDetails, 'Course Support Record' = rnum))},
                                                         {
-                                                            LineId: ln.ID, Req: req, ReqId: req.ID, Course: course, Route: Upper(Coalesce(ln.DepartmentRoute.Value, "")),
-                                                            Item: Coalesce(ln.EquipmentNameSnapshot, "Equipment"), CatalogId: ln.Equipment.Id,
-                                                            Qty: Coalesce(ln.QuantityApproved, ln.QuantityRequested, 1),
-                                                            Start: Coalesce(course.CourseStartDate, Today()), End: Coalesce(course.CourseEndDate, course.CourseStartDate, Today()),
-                                                            Reserved: CountRows(Filter(InventoryReservations, RequestEquipmentId = ln.ID && ReservationStatus.Value = "Reserved")),
-                                                            Issued: CountRows(Filter(InventoryCheckouts, RequestEquipmentId = ln.ID))
+                                                            LineId: ln.ID, Req: req, ReqId: req.ID, Course: course, Route: Upper(Coalesce(ln.'Department Route'.Value, "")),
+                                                            Item: Coalesce(ln.'Equipment Name Snapshot', "Equipment"), CatalogId: ln.Equipment.Id,
+                                                            Qty: Coalesce(ln.'Quantity Approved', ln.'Quantity Requested', 1),
+                                                            Start: Coalesce(course.'Course Start Date', Today()), End: Coalesce(course.'Course End Date', course.'Course Start Date', Today()),
+                                                            Reserved: CountRows(Filter(InventoryReservations, 'Request Equipment Id' = ln.ID && 'Reservation Status'.Value = "Reserved")),
+                                                            Issued: CountRows(Filter(InventoryCheckouts, 'Request Equipment Id' = ln.ID))
                                                         }
                                                     )
                                                 )
                                             ),
-                                            !IsBlank(Req) && Req.CurrentStage in ["Fulfillment", "IT Fulfillment"] &&
+                                            !IsBlank(Req) && Req.'Current Stage' in ["Fulfillment", "IT Fulfillment"] &&
                                                 (("AV" in Route && fxCanManage("AV")) || ("IT" in Route && fxCanManage("IT")))
                                         ),
                                         "Start",
@@ -314,7 +320,7 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =24
-                                          Text: =If(IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid)), "Request items", LookUp(gblInvReqReqs, ReqId = locReqRid).Req.Title)
+                                          Text: =If(IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid)), "Request items", LookUp(gblInvReqReqs, ReqId = locReqRid).Req.'Request Number')
                                           Wrap: =false
                                     - txtInvRqPageSubtitle:
                                         Control: ModernText
@@ -521,7 +527,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =13
-                                                      Text: =ThisItem.Req.Title & "   " & Coalesce(ThisItem.Req.RequestSubject, "(No subject)")
+                                                      Text: =ThisItem.Req.'Request Number' & "   " & Coalesce(ThisItem.Req.'Request Subject', "(No subject)")
                                                       Wrap: =false
                                                 - txtInvRqRowL2:
                                                     Control: ModernText
@@ -548,7 +554,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =12
-                                                      Text: =If(IsBlank(ThisItem.Course), "No course dates", "Course " & Text(ThisItem.Start, "mmm d") & " – " & Text(ThisItem.End, "mmm d, yyyy")) & "  ·  Requester " & fxPersonName(Coalesce(ThisItem.Req.RequesterName, ThisItem.Req.RequesterEmail)) & If(IsBlank(ThisItem.Course.Room), "", "  ·  " & ThisItem.Course.Room)
+                                                      Text: =If(IsBlank(ThisItem.Course), "No course dates", "Course " & Text(ThisItem.Start, "mmm d") & " – " & Text(ThisItem.End, "mmm d, yyyy")) & "  ·  Requester " & fxPersonName(Coalesce(ThisItem.Req.'Requester Name', ThisItem.Req.'Requester Email')) & If(IsBlank(ThisItem.Course.Room), "", "  ·  " & ThisItem.Course.Room)
                                                       Wrap: =false
                                           - txtInvRqRowRes:
                                               Control: ModernText
@@ -597,7 +603,7 @@ Screens:
                                           - btnInvRqRowOpen:
                                               Control: ModernButton
                                               Properties:
-                                                AccessibleLabel: ="Open " & ThisItem.Req.Title
+                                                AccessibleLabel: ="Open " & ThisItem.Req.'Request Number'
                                                 Appearance: =ButtonAppearance.Secondary
                                                 Height: =36
                                                 Icon: ="ChevronRight"
@@ -655,7 +661,7 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =16
-                                          Text: =LookUp(gblInvReqReqs, ReqId = locReqRid).Req.Title & "  ·  " & Coalesce(LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequestSubject, "")
+                                          Text: =LookUp(gblInvReqReqs, ReqId = locReqRid).Req.'Request Number' & "  ·  " & Coalesce(LookUp(gblInvReqReqs, ReqId = locReqRid).Req.'Request Subject', "")
                                     - txtInvRqSelDesc:
                                         Control: ModernText
                                         Properties:
@@ -667,7 +673,7 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =12
-                                          Text: =If(IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid).Course.CourseName), "", LookUp(gblInvReqReqs, ReqId = locReqRid).Course.CourseName & "  ·  ") & If(IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid).Course), "No course dates", "Course " & Text(LookUp(gblInvReqReqs, ReqId = locReqRid).Start, "mmm d") & " – " & Text(LookUp(gblInvReqReqs, ReqId = locReqRid).End, "mmm d, yyyy"))
+                                          Text: =If(IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid).Course.'Course Name'), "", LookUp(gblInvReqReqs, ReqId = locReqRid).Course.'Course Name' & "  ·  ") & If(IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid).Course), "No course dates", "Course " & Text(LookUp(gblInvReqReqs, ReqId = locReqRid).Start, "mmm d") & " – " & Text(LookUp(gblInvReqReqs, ReqId = locReqRid).End, "mmm d, yyyy"))
                                           Wrap: =false
                               - conInvRqSelStats:
                                   Control: GroupContainer
@@ -837,7 +843,7 @@ Screens:
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
                                                 Size: =13
-                                                Text: =fxPersonName(Coalesce(LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterName, LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterEmail)) & If(IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid).Course.Room), "", "  ·  " & LookUp(gblInvReqReqs, ReqId = locReqRid).Course.Room)
+                                                Text: =fxPersonName(Coalesce(LookUp(gblInvReqReqs, ReqId = locReqRid).Req.'Requester Name', LookUp(gblInvReqReqs, ReqId = locReqRid).Req.'Requester Email')) & If(IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid).Course.Room), "", "  ·  " & LookUp(gblInvReqReqs, ReqId = locReqRid).Course.Room)
                                                 Wrap: =false
                         - conInvRqItems:
                             Control: GroupContainer
@@ -1056,12 +1062,12 @@ Screens:
                                         AddColumns(
                                             Filter(
                                                 gblInvAssets,
-                                                Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
-                                                    (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
-                                                    !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
-                                                    (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                    (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
+                                                    !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
+                                                    (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
                                             ),
-                                            Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                            Fit, If('Catalog Item Id' = cl.CatalogId, 0, 1)
                                         ),
                                         "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                     )
@@ -1270,12 +1276,12 @@ Screens:
                                                     AddColumns(
                                                         Filter(
                                                             gblInvAssets,
-                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
-                                                                (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
-                                                                !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
-                                                                (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                            Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
+                                                                !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
+                                                                (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
                                                         ),
-                                                        Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                                        Fit, If('Catalog Item Id' = cl.CatalogId, 0, 1)
                                                     ),
                                                     "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                                 )
@@ -1285,12 +1291,12 @@ Screens:
                                                     AddColumns(
                                                         Filter(
                                                             gblInvAssets,
-                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
-                                                                (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
-                                                                !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
-                                                                (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                            Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
+                                                                !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
+                                                                (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
                                                         ),
-                                                        Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                                        Fit, If('Catalog Item Id' = cl.CatalogId, 0, 1)
                                                     ),
                                                     "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                                 )
@@ -1306,12 +1312,12 @@ Screens:
                                                     AddColumns(
                                                         Filter(
                                                             gblInvAssets,
-                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
-                                                                (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
-                                                                !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
-                                                                (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                            Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
+                                                                !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
+                                                                (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
                                                         ),
-                                                        Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                                        Fit, If('Catalog Item Id' = cl.CatalogId, 0, 1)
                                                     ),
                                                     "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                                 )
@@ -1323,12 +1329,12 @@ Screens:
                                                     AddColumns(
                                                         Filter(
                                                             gblInvAssets,
-                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
-                                                                (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
-                                                                !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
-                                                                (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                            Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
+                                                                !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
+                                                                (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
                                                         ),
-                                                        Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                                        Fit, If('Catalog Item Id' = cl.CatalogId, 0, 1)
                                                     ),
                                                     "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                                 )
@@ -1346,12 +1352,12 @@ Screens:
                                                     AddColumns(
                                                         Filter(
                                                             gblInvAssets,
-                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
-                                                                (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
-                                                                !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
-                                                                (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                            Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
+                                                                !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
+                                                                (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
                                                         ),
-                                                        Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                                        Fit, If('Catalog Item Id' = cl.CatalogId, 0, 1)
                                                     ),
                                                     "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                                 )
@@ -1373,12 +1379,12 @@ Screens:
                                                     AddColumns(
                                                         Filter(
                                                             gblInvAssets,
-                                                            Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
-                                                                (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
-                                                                !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
-                                                                (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                            Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
+                                                                !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
+                                                                (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
                                                         ),
-                                                        Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                                        Fit, If('Catalog Item Id' = cl.CatalogId, 0, 1)
                                                     ),
                                                     "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                                 )
@@ -1397,12 +1403,12 @@ Screens:
                                               AddColumns(
                                                   Filter(
                                                       gblInvAssets,
-                                                      Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
-                                                          (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
-                                                          !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
-                                                          (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                      Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                          (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
+                                                          !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
+                                                          (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
                                                   ),
-                                                  Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                                  Fit, If('Catalog Item Id' = cl.CatalogId, 0, 1)
                                               ),
                                               "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                           )
@@ -1414,12 +1420,12 @@ Screens:
                                               AddColumns(
                                                   Filter(
                                                       gblInvAssets,
-                                                      Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
-                                                          (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
-                                                          !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
-                                                          (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                      Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                          (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
+                                                          !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
+                                                          (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
                                                   ),
-                                                  Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                                  Fit, If('Catalog Item Id' = cl.CatalogId, 0, 1)
                                               ),
                                               "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                           )
@@ -1461,7 +1467,7 @@ Screens:
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
                                                 Size: =13
-                                                Text: =ThisItem.Title
+                                                Text: =ThisItem.'Asset Tag'
                                                 Wrap: =false
                                           - txtInvRqPickInfo:
                                               Control: ModernText
@@ -1475,12 +1481,12 @@ Screens:
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
                                                 Size: =12
-                                                Text: =Coalesce(ThisItem.CatalogNameSnapshot, "No catalog item") & If(IsBlank(Trim(ThisItem.Make & ThisItem.Model)), "", "  ·  " & Trim(ThisItem.Make & " " & ThisItem.Model)) & If(IsBlank(ThisItem.HomeLocation), "", "  ·  " & ThisItem.HomeLocation)
+                                                Text: =Coalesce(ThisItem.'Catalog Name Snapshot', "No catalog item") & If(IsBlank(Trim(ThisItem.Make & ThisItem.Model)), "", "  ·  " & Trim(ThisItem.Make & " " & ThisItem.Model)) & If(IsBlank(ThisItem.'Home Location'), "", "  ·  " & ThisItem.'Home Location')
                                                 Wrap: =false
                                           - btnInvRqPickGo:
                                               Control: ModernButton
                                               Properties:
-                                                AccessibleLabel: ="Reserve " & ThisItem.Title
+                                                AccessibleLabel: ="Reserve " & ThisItem.'Asset Tag'
                                                 Appearance: =ButtonAppearance.Secondary
                                                 DisplayMode: =If(locBusy || IsBlank(dteInvRqStart.SelectedDate) || IsBlank(dteInvRqEnd.SelectedDate), DisplayMode.Disabled, DisplayMode.Edit)
                                                 Height: =36
@@ -1507,7 +1513,7 @@ Screens:
                               DropShadow: =DropShadow.Semilight
                               Fill: =RGBA(255, 255, 255, 1)
                               FillPortions: =0
-                              Height: =20 + 48 + 12 + Max(24, CountRows(AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item"))) * 52) + 24
+                              Height: =20 + 48 + 12 + Max(24, CountRows(AddColumns(Filter(InventoryReservations, 'Request Id' = locReqRid && 'Reservation Status'.Value = "Reserved"), A, LookUp(gblInvAssets, ID = 'Asset Id'), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = 'Request Equipment Id').Item, "Item"))) * 52) + 24
                               LayoutAlignItems: =LayoutAlignItems.Stretch
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =12
@@ -1548,7 +1554,7 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =16
-                                          Text: ="Reserved for this request (" & CountRows(AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item"))) & ")"
+                                          Text: ="Reserved for this request (" & CountRows(AddColumns(Filter(InventoryReservations, 'Request Id' = locReqRid && 'Reservation Status'.Value = "Reserved"), A, LookUp(gblInvAssets, ID = 'Asset Id'), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = 'Request Equipment Id').Item, "Item"))) & ")"
                                     - txtInvRqMineDesc:
                                         Control: ModernText
                                         Properties:
@@ -1574,7 +1580,7 @@ Screens:
                                     PaddingTop: =0
                                     Size: =12
                                     Text: ="Nothing reserved yet. Use Reserve… on an item above."
-                                    Visible: =IsEmpty(AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item")))
+                                    Visible: =IsEmpty(AddColumns(Filter(InventoryReservations, 'Request Id' = locReqRid && 'Reservation Status'.Value = "Reserved"), A, LookUp(gblInvAssets, ID = 'Asset Id'), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = 'Request Equipment Id').Item, "Item")))
                                     Wrap: =false
                               - galInvRqMine:
                                   Control: Gallery
@@ -1583,7 +1589,7 @@ Screens:
                                     AccessibleLabel: ="Reserved units"
                                     FillPortions: =0
                                     Height: =Self.AllItemsCount * 52
-                                    Items: =AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item"))
+                                    Items: =AddColumns(Filter(InventoryReservations, 'Request Id' = locReqRid && 'Reservation Status'.Value = "Reserved"), A, LookUp(gblInvAssets, ID = 'Asset Id'), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = 'Request Equipment Id').Item, "Item"))
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                     ShowScrollbar: =false
@@ -1613,7 +1619,7 @@ Screens:
                                           - chkInvRqMinePick:
                                               Control: ModernCheckbox
                                               Properties:
-                                                AccessibleLabel: ="Issue " & ThisItem.AssetTagSnapshot & " now"
+                                                AccessibleLabel: ="Issue " & ThisItem.'Asset Tag Snapshot' & " now"
                                                 Default: =!(ThisItem.ID in colReqSkip.Value)
                                                 Label: =""
                                                 LayoutMinWidth: =0
@@ -1633,7 +1639,7 @@ Screens:
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
                                                 Size: =13
-                                                Text: =ThisItem.AssetTagSnapshot
+                                                Text: =ThisItem.'Asset Tag Snapshot'
                                                 Wrap: =false
                                           - txtInvRqMineInfo:
                                               Control: ModernText
@@ -1648,26 +1654,26 @@ Screens:
                                                 PaddingTop: =0
                                                 Size: =12
                                                 Text: |-
-                                                  =ThisItem.ItemName & "  ·  " & Trim(ThisItem.A.Make & " " & ThisItem.A.Model) & "  ·  " & Text(ThisItem.StartDate, "mmm d") & " – " & Text(ThisItem.EndDate, "mmm d, yyyy") & If(ThisItem.A.Status = "Issued", With({due: LookUp(gblInvOpenCheckouts, AssetId = ThisItem.AssetId).DueDate}, "  ·  Not back yet" & If(IsBlank(due), "", " (due " & Text(due, "mmm d") & ")")), "")
+                                                  =ThisItem.ItemName & "  ·  " & Trim(ThisItem.A.Make & " " & ThisItem.A.Model) & "  ·  " & Text(ThisItem.'Start Date', "mmm d") & " – " & Text(ThisItem.'End Date', "mmm d, yyyy") & If(ThisItem.A.Status = "Issued", With({due: LookUp(gblInvOpenCheckouts, 'Asset Id' = ThisItem.'Asset Id').'Due Date'}, "  ·  Not back yet" & If(IsBlank(due), "", " (due " & Text(due, "mmm d") & ")")), "")
                                                 Wrap: =false
                                           - btnInvRqMineSwap:
                                               Control: ModernButton
                                               Properties:
-                                                AccessibleLabel: ="Swap " & ThisItem.AssetTagSnapshot & " for an available unit"
+                                                AccessibleLabel: ="Swap " & ThisItem.'Asset Tag Snapshot' & " for an available unit"
                                                 Appearance: =ButtonAppearance.Secondary
                                                 DisplayMode: |-
                                                   =If(locBusy || IsEmpty(With(
-                                                      {cl: LookUp(gblInvReqLines, LineId = ThisItem.RequestEquipmentId), s: ThisItem.StartDate, e: ThisItem.EndDate, q: ""},
+                                                      {cl: LookUp(gblInvReqLines, LineId = ThisItem.'Request Equipment Id'), s: ThisItem.'Start Date', e: ThisItem.'End Date', q: ""},
                                                       SortByColumns(
                                                           AddColumns(
                                                               Filter(
                                                                   gblInvAssets,
-                                                                  Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
-                                                                      (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
-                                                                      !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
-                                                                      (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                                  Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                      (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
+                                                                      !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
+                                                                      (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
                                                               ),
-                                                              Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                                              Fit, If('Catalog Item Id' = cl.CatalogId, 0, 1)
                                                           ),
                                                           "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                                       )
@@ -1679,21 +1685,21 @@ Screens:
                                                   =UpdateContext({locBusy: true});
                                                   With(
                                                       {next: First(With(
-                                                      {cl: LookUp(gblInvReqLines, LineId = ThisItem.RequestEquipmentId), s: ThisItem.StartDate, e: ThisItem.EndDate, q: ""},
+                                                      {cl: LookUp(gblInvReqLines, LineId = ThisItem.'Request Equipment Id'), s: ThisItem.'Start Date', e: ThisItem.'End Date', q: ""},
                                                       SortByColumns(
                                                           AddColumns(
                                                               Filter(
                                                                   gblInvAssets,
-                                                                  Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
-                                                                      (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
-                                                                      !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
-                                                                      (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                                  Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                      (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
+                                                                      !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
+                                                                      (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
                                                               ),
-                                                              Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                                              Fit, If('Catalog Item Id' = cl.CatalogId, 0, 1)
                                                           ),
                                                           "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                                       )
-                                                  )), tag: ThisItem.AssetTagSnapshot, ln: LookUp(gblInvReqLines, LineId = ThisItem.RequestEquipmentId), s: ThisItem.StartDate, e: ThisItem.EndDate},
+                                                  )), tag: ThisItem.'Asset Tag Snapshot', ln: LookUp(gblInvReqLines, LineId = ThisItem.'Request Equipment Id'), s: ThisItem.'Start Date', e: ThisItem.'End Date'},
                                                       IfError(
                                                           With(
                                                               {rel: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "ReleaseReservation", reservationId: ThisItem.ID, note: "Swapped: not back in time"})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
@@ -1703,7 +1709,7 @@ Screens:
                                                                   With(
                                                                       {res: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "Reserve", lineId: ln.LineId, assetId: next.ID, startDate: Text(s, "yyyy-mm-dd"), endDate: Text(e, "yyyy-mm-dd")})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                                       Notify(
-                                                                          If(Text(res.status) = "Success", tag & " swapped for " & next.Title & ".", tag & " was released, but " & next.Title & " could not be reserved: " & Text(res.message)),
+                                                                          If(Text(res.status) = "Success", tag & " swapped for " & next.'Asset Tag' & ".", tag & " was released, but " & next.'Asset Tag' & " could not be reserved: " & Text(res.message)),
                                                                           If(Text(res.status) = "Success", NotificationType.Success, NotificationType.Warning)
                                                                       )
                                                                   )
@@ -1716,17 +1722,17 @@ Screens:
                                                   Set(gblInvLoadedAt, Blank()); Select(btnInvRqReload); Select(btnInvRqLoad)
                                                 Text: |-
                                                   =If(IsEmpty(With(
-                                                      {cl: LookUp(gblInvReqLines, LineId = ThisItem.RequestEquipmentId), s: ThisItem.StartDate, e: ThisItem.EndDate, q: ""},
+                                                      {cl: LookUp(gblInvReqLines, LineId = ThisItem.'Request Equipment Id'), s: ThisItem.'Start Date', e: ThisItem.'End Date', q: ""},
                                                       SortByColumns(
                                                           AddColumns(
                                                               Filter(
                                                                   gblInvAssets,
-                                                                  Status = "Available" && IsActive && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
-                                                                      (Coalesce(CatalogItemId, 0) = 0 || CatalogItemId = cl.CatalogId) &&
-                                                                      !(ID in Filter(gblInvReserved, StartDate <= e && EndDate >= s).AssetId) &&
-                                                                      (IsBlank(q) || q in Lower(Title) || q in Lower(Coalesce(SerialNumber, "")) || q in Lower(Coalesce(Model, "")))
+                                                                  Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                      (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
+                                                                      !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
+                                                                      (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
                                                               ),
-                                                              Fit, If(CatalogItemId = cl.CatalogId, 0, 1)
+                                                              Fit, If('Catalog Item Id' = cl.CatalogId, 0, 1)
                                                           ),
                                                           "Fit", SortOrder.Ascending, "Title", SortOrder.Ascending
                                                       )
@@ -1736,7 +1742,7 @@ Screens:
                                           - btnInvRqMineRelease:
                                               Control: ModernButton
                                               Properties:
-                                                AccessibleLabel: ="Release " & ThisItem.AssetTagSnapshot
+                                                AccessibleLabel: ="Release " & ThisItem.'Asset Tag Snapshot'
                                                 Appearance: =ButtonAppearance.Subtle
                                                 DisplayMode: =If(locBusy, DisplayMode.Disabled, DisplayMode.Edit)
                                                 Height: =36
@@ -1777,7 +1783,7 @@ Screens:
                               RadiusBottomRight: =8
                               RadiusTopLeft: =8
                               RadiusTopRight: =8
-                              Visible: =!IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid)) && fxIsInvStaff && !IsEmpty(AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item")))
+                              Visible: =!IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid)) && fxIsInvStaff && !IsEmpty(AddColumns(Filter(InventoryReservations, 'Request Id' = locReqRid && 'Reservation Status'.Value = "Reserved"), A, LookUp(gblInvAssets, ID = 'Asset Id'), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = 'Request Equipment Id').Item, "Item")))
                             Children:
                               - conInvRqIssueHead:
                                   Control: GroupContainer
@@ -1804,7 +1810,7 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =16
-                                          Text: ="Issue the ticked units (" & CountRows(Filter(AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item")), !(ID in colReqSkip.Value))) & " of " & CountRows(AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item"))) & ")"
+                                          Text: ="Issue the ticked units (" & CountRows(Filter(AddColumns(Filter(InventoryReservations, 'Request Id' = locReqRid && 'Reservation Status'.Value = "Reserved"), A, LookUp(gblInvAssets, ID = 'Asset Id'), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = 'Request Equipment Id').Item, "Item")), !(ID in colReqSkip.Value))) & " of " & CountRows(AddColumns(Filter(InventoryReservations, 'Request Id' = locReqRid && 'Reservation Status'.Value = "Reserved"), A, LookUp(gblInvAssets, ID = 'Asset Id'), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = 'Request Equipment Id').Item, "Item"))) & ")"
                                     - txtInvRqIssueDesc:
                                         Control: ModernText
                                         Properties:
@@ -1864,7 +1870,7 @@ Screens:
                                                 Appearance: =Appearance.Outline
                                                 DelayOutput: =true
                                                 Height: =36
-                                                InputTextPlaceholder: =fxPersonName(Coalesce(LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterName, LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterEmail))
+                                                InputTextPlaceholder: =fxPersonName(Coalesce(LookUp(gblInvReqReqs, ReqId = locReqRid).Req.'Requester Name', LookUp(gblInvReqReqs, ReqId = locReqRid).Req.'Requester Email'))
                                                 ItemDisplayText: =ThisItem.DisplayName & "  (" & ThisItem.Mail & ")"
                                                 Items: |-
                                                   =If(Len(Trim(cmbInvRqWho.SearchText)) >= 2, Filter(Office365Users.SearchUserV2({searchTerm: Trim(cmbInvRqWho.SearchText), top: 15, isSearchTermRequired: true}).value, AccountEnabled && !IsBlank(Mail)))
@@ -1902,7 +1908,7 @@ Screens:
                                                 AccessibleLabel: ="Duty phone"
                                                 AlignInContainer: =AlignInContainer.Stretch
                                                 Appearance: =Appearance.Outline
-                                                Default: =If(IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid)), "", IfError(Coalesce(First(Office365Users.UserProfileV2(If(IsBlank(cmbInvRqWho.Selected), LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterEmail, cmbInvRqWho.Selected.Mail)).businessPhones).Value, ""), ""))
+                                                Default: =If(IsBlank(LookUp(gblInvReqReqs, ReqId = locReqRid)), "", IfError(Coalesce(First(Office365Users.UserProfileV2(If(IsBlank(cmbInvRqWho.Selected), LookUp(gblInvReqReqs, ReqId = locReqRid).Req.'Requester Email', cmbInvRqWho.Selected.Mail)).businessPhones).Value, ""), ""))
                                                 Height: =36
                                                 LayoutMinWidth: =0
                                                 Placeholder: ="From their profile"
@@ -2033,7 +2039,7 @@ Screens:
                                         Control: ModernButton
                                         Properties:
                                           AccessibleLabel: =Self.Text
-                                          DisplayMode: =If(locBusy || IsEmpty(Filter(AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item")), !(ID in colReqSkip.Value))) || IsBlank(dteInvRqReturn.SelectedDate) || IsBlank(If(IsBlank(cmbInvRqWho.Selected), LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterEmail, cmbInvRqWho.Selected.Mail)), DisplayMode.Disabled, DisplayMode.Edit)
+                                          DisplayMode: =If(locBusy || IsEmpty(Filter(AddColumns(Filter(InventoryReservations, 'Request Id' = locReqRid && 'Reservation Status'.Value = "Reserved"), A, LookUp(gblInvAssets, ID = 'Asset Id'), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = 'Request Equipment Id').Item, "Item")), !(ID in colReqSkip.Value))) || IsBlank(dteInvRqReturn.SelectedDate) || IsBlank(If(IsBlank(cmbInvRqWho.Selected), LookUp(gblInvReqReqs, ReqId = locReqRid).Req.'Requester Email', cmbInvRqWho.Selected.Mail)), DisplayMode.Disabled, DisplayMode.Edit)
                                           Height: =36
                                           Icon: ="Send"
                                           LayoutMinWidth: =0
@@ -2041,7 +2047,7 @@ Screens:
                                             =// The ticked units, on one receipt per department: StartReceipt -> Issue each -> FinishReceipt.
                                             UpdateContext({locBusy: true});
                                             With(
-                                                {all: Filter(AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item")), !(ID in colReqSkip.Value))},
+                                                {all: Filter(AddColumns(Filter(InventoryReservations, 'Request Id' = locReqRid && 'Reservation Status'.Value = "Reserved"), A, LookUp(gblInvAssets, ID = 'Asset Id'), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = 'Request Equipment Id').Item, "Item")), !(ID in colReqSkip.Value))},
                                                 With(
                                                     {
                                                         byDept: ForAll(
@@ -2052,7 +2058,7 @@ Screens:
                                                                     With(
                                                                         {start: ParseJSON(With({invPl: JSON({
                                                                             actionVersion: fxInvActionVersion, action: "StartReceipt",
-                                                                            recipient: {email: Lower(If(IsBlank(cmbInvRqWho.Selected), LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterEmail, cmbInvRqWho.Selected.Mail)), name: If(IsBlank(cmbInvRqWho.Selected), Coalesce(LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterName, LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterEmail), cmbInvRqWho.Selected.DisplayName), claims: "i:0#.f|membership|" & Lower(If(IsBlank(cmbInvRqWho.Selected), LookUp(gblInvReqReqs, ReqId = locReqRid).Req.RequesterEmail, cmbInvRqWho.Selected.Mail))},
+                                                                            recipient: {email: Lower(If(IsBlank(cmbInvRqWho.Selected), LookUp(gblInvReqReqs, ReqId = locReqRid).Req.'Requester Email', cmbInvRqWho.Selected.Mail)), name: If(IsBlank(cmbInvRqWho.Selected), Coalesce(LookUp(gblInvReqReqs, ReqId = locReqRid).Req.'Requester Name', LookUp(gblInvReqReqs, ReqId = locReqRid).Req.'Requester Email'), cmbInvRqWho.Selected.DisplayName), claims: "i:0#.f|membership|" & Lower(If(IsBlank(cmbInvRqWho.Selected), LookUp(gblInvReqReqs, ReqId = locReqRid).Req.'Requester Email', cmbInvRqWho.Selected.Mail))},
                                                                             dutyPhone: Trim(txtInvRqPhone.Text), orgAccountNo: Switch(dept, "IT", "TSOS", "AV", "TSAV", ""),
                                                                             returnDate: Text(dteInvRqReturn.SelectedDate, "yyyy-mm-dd"), checkoutType: "Request Loan", department: dept,
                                                                             requestId: locReqRid, signatureMethod: drpInvRqSign.Selected.Value
@@ -2087,7 +2093,7 @@ Screens:
                                             UpdateContext({locBusy: false});
                                             Clear(colReqSkip);
                                             Set(gblInvLoadedAt, Blank()); Select(btnInvRqReload); Select(btnInvRqLoad)
-                                          Text: ="Issue selected (" & CountRows(Filter(AddColumns(Filter(InventoryReservations, RequestId = locReqRid && ReservationStatus.Value = "Reserved"), A, LookUp(gblInvAssets, ID = AssetId), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = RequestEquipmentId).Item, "Item")), !(ID in colReqSkip.Value))) & ")"
+                                          Text: ="Issue selected (" & CountRows(Filter(AddColumns(Filter(InventoryReservations, 'Request Id' = locReqRid && 'Reservation Status'.Value = "Reserved"), A, LookUp(gblInvAssets, ID = 'Asset Id'), ItemName, Coalesce(LookUp(gblInvReqLines, LineId = 'Request Equipment Id').Item, "Item")), !(ID in colReqSkip.Value))) & ")"
                                           Width: =190
                         - conInvRqShort:
                             Control: GroupContainer

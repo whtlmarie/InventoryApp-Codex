@@ -4,7 +4,7 @@ App:
       =// ---------- Current user and roles (same UserRoles list as the Support Request app) ----------
       fxCurrentUserEmail = Lower(Trim(User().Email));
       fxCurrentUserName = User().FullName;
-      fxMyRoles = Distinct(ForAll(Filter(UserRoles, UserEmail = fxCurrentUserEmail && IsActive = true), {R: Trim(ThisRecord.Role.Value)}), R);
+      fxMyRoles = Distinct(ForAll(Filter(UserRoles, 'User Email' = fxCurrentUserEmail && 'Is Active' = true), {R: Trim(ThisRecord.Role.Value)}), R);
       fxHasRole(roleName: Text): Boolean = roleName in fxMyRoles.Value;
       fxIsDeveloper = fxHasRole("Developer");
       fxIsAdministrator = fxHasRole("Administrator");
@@ -35,7 +35,7 @@ App:
       fxAssetStatuses = ["Available", "Issued", "In Repair", "Pending Disposal", "Lost", "Retired", "Disposed"];
       fxSettableStatuses = ["Available", "In Repair", "Pending Disposal", "Lost", "Retired"];
       // Pick list for home locations and counts (InventoryLocations; managed on the Locations screen).
-      fxInvLocations = Sort(Filter(InventoryLocations, IsActive = true), Title);
+      fxInvLocations = Sort(Filter(InventoryLocations, 'Is Active' = true), Location);
       fxDispositionMethods = ["Recycled", "Destroyed", "Turned in (DLA Disposition)", "Transferred to another unit"];
       fxSanitizationMethods = ["Not applicable", "Wiped", "Degaussed", "Shredded / destroyed", "Drive removed"];
       // "Installed in Room": equipment that stays in its room (e.g. the NIPR laptop in a classified room); never reserved or issued.
@@ -44,7 +44,7 @@ App:
       fxStatusColor(status: Text): Color = Switch(status, "Available", RGBA(16, 110, 16, 1), "Issued", RGBA(15, 76, 129, 1), "In Repair", RGBA(131, 82, 0, 1), "Pending Disposal", RGBA(92, 45, 145, 1), "Lost", RGBA(164, 38, 44, 1), RGBA(97, 97, 97, 1));
       fxStatusFill(status: Text): Color = Switch(status, "Available", RGBA(223, 246, 221, 1), "Issued", RGBA(230, 240, 250, 1), "In Repair", RGBA(255, 244, 206, 1), "Pending Disposal", RGBA(243, 238, 250, 1), "Lost", RGBA(253, 231, 233, 1), RGBA(237, 239, 242, 1));
       // Catalog items the Inventory app tracks (same rule as the Support Request inventory handoff).
-      fxInvCatalog = Sort(Filter(EquipmentCatalog, IsActive = true && InventoryType.Value in ["Tracked Asset", "Loaner Pool"]), Title);
+      fxInvCatalog = Sort(Filter(EquipmentCatalog, 'Is Active' = true && 'Inventory Type'.Value in ["Tracked Asset", "Loaner Pool"]), 'Equipment Name');
 
       // ---------- Export and labels (2026-10-03) ----------
       // One CSV cell (quoted, quotes doubled) and HTML-safe text.
@@ -170,5 +170,5 @@ App:
       // Signature method: Electronic (approval) or CAC (signed in Adobe, then uploaded).
       fxInvSwitchPayload(receiptId: Number, method: Text): Text = JSON({actionVersion: fxInvActionVersion, action: "SwitchMethod", receiptId: receiptId, method: method});
       fxInvCacUploadPayload(receiptId: Number, fileName: Text, fileContent: Text): Text = JSON({actionVersion: fxInvActionVersion, action: "CacUpload", receiptId: receiptId, file: {name: fileName, content: fileContent}});
-    StartScreen: =scrInvHome
+    StartScreen: =If(!IsBlank(Param("person")), scrInvPerson, !IsBlank(Param("line")), scrInvRequests, scrInvHome)
     Theme: =PowerAppsTheme

@@ -646,7 +646,7 @@ Screens:
                                           PaddingLeft: =8
                                           PaddingTop: =0
                                           Size: =11
-                                          Text: =ThisItem.AssetTagSnapshot
+                                          Text: =ThisItem.'Asset Tag Snapshot'
                                           Width: =Parent.Width * 0.18
                                           Wrap: =false
                                     - txtInvHrR1:
@@ -674,7 +674,7 @@ Screens:
                                           PaddingLeft: =8
                                           PaddingTop: =0
                                           Size: =11
-                                          Text: =ThisItem.ReceiptNumber
+                                          Text: =ThisItem.'Receipt Number'
                                           Width: =Parent.Width * 0.15
                                           Wrap: =false
                                     - txtInvHrR3:
@@ -688,7 +688,7 @@ Screens:
                                           PaddingLeft: =8
                                           PaddingTop: =0
                                           Size: =11
-                                          Text: =Text(ThisItem.IssuedDate, "yyyymmdd")
+                                          Text: =Text(ThisItem.'Issued Date', "yyyymmdd")
                                           Width: =Parent.Width * 0.1
                                           Wrap: =false
                                     - txtInvHrR4:
@@ -702,7 +702,7 @@ Screens:
                                           PaddingLeft: =8
                                           PaddingTop: =0
                                           Size: =11
-                                          Text: =If(IsBlank(ThisItem.DueDate), "Long-term", Text(ThisItem.DueDate, "yyyymmdd"))
+                                          Text: =If(IsBlank(ThisItem.'Due Date'), "Long-term", Text(ThisItem.'Due Date', "yyyymmdd"))
                                           Width: =Parent.Width * 0.12
                                           Wrap: =false
                                     - txtInvHrR5:
@@ -716,7 +716,7 @@ Screens:
                                           PaddingLeft: =8
                                           PaddingTop: =0
                                           Size: =11
-                                          Text: =If(ThisItem.Status = "Active" && !IsBlank(ThisItem.DueDate) && ThisItem.DueDate < Today(), "Overdue", If(ThisItem.Status = "Awaiting Acknowledgement", "Not yet signed", ThisItem.Status))
+                                          Text: =If(ThisItem.Status = "Active" && !IsBlank(ThisItem.'Due Date') && ThisItem.'Due Date' < Today(), "Overdue", If(ThisItem.Status = "Awaiting Acknowledgement", "Not yet signed", ThisItem.Status))
                                           Width: =Parent.Width * 0.11
                                           Wrap: =false
                         - conInvHrGap3:

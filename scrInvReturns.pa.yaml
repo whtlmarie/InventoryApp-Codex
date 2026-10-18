@@ -203,10 +203,10 @@ Screens:
                                 Refresh(InventoryCheckouts);
                                 Refresh(InventoryReservations);
                                 Refresh(InventoryReceipts);
-                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, AssetStatus.Value, Kind, AssetKind.Value));
-                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, CheckoutStatus.Value = "Active" || CheckoutStatus.Value = "Awaiting Acknowledgement" || CheckoutStatus.Value = "Return Required"), Status, CheckoutStatus.Value));
-                                Set(gblInvReserved, Filter(InventoryReservations, ReservationStatus.Value = "Reserved"));
-                                Set(gblInvLines, Filter(RequestEquipment, NeedsInventoryAction = true));
+                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, 'Asset Status'.Value, Kind, 'Asset Kind'.Value));
+                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, 'Checkout Status'.Value = "Active" || 'Checkout Status'.Value = "Awaiting Acknowledgement" || 'Checkout Status'.Value = "Return Required"), Status, 'Checkout Status'.Value));
+                                Set(gblInvReserved, Filter(InventoryReservations, 'Reservation Status'.Value = "Reserved"));
+                                Set(gblInvLines, Filter(RequestEquipment, 'Needs Inventory Action' = true));
                                 Set(gblInvLoadedAt, Now());
                                 Set(gblInvLoading, false)
                               Text: ="Reload"
@@ -394,8 +394,8 @@ Screens:
                                                         colInvRetBulk,
                                                         SortByColumns(
                                                             ForAll(
-                                                                Filter(gblInvOpenCheckouts As c, (q in Lower(c.ReceiptNumber) || q in Lower(Coalesce(c.RequestNumber, "")) || q in Lower(Coalesce(c.RecipientName, "")) || q in Lower(Coalesce(c.RecipientEmail, ""))) && fxCanManage(LookUp(gblInvAssets, ID = c.AssetId).Dept)) As co,
-                                                                {CheckoutId: co.ID, Tag: co.AssetTagSnapshot, Desc: Coalesce(LookUp(gblInvAssets, ID = co.AssetId).CatalogNameSnapshot, "Equipment"), Holder: co.RecipientName, Receipt: co.ReceiptNumber, Req: Coalesce(co.RequestNumber, ""), Due: co.DueDate, Pick: true, Condition: "Good", Note: ""}
+                                                                Filter(gblInvOpenCheckouts As c, (q in Lower(c.'Receipt Number') || q in Lower(Coalesce(c.'Request Number', "")) || q in Lower(Coalesce(c.'Recipient Name', "")) || q in Lower(Coalesce(c.'Recipient Email', ""))) && fxCanManage(LookUp(gblInvAssets, ID = c.'Asset Id').Dept)) As co,
+                                                                {CheckoutId: co.ID, Tag: co.'Asset Tag Snapshot', Desc: Coalesce(LookUp(gblInvAssets, ID = co.'Asset Id').'Catalog Name Snapshot', "Equipment"), Holder: co.'Recipient Name', Receipt: co.'Receipt Number', Req: Coalesce(co.'Request Number', ""), Due: co.'Due Date', Pick: true, Condition: "Good", Note: ""}
                                                             ),
                                                             "Holder", SortOrder.Ascending, "Receipt", SortOrder.Ascending, "Tag", SortOrder.Ascending
                                                         )
@@ -800,30 +800,30 @@ Screens:
                                                       If(
                                                           !IsBlank(code),
                                                           With(
-                                                              {exact: Coalesce(LookUp(gblInvAssets, Lower(Title) = code), LookUp(gblInvAssets, Lower(Coalesce(SerialNumber, "")) = code))},
+                                                              {exact: Coalesce(LookUp(gblInvAssets, Lower('Asset Tag') = code), LookUp(gblInvAssets, Lower(Coalesce('Serial Number', "")) = code))},
                                                               If(
                                                                   !IsBlank(exact),
                                                                   UpdateContext({locScanMsg: "", locScanMatches: Blank()});
                                                                   With({hit: exact}, With(
-                                                      {co: LookUp(gblInvOpenCheckouts, AssetId = hit.ID)},
+                                                      {co: LookUp(gblInvOpenCheckouts, 'Asset Id' = hit.ID)},
                                                       If(
-                                                          hit.ID in colInvRetItems.AssetId, UpdateContext({locScanMsg: hit.Title & " is already in the list."}),
-                                                          IsBlank(co), UpdateContext({locScanMsg: hit.Title & " is not checked out (" & hit.Status & ")."}),
+                                                          hit.ID in colInvRetItems.AssetId, UpdateContext({locScanMsg: hit.'Asset Tag' & " is already in the list."}),
+                                                          IsBlank(co), UpdateContext({locScanMsg: hit.'Asset Tag' & " is not checked out (" & hit.Status & ")."}),
                                                           !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only check in " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),
-                                                          Collect(colInvRetItems, {AssetId: hit.ID, Tag: hit.Title, Desc: Coalesce(hit.CatalogNameSnapshot, "Equipment"), CheckoutId: co.ID, Holder: co.RecipientName, Receipt: co.ReceiptNumber, Due: co.DueDate, Condition: "Good", Note: ""})
+                                                          Collect(colInvRetItems, {AssetId: hit.ID, Tag: hit.'Asset Tag', Desc: Coalesce(hit.'Catalog Name Snapshot', "Equipment"), CheckoutId: co.ID, Holder: co.'Recipient Name', Receipt: co.'Receipt Number', Due: co.'Due Date', Condition: "Good", Note: ""})
                                                       )
                                                   )),
                                                                   With(
-                                                                      {m: FirstN(SortByColumns(Filter(gblInvAssets, code in Lower(Title) || code in Lower(Coalesce(SerialNumber, ""))), "Title"), 6)},
+                                                                      {m: FirstN(SortByColumns(Filter(gblInvAssets, code in Lower('Asset Tag') || code in Lower(Coalesce('Serial Number', ""))), "Title"), 6)},
                                                                       If(
                                                                           IsEmpty(m), UpdateContext({locScanMsg: "No asset tag or serial number contains " & Trim(Self.Text) & ".", locScanMatches: Blank()}),
                                                                           CountRows(m) = 1, UpdateContext({locScanMsg: "", locScanMatches: Blank()}); With({hit: First(m)}, With(
-                                                      {co: LookUp(gblInvOpenCheckouts, AssetId = hit.ID)},
+                                                      {co: LookUp(gblInvOpenCheckouts, 'Asset Id' = hit.ID)},
                                                       If(
-                                                          hit.ID in colInvRetItems.AssetId, UpdateContext({locScanMsg: hit.Title & " is already in the list."}),
-                                                          IsBlank(co), UpdateContext({locScanMsg: hit.Title & " is not checked out (" & hit.Status & ")."}),
+                                                          hit.ID in colInvRetItems.AssetId, UpdateContext({locScanMsg: hit.'Asset Tag' & " is already in the list."}),
+                                                          IsBlank(co), UpdateContext({locScanMsg: hit.'Asset Tag' & " is not checked out (" & hit.Status & ")."}),
                                                           !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only check in " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),
-                                                          Collect(colInvRetItems, {AssetId: hit.ID, Tag: hit.Title, Desc: Coalesce(hit.CatalogNameSnapshot, "Equipment"), CheckoutId: co.ID, Holder: co.RecipientName, Receipt: co.ReceiptNumber, Due: co.DueDate, Condition: "Good", Note: ""})
+                                                          Collect(colInvRetItems, {AssetId: hit.ID, Tag: hit.'Asset Tag', Desc: Coalesce(hit.'Catalog Name Snapshot', "Equipment"), CheckoutId: co.ID, Holder: co.'Recipient Name', Receipt: co.'Receipt Number', Due: co.'Due Date', Condition: "Good", Note: ""})
                                                       )
                                                   )),
                                                                           UpdateContext({locScanMsg: "", locScanMatches: m})
@@ -856,7 +856,7 @@ Screens:
                                           - btnInvRetScanPick:
                                               Control: ModernButton
                                               Properties:
-                                                AccessibleLabel: ="Use " & ThisItem.Title
+                                                AccessibleLabel: ="Use " & ThisItem.'Asset Tag'
                                                 Align: =Align.Left
                                                 Appearance: =ButtonAppearance.Secondary
                                                 Height: =34
@@ -864,15 +864,15 @@ Screens:
                                                 Layout: =ButtonLayout.IconAfter
                                                 OnSelect: |-
                                                   =UpdateContext({locScanMatches: Blank(), locScanMsg: ""}); With({hit: ThisItem}, With(
-                                                      {co: LookUp(gblInvOpenCheckouts, AssetId = hit.ID)},
+                                                      {co: LookUp(gblInvOpenCheckouts, 'Asset Id' = hit.ID)},
                                                       If(
-                                                          hit.ID in colInvRetItems.AssetId, UpdateContext({locScanMsg: hit.Title & " is already in the list."}),
-                                                          IsBlank(co), UpdateContext({locScanMsg: hit.Title & " is not checked out (" & hit.Status & ")."}),
+                                                          hit.ID in colInvRetItems.AssetId, UpdateContext({locScanMsg: hit.'Asset Tag' & " is already in the list."}),
+                                                          IsBlank(co), UpdateContext({locScanMsg: hit.'Asset Tag' & " is not checked out (" & hit.Status & ")."}),
                                                           !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only check in " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),
-                                                          Collect(colInvRetItems, {AssetId: hit.ID, Tag: hit.Title, Desc: Coalesce(hit.CatalogNameSnapshot, "Equipment"), CheckoutId: co.ID, Holder: co.RecipientName, Receipt: co.ReceiptNumber, Due: co.DueDate, Condition: "Good", Note: ""})
+                                                          Collect(colInvRetItems, {AssetId: hit.ID, Tag: hit.'Asset Tag', Desc: Coalesce(hit.'Catalog Name Snapshot', "Equipment"), CheckoutId: co.ID, Holder: co.'Recipient Name', Receipt: co.'Receipt Number', Due: co.'Due Date', Condition: "Good", Note: ""})
                                                       )
                                                   ))
-                                                Text: =ThisItem.Title & "   ·   " & Coalesce(ThisItem.CatalogNameSnapshot, "Equipment") & "   ·   " & ThisItem.Status
+                                                Text: =ThisItem.'Asset Tag' & "   ·   " & Coalesce(ThisItem.'Catalog Name Snapshot', "Equipment") & "   ·   " & ThisItem.Status
                                                 Width: =Parent.TemplateWidth - 4
                                     - txtInvRetScanMsg:
                                         Control: ModernText

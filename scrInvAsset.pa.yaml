@@ -202,10 +202,10 @@ Screens:
                                 Refresh(InventoryCheckouts);
                                 Refresh(InventoryReservations);
                                 Refresh(InventoryReceipts);
-                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, AssetStatus.Value, Kind, AssetKind.Value));
-                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, CheckoutStatus.Value = "Active" || CheckoutStatus.Value = "Awaiting Acknowledgement" || CheckoutStatus.Value = "Return Required"), Status, CheckoutStatus.Value));
-                                Set(gblInvReserved, Filter(InventoryReservations, ReservationStatus.Value = "Reserved"));
-                                Set(gblInvLines, Filter(RequestEquipment, NeedsInventoryAction = true));
+                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, 'Asset Status'.Value, Kind, 'Asset Kind'.Value));
+                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, 'Checkout Status'.Value = "Active" || 'Checkout Status'.Value = "Awaiting Acknowledgement" || 'Checkout Status'.Value = "Return Required"), Status, 'Checkout Status'.Value));
+                                Set(gblInvReserved, Filter(InventoryReservations, 'Reservation Status'.Value = "Reserved"));
+                                Set(gblInvLines, Filter(RequestEquipment, 'Needs Inventory Action' = true));
                                 Set(gblInvLoadedAt, Now());
                                 Set(gblInvLoading, false)
                               Text: ="Reload"
@@ -221,9 +221,9 @@ Screens:
                                 =// Asset, its open checkout, reservations and history (re-run after every change).
                                 UpdateContext({locAsset: If(gblInvAssetId > 0, LookUp(InventoryAssets, ID = gblInvAssetId))});
                                 UpdateContext({
-                                    locCheckout: If(Coalesce(locAsset.CurrentCheckoutId, 0) > 0, LookUp(InventoryCheckouts, ID = locAsset.CurrentCheckoutId)),
-                                    locRes: Filter(InventoryReservations, AssetId = gblInvAssetId && ReservationStatus.Value = "Reserved"),
-                                    locHist: Sort(Filter(InventoryHistory, AssetId = gblInvAssetId), Created, SortOrder.Descending)
+                                    locCheckout: If(Coalesce(locAsset.'Current Checkout Id', 0) > 0, LookUp(InventoryCheckouts, ID = locAsset.'Current Checkout Id')),
+                                    locRes: Filter(InventoryReservations, 'Asset Id' = gblInvAssetId && 'Reservation Status'.Value = "Reserved"),
+                                    locHist: Sort(Filter(InventoryHistory, 'Asset Id' = gblInvAssetId), Created, SortOrder.Descending)
                                 });
                                 Reset(txtInvAsdTag); Reset(txtInvAsdMake); Reset(txtInvAsdModel); Reset(drpInvAsdHome); Reset(txtInvAsdNotes);
                                 Reset(drpInvAsdDept); Reset(drpInvAsdCatalog); Reset(drpInvAsdKind); Reset(drpInvAsdCond); Reset(dteInvAsdPurchase); Reset(dteInvAsdWarranty)
@@ -291,7 +291,7 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =24
-                                          Text: =If(locNew, "Add asset", locAsset.Title)
+                                          Text: =If(locNew, "Add asset", locAsset.'Asset Tag')
                                           Wrap: =false
                                     - txtInvAsdPageSubtitle:
                                         Control: ModernText
@@ -304,7 +304,7 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =13
-                                          Text: =If(locNew, "Scan the label into the asset tag box, then fill in the details.", Coalesce(locAsset.CatalogNameSnapshot, "Not linked to a catalog item") & "  ·  " & locAsset.Department.Value & "  ·  " & locAsset.AssetKind.Value)
+                                          Text: =If(locNew, "Scan the label into the asset tag box, then fill in the details.", Coalesce(locAsset.'Catalog Name Snapshot', "Not linked to a catalog item") & "  ·  " & locAsset.Department.Value & "  ·  " & locAsset.'Asset Kind'.Value)
                                           Wrap: =false
                               - txtInvAsdTopStatus:
                                   Control: ModernText
@@ -312,8 +312,8 @@ Screens:
                                     AccessibleLabel: =Self.Text
                                     Align: =Align.Center
                                     AlignInContainer: =AlignInContainer.Center
-                                    Color: =fxStatusColor(locAsset.AssetStatus.Value)
-                                    Fill: =fxStatusFill(locAsset.AssetStatus.Value)
+                                    Color: =fxStatusColor(locAsset.'Asset Status'.Value)
+                                    Fill: =fxStatusFill(locAsset.'Asset Status'.Value)
                                     FontWeight: =FontWeight.Semibold
                                     Height: =24
                                     LayoutMinWidth: =0
@@ -325,7 +325,7 @@ Screens:
                                     RadiusTopLeft: =12
                                     RadiusTopRight: =12
                                     Size: =12
-                                    Text: =locAsset.AssetStatus.Value
+                                    Text: =locAsset.'Asset Status'.Value
                                     Width: =120
                                     Wrap: =false
                               - btnInvAsdRefresh:
@@ -473,7 +473,7 @@ Screens:
                                                             AccessibleLabel: ="Asset tag or serial number"
                                                             AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
-                                                            Default: =locAsset.Title
+                                                            Default: =locAsset.'Asset Tag'
                                                             DisplayMode: =If(locEdit, DisplayMode.Edit, DisplayMode.View)
                                                             Height: =36
                                                             LayoutMinWidth: =0
@@ -562,11 +562,11 @@ Screens:
                                                             AccessibleLabel: ="Catalog item"
                                                             AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
-                                                            Default: =LookUp(fxInvCatalog, ID = locAsset.CatalogItemId)
+                                                            Default: =LookUp(fxInvCatalog, ID = locAsset.'Catalog Item Id')
                                                             DisplayMode: =If(locEdit, DisplayMode.Edit, DisplayMode.View)
                                                             Height: =36
-                                                            ItemDisplayText: =ThisItem.Title
-                                                            Items: =Filter(fxInvCatalog, IsBlank(drpInvAsdDept.Selected.Value) || drpInvAsdDept.Selected.Value in Coalesce(DepartmentRoute.Value, ""))
+                                                            ItemDisplayText: =ThisItem.'Equipment Name'
+                                                            Items: =Filter(fxInvCatalog, IsBlank(drpInvAsdDept.Selected.Value) || drpInvAsdDept.Selected.Value in Coalesce('Department Route'.Value, ""))
                                                             LayoutMinWidth: =0
                                                             Width: =Parent.Width
                                                 - conInvAsdFKind:
@@ -600,7 +600,7 @@ Screens:
                                                             AccessibleLabel: ="Kind"
                                                             AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
-                                                            Default: =LookUp(fxAssetKinds, Value = Coalesce(locAsset.AssetKind.Value, If(IsBlank(drpInvAsdCatalog.Selected), "Loaner Pool", drpInvAsdCatalog.Selected.InventoryType.Value)))
+                                                            Default: =LookUp(fxAssetKinds, Value = Coalesce(locAsset.'Asset Kind'.Value, If(IsBlank(drpInvAsdCatalog.Selected), "Loaner Pool", drpInvAsdCatalog.Selected.'Inventory Type'.Value)))
                                                             DisplayMode: =If(locEdit, DisplayMode.Edit, DisplayMode.View)
                                                             Height: =36
                                                             ItemDisplayText: =ThisItem.Value
@@ -772,10 +772,10 @@ Screens:
                                                             AccessibleLabel: ="Home location"
                                                             AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
-                                                            Default: =LookUp(fxInvLocations, Title = locAsset.HomeLocation)
+                                                            Default: =LookUp(fxInvLocations, Location = locAsset.'Home Location')
                                                             DisplayMode: =If(locEdit, DisplayMode.Edit, DisplayMode.View)
                                                             Height: =36
-                                                            ItemDisplayText: =ThisItem.Title
+                                                            ItemDisplayText: =ThisItem.Location
                                                             Items: =Filter(fxInvLocations, Department.Value = "Both" || Department.Value = drpInvAsdDept.Selected.Value)
                                                             LayoutMinWidth: =0
                                                             Width: =Parent.Width
@@ -822,7 +822,7 @@ Screens:
                                                             AccessibleLabel: ="Purchase date"
                                                             AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
-                                                            DefaultDate: =locAsset.PurchaseDate
+                                                            DefaultDate: =locAsset.'Purchase Date'
                                                             DisplayMode: =If(locEdit, DisplayMode.Edit, DisplayMode.View)
                                                             Height: =36
                                                             LayoutMinWidth: =0
@@ -858,7 +858,7 @@ Screens:
                                                             AccessibleLabel: ="Warranty end"
                                                             AlignInContainer: =AlignInContainer.Stretch
                                                             Appearance: =Appearance.Outline
-                                                            DefaultDate: =locAsset.WarrantyEnd
+                                                            DefaultDate: =locAsset.'Warranty End'
                                                             DisplayMode: =If(locEdit, DisplayMode.Edit, DisplayMode.View)
                                                             Height: =36
                                                             LayoutMinWidth: =0
@@ -975,7 +975,7 @@ Screens:
                                                             If(locNew, "AssetCreate", "AssetUpdate"), gblInvAssetId,
                                                             Trim(txtInvAsdTag.Text), Trim(txtInvAsdTag.Text), Trim(txtInvAsdMake.Text), Trim(txtInvAsdModel.Text),
                                                             Coalesce(drpInvAsdCatalog.Selected.ID, 0), drpInvAsdDept.Selected.Value, drpInvAsdKind.Selected.Value, drpInvAsdCond.Selected.Value,
-                                                            Coalesce(drpInvAsdHome.Selected.Title, ""), If(IsBlank(dteInvAsdPurchase.SelectedDate), "", Text(dteInvAsdPurchase.SelectedDate, "yyyy-mm-dd")),
+                                                            Coalesce(drpInvAsdHome.Selected.Location, ""), If(IsBlank(dteInvAsdPurchase.SelectedDate), "", Text(dteInvAsdPurchase.SelectedDate, "yyyy-mm-dd")),
                                                             If(IsBlank(dteInvAsdWarranty.SelectedDate), "", Text(dteInvAsdWarranty.SelectedDate, "yyyy-mm-dd")), txtInvAsdNotes.Text
                                                         )}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                                 UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message), Id: Value(raw.id)}})
@@ -1213,7 +1213,7 @@ Screens:
                                                 AccessibleLabel: ="Photos and documents"
                                                 FillPortions: =0
                                                 Height: =Self.AllItemsCount * 72
-                                                Items: =Sort(Filter(InventoryAssetFiles, AssetId = gblInvAssetId), ID, SortOrder.Descending)
+                                                Items: =Sort(Filter(InventoryAssetFiles, 'Asset Id' = gblInvAssetId), ID, SortOrder.Descending)
                                                 LayoutMinHeight: =0
                                                 LayoutMinWidth: =0
                                                 ShowScrollbar: =false
@@ -1243,11 +1243,11 @@ Screens:
                                                       - imgInvAsdFileThumb:
                                                           Control: Image
                                                           Properties:
-                                                            AccessibleLabel: =ThisItem.'{FilenameWithExtension}'
+                                                            AccessibleLabel: =ThisItem.'File name with extension'
                                                             Height: =56
-                                                            Image: =If(ThisItem.FileKind.Value = "Photo", ThisItem.'{Thumbnail}'.Small, "")
+                                                            Image: =If(ThisItem.'File Kind'.Value = "Photo", ThisItem.Thumbnail.Small, "")
                                                             ImagePosition: =ImagePosition.Fill
-                                                            Visible: =ThisItem.FileKind.Value = "Photo"
+                                                            Visible: =ThisItem.'File Kind'.Value = "Photo"
                                                             Width: =56
                                                       - conInvAsdFileText:
                                                           Control: GroupContainer
@@ -1274,7 +1274,7 @@ Screens:
                                                                   PaddingTop: =0
                                                                   Size: =13
                                                                   Text: |-
-                                                                    =ThisItem.FileKind.Value & ":  " & ThisItem.'{FilenameWithExtension}'
+                                                                    =ThisItem.'File Kind'.Value & ":  " & ThisItem.'File name with extension'
                                                                   Wrap: =false
                                                             - txtInvAsdFileMeta:
                                                                 Control: ModernText
@@ -1287,24 +1287,24 @@ Screens:
                                                                   PaddingLeft: =0
                                                                   PaddingTop: =0
                                                                   Size: =12
-                                                                  Text: =Text(ThisItem.Created, "mmm d, yyyy") & If(IsBlank(ThisItem.FileNote), "", "  ·  " & ThisItem.FileNote)
+                                                                  Text: =Text(ThisItem.Created, "mmm d, yyyy") & If(IsBlank(ThisItem.'File Note'), "", "  ·  " & ThisItem.'File Note')
                                                                   Wrap: =false
                                                       - btnInvAsdFileOpen:
                                                           Control: ModernButton
                                                           Properties:
-                                                            AccessibleLabel: ="Open " & ThisItem.'{FilenameWithExtension}'
+                                                            AccessibleLabel: ="Open " & ThisItem.'File name with extension'
                                                             Appearance: =ButtonAppearance.Subtle
                                                             Height: =36
                                                             Icon: ="Open"
                                                             Layout: =ButtonLayout.IconOnly
                                                             LayoutMinWidth: =36
-                                                            OnSelect: =Launch(ThisItem.'{Link}')
+                                                            OnSelect: =Launch(ThisItem.'Link to item')
                                                             Text: ="Open"
                                                             Width: =36
                                                       - btnInvAsdFileDel:
                                                           Control: ModernButton
                                                           Properties:
-                                                            AccessibleLabel: ="Remove " & ThisItem.'{FilenameWithExtension}'
+                                                            AccessibleLabel: ="Remove " & ThisItem.'File name with extension'
                                                             Appearance: =ButtonAppearance.Subtle
                                                             DisplayMode: =If(locBusy, DisplayMode.Disabled, DisplayMode.Edit)
                                                             Height: =36
@@ -1420,8 +1420,8 @@ Screens:
                                                       AccessibleLabel: =Self.Text
                                                       Align: =Align.Center
                                                       AlignInContainer: =AlignInContainer.Center
-                                                      Color: =fxStatusColor(locAsset.AssetStatus.Value)
-                                                      Fill: =fxStatusFill(locAsset.AssetStatus.Value)
+                                                      Color: =fxStatusColor(locAsset.'Asset Status'.Value)
+                                                      Fill: =fxStatusFill(locAsset.'Asset Status'.Value)
                                                       FontWeight: =FontWeight.Semibold
                                                       Height: =24
                                                       LayoutMinWidth: =0
@@ -1433,7 +1433,7 @@ Screens:
                                                       RadiusTopLeft: =12
                                                       RadiusTopRight: =12
                                                       Size: =12
-                                                      Text: =locAsset.AssetStatus.Value
+                                                      Text: =locAsset.'Asset Status'.Value
                                                       Width: =120
                                                       Wrap: =false
                                                 - txtInvAsdHolder:
@@ -1449,7 +1449,7 @@ Screens:
                                                       PaddingTop: =0
                                                       Size: =12
                                                       Text: |-
-                                                        =If(locAsset.AssetStatus.Value = "Issued", "With " & fxPersonName(locAsset.CurrentHolderName) & If(IsBlank(locCheckout.DueDate), "", ", due " & Text(locCheckout.DueDate, "mmm d, yyyy")), If(locAsset.AssetStatus.Value = "Disposed", locAsset.DispositionMethod.Value & " " & Text(locAsset.DispositionDate, "mmm d, yyyy") & If(IsBlank(locAsset.DispositionRef), "", ", doc " & locAsset.DispositionRef), "Condition: " & locAsset.Condition.Value)) & Char(10) & If(IsBlank(locAsset.LastVerifiedDate), "Not verified in a count yet", "Last verified " & Text(locAsset.LastVerifiedDate, "mmm d, yyyy") & " by " & fxPersonName(locAsset.LastVerifiedBy))
+                                                        =If(locAsset.'Asset Status'.Value = "Issued", "With " & fxPersonName(locAsset.'Current Holder Name') & If(IsBlank(locCheckout.'Due Date'), "", ", due " & Text(locCheckout.'Due Date', "mmm d, yyyy")), If(locAsset.'Asset Status'.Value = "Disposed", locAsset.'Disposition Method'.Value & " " & Text(locAsset.'Disposition Date', "mmm d, yyyy") & If(IsBlank(locAsset.'Turn-in Document Number'), "", ", doc " & locAsset.'Turn-in Document Number'), "Condition: " & locAsset.Condition.Value)) & Char(10) & If(IsBlank(locAsset.'Last Verified Date'), "Not verified in a count yet", "Last verified " & Text(locAsset.'Last Verified Date', "mmm d, yyyy") & " by " & fxPersonName(locAsset.'Last Verified By'))
                                           - conInvAsdFNewStatus:
                                               Control: GroupContainer
                                               Variant: AutoLayout
@@ -1485,7 +1485,7 @@ Screens:
                                                       DisplayMode: =If(fxCanManage(locAsset.Department.Value), DisplayMode.Edit, DisplayMode.Disabled)
                                                       Height: =36
                                                       ItemDisplayText: =ThisItem.Value
-                                                      Items: =Filter(fxSettableStatuses, locAsset.AssetStatus.Value <> "Disposed" && Value <> locAsset.AssetStatus.Value && (locAsset.AssetStatus.Value <> "Issued" || Value = "Lost"))
+                                                      Items: =Filter(fxSettableStatuses, locAsset.'Asset Status'.Value <> "Disposed" && Value <> locAsset.'Asset Status'.Value && (locAsset.'Asset Status'.Value <> "Issued" || Value = "Lost"))
                                                       LayoutMinWidth: =0
                                                       Width: =Parent.Width
                                           - conInvAsdFStatusNote:
@@ -1558,7 +1558,7 @@ Screens:
                                                 OnSelect: |-
                                                   =UpdateContext({locIncOpen: true})
                                                 Text: ="Report lost or damaged"
-                                                Visible: =!locIncOpen && fxCanManage(locAsset.Department.Value) && !(locAsset.AssetStatus.Value in ["Lost", "Retired"])
+                                                Visible: =!locIncOpen && fxCanManage(locAsset.Department.Value) && !(locAsset.'Asset Status'.Value in ["Lost", "Retired"])
                                                 Width: =220
                                           - conInvAsdInc:
                                               Control: GroupContainer
@@ -1836,7 +1836,7 @@ Screens:
                                                 OnSelect: |-
                                                   =UpdateContext({locDispOpen: true})
                                                 Text: ="Record disposition (recycle, destroy, turn in)"
-                                                Visible: =!locDispOpen && fxIsInvManager && !(locAsset.AssetStatus.Value in ["Issued", "Disposed"])
+                                                Visible: =!locDispOpen && fxIsInvManager && !(locAsset.'Asset Status'.Value in ["Issued", "Disposed"])
                                                 Width: =330
                                           - conInvAsdDisp:
                                               Control: GroupContainer
@@ -2301,7 +2301,7 @@ Screens:
                                           RadiusBottomRight: =8
                                           RadiusTopLeft: =8
                                           RadiusTopRight: =8
-                                          Visible: =!locNew && !IsEmpty(Filter(InventoryIncidents, AssetId = gblInvAssetId))
+                                          Visible: =!locNew && !IsEmpty(Filter(InventoryIncidents, 'Asset Id' = gblInvAssetId))
                                         Children:
                                           - conInvAsdIncsHead:
                                               Control: GroupContainer
@@ -2349,7 +2349,7 @@ Screens:
                                                 AccessibleLabel: ="Incidents"
                                                 FillPortions: =0
                                                 Height: =Self.AllItemsCount * 60
-                                                Items: =Sort(Filter(InventoryIncidents, AssetId = gblInvAssetId), ID, SortOrder.Descending)
+                                                Items: =Sort(Filter(InventoryIncidents, 'Asset Id' = gblInvAssetId), ID, SortOrder.Descending)
                                                 LayoutMinHeight: =0
                                                 LayoutMinWidth: =0
                                                 ShowScrollbar: =false
@@ -2380,7 +2380,7 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =13
-                                                            Text: =ThisItem.IncidentType.Value & "  ·  " & Text(ThisItem.IncidentDate, "mmm d, yyyy") & If(IsBlank(ThisItem.HolderName), "", "  ·  with " & fxPersonName(ThisItem.HolderName)) & If(IsBlank(ThisItem.EstimatedCost), "", "  ·  est. " & Text(ThisItem.EstimatedCost, "$#,##0.00"))
+                                                            Text: =ThisItem.'Incident Type'.Value & "  ·  " & Text(ThisItem.'Incident Date', "mmm d, yyyy") & If(IsBlank(ThisItem.'Holder Name'), "", "  ·  with " & fxPersonName(ThisItem.'Holder Name')) & If(IsBlank(ThisItem.'Estimated Cost'), "", "  ·  est. " & Text(ThisItem.'Estimated Cost', "$#,##0.00"))
                                                             Wrap: =false
                                                       - txtInvAsdIncWhy:
                                                           Control: ModernText
@@ -2393,7 +2393,7 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =12
-                                                            Text: =ThisItem.Circumstances & "  (" & fxPersonName(ThisItem.ReportedByName) & ")"
+                                                            Text: =ThisItem.Circumstances & "  (" & fxPersonName(ThisItem.'Reported By Name') & ")"
                                                             Wrap: =false
                                     - conInvAsdRes:
                                         Control: GroupContainer
@@ -2508,7 +2508,7 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =13
-                                                            Text: =ThisItem.RequestNumber
+                                                            Text: =ThisItem.'Request Number'
                                                             Wrap: =false
                                                       - txtInvAsdResDates:
                                                           Control: ModernText
@@ -2522,7 +2522,7 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =12
-                                                            Text: =Text(ThisItem.StartDate, "mmm d") & " – " & Text(ThisItem.EndDate, "mmm d, yyyy")
+                                                            Text: =Text(ThisItem.'Start Date', "mmm d") & " – " & Text(ThisItem.'End Date', "mmm d, yyyy")
                                                             Wrap: =false
                                     - conInvAsdHist:
                                         Control: GroupContainer
@@ -2638,7 +2638,7 @@ Screens:
                                                             PaddingTop: =0
                                                             Size: =13
                                                             Text: |-
-                                                              =ThisItem.EventType.Value & ": " & ThisItem.Details
+                                                              =ThisItem.'Event Type'.Value & ": " & ThisItem.Details
                                                             Wrap: =false
                                                       - txtInvAsdHistWho:
                                                           Control: ModernText
@@ -2651,7 +2651,7 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =12
-                                                            Text: =fxPersonName(Coalesce(ThisItem.ActorName, ThisItem.ActorEmail)) & "   ·   " & Text(ThisItem.Created, "mmm d, yyyy h:mm AM/PM")
+                                                            Text: =fxPersonName(Coalesce(ThisItem.'Actor Name', ThisItem.'Actor Email')) & "   ·   " & Text(ThisItem.Created, "mmm d, yyyy h:mm AM/PM")
                                                             Wrap: =false
                         - txtInvAsdMissing:
                             Control: ModernText

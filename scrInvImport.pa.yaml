@@ -202,10 +202,10 @@ Screens:
                                 Refresh(InventoryCheckouts);
                                 Refresh(InventoryReservations);
                                 Refresh(InventoryReceipts);
-                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, AssetStatus.Value, Kind, AssetKind.Value));
-                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, CheckoutStatus.Value = "Active" || CheckoutStatus.Value = "Awaiting Acknowledgement" || CheckoutStatus.Value = "Return Required"), Status, CheckoutStatus.Value));
-                                Set(gblInvReserved, Filter(InventoryReservations, ReservationStatus.Value = "Reserved"));
-                                Set(gblInvLines, Filter(RequestEquipment, NeedsInventoryAction = true));
+                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, 'Asset Status'.Value, Kind, 'Asset Kind'.Value));
+                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, 'Checkout Status'.Value = "Active" || 'Checkout Status'.Value = "Awaiting Acknowledgement" || 'Checkout Status'.Value = "Return Required"), Status, 'Checkout Status'.Value));
+                                Set(gblInvReserved, Filter(InventoryReservations, 'Reservation Status'.Value = "Reserved"));
+                                Set(gblInvLines, Filter(RequestEquipment, 'Needs Inventory Action' = true));
                                 Set(gblInvLoadedAt, Now());
                                 Set(gblInvLoading, false)
                               Text: ="Reload"
@@ -480,7 +480,7 @@ Screens:
                                                 Height: =36
                                                 ItemDisplayText: =ThisItem.Value
                                                 Items: |-
-                                                  =Table({Value: "(none)"}, ForAll(fxInvLocations, {Value: Title}))
+                                                  =Table({Value: "(none)"}, ForAll(fxInvLocations, {Value: Location}))
                                                 LayoutMinWidth: =0
                                                 Width: =Parent.Width
                               - conInvImpHelp:
@@ -595,7 +595,7 @@ Screens:
                                                                         {
                                                                             Row: s.Value, Tag: serial, Serial: serial, Make: If(IsBlank(iM), "", IfError(Trim(Index(c, iM).Value), "")), Model: If(IsBlank(iMo), "", IfError(Trim(Index(c, iMo).Value), "")),
                                                                             Dept: Switch(cust, "TSOS", "IT", "TSAV", "AV", cust), Kind: drpInvImpKind.Selected.Value,
-                                                                            Loc: With({lx: Lower(hqLoc)}, If(IsBlank(lx), If(drpInvImpLoc.Selected.Value = "(none)", "", drpInvImpLoc.Selected.Value), Coalesce(LookUp(fxInvLocations, Lower(HqName) = lx || Lower(Title) = lx).Title, If(drpInvImpLoc.Selected.Value = "(none)", "", drpInvImpLoc.Selected.Value)))),
+                                                                            Loc: With({lx: Lower(hqLoc)}, If(IsBlank(lx), If(drpInvImpLoc.Selected.Value = "(none)", "", drpInvImpLoc.Selected.Value), Coalesce(LookUp(fxInvLocations, Lower('HQ Name') = lx || Lower(Location) = lx).Location, If(drpInvImpLoc.Selected.Value = "(none)", "", drpInvImpLoc.Selected.Value)))),
                                                                             HqLoc: hqLoc, Purchase: "", Warranty: "", Notes: If(IsBlank(desc), "", "HQ: " & desc), Source: "the HQ list"
                                                                         }
                                                                     )
@@ -609,15 +609,15 @@ Screens:
                                                                         {
                                                                             Row: s.Value, Tag: If(IsBlank(iT), "", IfError(Trim(Index(c, iT).Value), "")), Serial: If(IsBlank(iS), "", IfError(Trim(Index(c, iS).Value), "")), Make: If(IsBlank(iM), "", IfError(Trim(Index(c, iM).Value), "")), Model: If(IsBlank(iMo), "", IfError(Trim(Index(c, iMo).Value), "")),
                                                                             Dept: Upper(If(IsBlank(iD), "", IfError(Trim(Index(c, iD).Value), ""))), Kind: Coalesce(LookUp(["Tracked Asset", "Loaner Pool", "Installed in Room"], Lower(Value) = Lower(kind)).Value, If(IsBlank(kind), drpInvImpKind.Selected.Value, kind)),
-                                                                            Loc: With({lx: Lower(Trim(If(IsBlank(iL), "", IfError(Trim(Index(c, iL).Value), ""))))}, If(IsBlank(lx), If(drpInvImpLoc.Selected.Value = "(none)", "", drpInvImpLoc.Selected.Value), Coalesce(LookUp(fxInvLocations, Lower(Title) = lx || Lower(HqName) = lx).Title, Trim(If(IsBlank(iL), "", IfError(Trim(Index(c, iL).Value), "")))))), HqLoc: "",
+                                                                            Loc: With({lx: Lower(Trim(If(IsBlank(iL), "", IfError(Trim(Index(c, iL).Value), ""))))}, If(IsBlank(lx), If(drpInvImpLoc.Selected.Value = "(none)", "", drpInvImpLoc.Selected.Value), Coalesce(LookUp(fxInvLocations, Lower(Location) = lx || Lower('HQ Name') = lx).Location, Trim(If(IsBlank(iL), "", IfError(Trim(Index(c, iL).Value), "")))))), HqLoc: "",
                                                                             Purchase: With({d: If(IsBlank(iP), "", IfError(Trim(Index(c, iP).Value), ""))}, If(IsBlank(d), "", IfError(Text(DateValue(d), "yyyy-mm-dd"), "bad"))), Warranty: With({d: If(IsBlank(iW), "", IfError(Trim(Index(c, iW).Value), ""))}, If(IsBlank(d), "", IfError(Text(DateValue(d), "yyyy-mm-dd"), "bad"))), Notes: If(IsBlank(iN), "", IfError(Trim(Index(c, iN).Value), "")), Source: "the import template"
                                                                         }
                                                                     )
                                                                 )
                                                             )), !IsBlank(Trim(Tag & Serial))),
-                                                                        tags: ForAll(gblInvAssets, {V: Lower(Title)}),
-                                                                        sers: ForAll(Filter(gblInvAssets, !IsBlank(SerialNumber)), {V: Lower(SerialNumber)}),
-                                                                        locs: ForAll(fxInvLocations, {V: Lower(Title)})
+                                                                        tags: ForAll(gblInvAssets, {V: Lower('Asset Tag')}),
+                                                                        sers: ForAll(Filter(gblInvAssets, !IsBlank('Serial Number')), {V: Lower('Serial Number')}),
+                                                                        locs: ForAll(fxInvLocations, {V: Lower(Location)})
                                                                     },
                                                                     ClearCollect(
                                                                         colInvImp,

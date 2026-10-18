@@ -202,10 +202,10 @@ Screens:
                                 Refresh(InventoryCheckouts);
                                 Refresh(InventoryReservations);
                                 Refresh(InventoryReceipts);
-                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, AssetStatus.Value, Kind, AssetKind.Value));
-                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, CheckoutStatus.Value = "Active" || CheckoutStatus.Value = "Awaiting Acknowledgement" || CheckoutStatus.Value = "Return Required"), Status, CheckoutStatus.Value));
-                                Set(gblInvReserved, Filter(InventoryReservations, ReservationStatus.Value = "Reserved"));
-                                Set(gblInvLines, Filter(RequestEquipment, NeedsInventoryAction = true));
+                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, 'Asset Status'.Value, Kind, 'Asset Kind'.Value));
+                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, 'Checkout Status'.Value = "Active" || 'Checkout Status'.Value = "Awaiting Acknowledgement" || 'Checkout Status'.Value = "Return Required"), Status, 'Checkout Status'.Value));
+                                Set(gblInvReserved, Filter(InventoryReservations, 'Reservation Status'.Value = "Reserved"));
+                                Set(gblInvLines, Filter(RequestEquipment, 'Needs Inventory Action' = true));
                                 Set(gblInvLoadedAt, Now());
                                 Set(gblInvLoading, false)
                               Text: ="Reload"
@@ -474,7 +474,7 @@ Screens:
                                             IfError(
                                                 With(
                                                     {raw: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "ExportCsv", name: "Labels", ext: "html", content: With(
-                                                {list: ForAll(Sequence(CountRows(SortByColumns(Filter(gblInvAssets, ID in gblInvLabelIds.ID), "Title"))) As s, With({a: Index(SortByColumns(Filter(gblInvAssets, ID in gblInvLabelIds.ID), "Title"), s.Value)}, {n: s.Value + Max(0, Min(29, RoundDown(IfError(Value(txtInvLblStart.Text), 1), 0) - 1)), Tag: a.Title, Model: Coalesce(Trim(a.Make & " " & a.Model), a.CatalogNameSnapshot, ""), Acct: fxOrgAccount(a.Dept)}))},
+                                                {list: ForAll(Sequence(CountRows(SortByColumns(Filter(gblInvAssets, ID in gblInvLabelIds.ID), "Title"))) As s, With({a: Index(SortByColumns(Filter(gblInvAssets, ID in gblInvLabelIds.ID), "Title"), s.Value)}, {n: s.Value + Max(0, Min(29, RoundDown(IfError(Value(txtInvLblStart.Text), 1), 0) - 1)), Tag: a.'Asset Tag', Model: Coalesce(Trim(a.Make & " " & a.Model), a.'Catalog Name Snapshot', ""), Acct: fxOrgAccount(a.Dept)}))},
                                                 With(
                                                     {pages: RoundUp((CountRows(list) + Max(0, Min(29, RoundDown(IfError(Value(txtInvLblStart.Text), 1), 0) - 1))) / 30, 0)},
                                                     "<!DOCTYPE html><html><head><meta charset='utf-8'><title>Inventory labels</title><style>@page{size:8.5in 11in;margin:0}html,body{margin:0;padding:0}body{font-family:Arial,Helvetica,sans-serif;color:#000}.page{position:relative;width:8.5in;height:11in;overflow:hidden;page-break-after:always;break-after:page}.l{position:absolute;width:2.625in;height:1in;box-sizing:border-box;padding:0.07in 0.14in;overflow:hidden}.m{font-size:7.5pt;line-height:0.14in;height:0.14in;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.b svg{display:block;width:2.34in;height:0.48in;margin:0.03in 0}.t{display:flex;justify-content:space-between;font-size:8pt;font-weight:bold;line-height:0.13in}.help{font:13px Arial,sans-serif;padding:10px 14px;background:#fff4ce;border-bottom:1px solid #e0c060}@media print{.help{display:none}}</style></head><body>" &
@@ -635,14 +635,14 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =9
-                                                      Text: =Coalesce(Trim(ThisItem.Make & " " & ThisItem.Model), ThisItem.CatalogNameSnapshot, "")
+                                                      Text: =Coalesce(Trim(ThisItem.Make & " " & ThisItem.Model), ThisItem.'Catalog Name Snapshot', "")
                                                       Wrap: =false
                                                 - imgInvLblBar:
                                                     Control: Image
                                                     Properties:
-                                                      AccessibleLabel: ="Barcode for " & ThisItem.Title
+                                                      AccessibleLabel: ="Barcode for " & ThisItem.'Asset Tag'
                                                       Height: =44
-                                                      Image: =fxCode128Image(ThisItem.Title)
+                                                      Image: =fxCode128Image(ThisItem.'Asset Tag')
                                                       ImagePosition: =ImagePosition.Stretch
                                                       Width: =226
                                                 - conInvLblTagRow:
@@ -669,7 +669,7 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =10
-                                                            Text: =ThisItem.Title
+                                                            Text: =ThisItem.'Asset Tag'
                                                             Wrap: =false
                                                       - txtInvLblAcct:
                                                           Control: ModernText
@@ -690,7 +690,7 @@ Screens:
                                           - btnInvLblRemove:
                                               Control: ModernButton
                                               Properties:
-                                                AccessibleLabel: ="Remove the label for " & ThisItem.Title
+                                                AccessibleLabel: ="Remove the label for " & ThisItem.'Asset Tag'
                                                 Appearance: =ButtonAppearance.Subtle
                                                 Height: =28
                                                 Icon: ="Dismiss"

@@ -202,10 +202,10 @@ Screens:
                                 Refresh(InventoryCheckouts);
                                 Refresh(InventoryReservations);
                                 Refresh(InventoryReceipts);
-                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, AssetStatus.Value, Kind, AssetKind.Value));
-                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, CheckoutStatus.Value = "Active" || CheckoutStatus.Value = "Awaiting Acknowledgement" || CheckoutStatus.Value = "Return Required"), Status, CheckoutStatus.Value));
-                                Set(gblInvReserved, Filter(InventoryReservations, ReservationStatus.Value = "Reserved"));
-                                Set(gblInvLines, Filter(RequestEquipment, NeedsInventoryAction = true));
+                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, 'Asset Status'.Value, Kind, 'Asset Kind'.Value));
+                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, 'Checkout Status'.Value = "Active" || 'Checkout Status'.Value = "Awaiting Acknowledgement" || 'Checkout Status'.Value = "Return Required"), Status, 'Checkout Status'.Value));
+                                Set(gblInvReserved, Filter(InventoryReservations, 'Reservation Status'.Value = "Reserved"));
+                                Set(gblInvLines, Filter(RequestEquipment, 'Needs Inventory Action' = true));
                                 Set(gblInvLoadedAt, Now());
                                 Set(gblInvLoading, false)
                               Text: ="Reload"
@@ -479,7 +479,7 @@ Screens:
                                                 Height: =36
                                                 ItemDisplayText: =ThisItem.Value
                                                 Items: |-
-                                                  =ForAll(Filter(fxInvLocations, Department.Value = "Both" || Department.Value = drpInvCntDept.Selected.Value), {Value: Title})
+                                                  =ForAll(Filter(fxInvLocations, Department.Value = "Both" || Department.Value = drpInvCntDept.Selected.Value), {Value: Location})
                                                 LayoutMinWidth: =0
                                                 Width: =Parent.Width
                               - btnInvCntStart:
@@ -555,7 +555,7 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =12
-                                          Text: ="Scanned " & CountRows(colInvCntScanned) & " of " & CountRows(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value))) & " expected. Save to keep going later; Complete to record the result."
+                                          Text: ="Scanned " & CountRows(colInvCntScanned) & " of " & CountRows(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value))) & " expected. Save to keep going later; Complete to record the result."
                                           Wrap: =false
                               - conInvCntScan:
                                   Control: GroupContainer
@@ -620,16 +620,16 @@ Screens:
                                                       If(
                                                           !IsBlank(code),
                                                           With(
-                                                              {exact: Coalesce(LookUp(gblInvAssets, Lower(Title) = code), LookUp(gblInvAssets, Lower(Coalesce(SerialNumber, "")) = code))},
+                                                              {exact: Coalesce(LookUp(gblInvAssets, Lower('Asset Tag') = code), LookUp(gblInvAssets, Lower(Coalesce('Serial Number', "")) = code))},
                                                               If(
                                                                   !IsBlank(exact),
                                                                   UpdateContext({locScanMsg: "", locScanMatches: Blank()});
-                                                                  With({hit: exact}, If(hit.ID in colInvCntScanned.ID, UpdateContext({locScanMsg: hit.Title & " is already counted."}), Collect(colInvCntScanned, hit); UpdateContext({locScanMsg: ""}))),
+                                                                  With({hit: exact}, If(hit.ID in colInvCntScanned.ID, UpdateContext({locScanMsg: hit.'Asset Tag' & " is already counted."}), Collect(colInvCntScanned, hit); UpdateContext({locScanMsg: ""}))),
                                                                   With(
-                                                                      {m: FirstN(SortByColumns(Filter(gblInvAssets, code in Lower(Title) || code in Lower(Coalesce(SerialNumber, ""))), "Title"), 6)},
+                                                                      {m: FirstN(SortByColumns(Filter(gblInvAssets, code in Lower('Asset Tag') || code in Lower(Coalesce('Serial Number', ""))), "Title"), 6)},
                                                                       If(
                                                                           IsEmpty(m), UpdateContext({locScanMsg: "No asset tag or serial number contains " & Trim(Self.Text) & ".", locScanMatches: Blank()}),
-                                                                          CountRows(m) = 1, UpdateContext({locScanMsg: "", locScanMatches: Blank()}); With({hit: First(m)}, If(hit.ID in colInvCntScanned.ID, UpdateContext({locScanMsg: hit.Title & " is already counted."}), Collect(colInvCntScanned, hit); UpdateContext({locScanMsg: ""}))),
+                                                                          CountRows(m) = 1, UpdateContext({locScanMsg: "", locScanMatches: Blank()}); With({hit: First(m)}, If(hit.ID in colInvCntScanned.ID, UpdateContext({locScanMsg: hit.'Asset Tag' & " is already counted."}), Collect(colInvCntScanned, hit); UpdateContext({locScanMsg: ""}))),
                                                                           UpdateContext({locScanMsg: "", locScanMatches: m})
                                                                       )
                                                                   )
@@ -660,15 +660,15 @@ Screens:
                                           - btnInvCntScanPick:
                                               Control: ModernButton
                                               Properties:
-                                                AccessibleLabel: ="Use " & ThisItem.Title
+                                                AccessibleLabel: ="Use " & ThisItem.'Asset Tag'
                                                 Align: =Align.Left
                                                 Appearance: =ButtonAppearance.Secondary
                                                 Height: =34
                                                 Icon: ="ChevronRight"
                                                 Layout: =ButtonLayout.IconAfter
                                                 OnSelect: |-
-                                                  =UpdateContext({locScanMatches: Blank(), locScanMsg: ""}); With({hit: ThisItem}, If(hit.ID in colInvCntScanned.ID, UpdateContext({locScanMsg: hit.Title & " is already counted."}), Collect(colInvCntScanned, hit); UpdateContext({locScanMsg: ""})))
-                                                Text: =ThisItem.Title & "   ·   " & Coalesce(ThisItem.CatalogNameSnapshot, "Equipment") & "   ·   " & ThisItem.Status
+                                                  =UpdateContext({locScanMatches: Blank(), locScanMsg: ""}); With({hit: ThisItem}, If(hit.ID in colInvCntScanned.ID, UpdateContext({locScanMsg: hit.'Asset Tag' & " is already counted."}), Collect(colInvCntScanned, hit); UpdateContext({locScanMsg: ""})))
+                                                Text: =ThisItem.'Asset Tag' & "   ·   " & Coalesce(ThisItem.'Catalog Name Snapshot', "Equipment") & "   ·   " & ThisItem.Status
                                                 Width: =Parent.TemplateWidth - 4
                                     - txtInvCntScanMsg:
                                         Control: ModernText
@@ -730,7 +730,7 @@ Screens:
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
                                                 Size: =14
-                                                Text: ="Missing (" & CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued")) & ")"
+                                                Text: ="Missing (" & CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued")) & ")"
                                                 Wrap: =false
                                           - txtInvCntMissingNone:
                                               Control: ModernText
@@ -744,7 +744,7 @@ Screens:
                                                 PaddingTop: =0
                                                 Size: =12
                                                 Text: ="None"
-                                                Visible: =IsEmpty(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued"))
+                                                Visible: =IsEmpty(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued"))
                                                 Wrap: =false
                                           - galInvCntMissing:
                                               Control: Gallery
@@ -752,8 +752,8 @@ Screens:
                                               Properties:
                                                 AccessibleLabel: ="Missing"
                                                 FillPortions: =0
-                                                Height: =Min(CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued")), 12) * 40
-                                                Items: =SortByColumns(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued"), "Title")
+                                                Height: =Min(CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued")), 12) * 40
+                                                Items: =SortByColumns(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued"), "Title")
                                                 LayoutMinHeight: =0
                                                 LayoutMinWidth: =0
                                                 TabIndex: =0
@@ -783,7 +783,7 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =12
-                                                            Text: =ThisItem.Title
+                                                            Text: =ThisItem.'Asset Tag'
                                                             Wrap: =false
                                                       - txtInvCntMissingInfo:
                                                           Control: ModernText
@@ -796,7 +796,7 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =11
-                                                            Text: =Coalesce(ThisItem.CatalogNameSnapshot, "") & "  ·  " & ThisItem.Status
+                                                            Text: =Coalesce(ThisItem.'Catalog Name Snapshot', "") & "  ·  " & ThisItem.Status
                                                             Wrap: =false
                                     - conInvCntUnexp:
                                         Control: GroupContainer
@@ -831,7 +831,7 @@ Screens:
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
                                                 Size: =14
-                                                Text: ="Unexpected here (" & CountRows(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)).ID))) & ")"
+                                                Text: ="Unexpected here (" & CountRows(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)).ID))) & ")"
                                                 Wrap: =false
                                           - txtInvCntUnexpNone:
                                               Control: ModernText
@@ -845,7 +845,7 @@ Screens:
                                                 PaddingTop: =0
                                                 Size: =12
                                                 Text: ="None"
-                                                Visible: =IsEmpty(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)).ID)))
+                                                Visible: =IsEmpty(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)).ID)))
                                                 Wrap: =false
                                           - galInvCntUnexp:
                                               Control: Gallery
@@ -853,8 +853,8 @@ Screens:
                                               Properties:
                                                 AccessibleLabel: ="Unexpected here"
                                                 FillPortions: =0
-                                                Height: =Min(CountRows(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)).ID))), 12) * 40
-                                                Items: =SortByColumns(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)).ID)), "Title")
+                                                Height: =Min(CountRows(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)).ID))), 12) * 40
+                                                Items: =SortByColumns(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)).ID)), "Title")
                                                 LayoutMinHeight: =0
                                                 LayoutMinWidth: =0
                                                 TabIndex: =0
@@ -884,7 +884,7 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =12
-                                                            Text: =ThisItem.Title
+                                                            Text: =ThisItem.'Asset Tag'
                                                             Wrap: =false
                                                       - txtInvCntUnexpInfo:
                                                           Control: ModernText
@@ -898,7 +898,7 @@ Screens:
                                                             PaddingTop: =0
                                                             Size: =11
                                                             Text: |-
-                                                              ="Listed: " & Coalesce(ThisItem.HomeLocation, "no location") & " (" & ThisItem.Dept & ")  ·  " & ThisItem.Status
+                                                              ="Listed: " & Coalesce(ThisItem.'Home Location', "no location") & " (" & ThisItem.Dept & ")  ·  " & ThisItem.Status
                                                             Wrap: =false
                                     - conInvCntOut:
                                         Control: GroupContainer
@@ -933,7 +933,7 @@ Screens:
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
                                                 Size: =14
-                                                Text: ="Out with people (" & CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status = "Issued")) & ")"
+                                                Text: ="Out with people (" & CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status = "Issued")) & ")"
                                                 Wrap: =false
                                           - txtInvCntOutNone:
                                               Control: ModernText
@@ -947,7 +947,7 @@ Screens:
                                                 PaddingTop: =0
                                                 Size: =12
                                                 Text: ="None"
-                                                Visible: =IsEmpty(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status = "Issued"))
+                                                Visible: =IsEmpty(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status = "Issued"))
                                                 Wrap: =false
                                           - galInvCntOut:
                                               Control: Gallery
@@ -955,8 +955,8 @@ Screens:
                                               Properties:
                                                 AccessibleLabel: ="Out with people"
                                                 FillPortions: =0
-                                                Height: =Min(CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status = "Issued")), 12) * 40
-                                                Items: =SortByColumns(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status = "Issued"), "Title")
+                                                Height: =Min(CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status = "Issued")), 12) * 40
+                                                Items: =SortByColumns(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status = "Issued"), "Title")
                                                 LayoutMinHeight: =0
                                                 LayoutMinWidth: =0
                                                 TabIndex: =0
@@ -986,7 +986,7 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =12
-                                                            Text: =ThisItem.Title
+                                                            Text: =ThisItem.'Asset Tag'
                                                             Wrap: =false
                                                       - txtInvCntOutInfo:
                                                           Control: ModernText
@@ -999,7 +999,7 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =11
-                                                            Text: =fxPersonName(ThisItem.CurrentHolderName)
+                                                            Text: =fxPersonName(ThisItem.'Current Holder Name')
                                                             Wrap: =false
                                     - conInvCntFound:
                                         Control: GroupContainer
@@ -1034,7 +1034,7 @@ Screens:
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
                                                 Size: =14
-                                                Text: ="Found (" & CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), ID in colInvCntScanned.ID)) & ")"
+                                                Text: ="Found (" & CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), ID in colInvCntScanned.ID)) & ")"
                                                 Wrap: =false
                                           - txtInvCntFoundNone:
                                               Control: ModernText
@@ -1048,7 +1048,7 @@ Screens:
                                                 PaddingTop: =0
                                                 Size: =12
                                                 Text: ="None"
-                                                Visible: =IsEmpty(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), ID in colInvCntScanned.ID))
+                                                Visible: =IsEmpty(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), ID in colInvCntScanned.ID))
                                                 Wrap: =false
                                           - galInvCntFound:
                                               Control: Gallery
@@ -1056,8 +1056,8 @@ Screens:
                                               Properties:
                                                 AccessibleLabel: ="Found"
                                                 FillPortions: =0
-                                                Height: =Min(CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), ID in colInvCntScanned.ID)), 12) * 40
-                                                Items: =SortByColumns(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), ID in colInvCntScanned.ID), "Title")
+                                                Height: =Min(CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), ID in colInvCntScanned.ID)), 12) * 40
+                                                Items: =SortByColumns(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), ID in colInvCntScanned.ID), "Title")
                                                 LayoutMinHeight: =0
                                                 LayoutMinWidth: =0
                                                 TabIndex: =0
@@ -1087,7 +1087,7 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =12
-                                                            Text: =ThisItem.Title
+                                                            Text: =ThisItem.'Asset Tag'
                                                             Wrap: =false
                                                       - txtInvCntFoundInfo:
                                                           Control: ModernText
@@ -1100,7 +1100,7 @@ Screens:
                                                             PaddingLeft: =0
                                                             PaddingTop: =0
                                                             Size: =11
-                                                            Text: =Coalesce(ThisItem.CatalogNameSnapshot, "")
+                                                            Text: =Coalesce(ThisItem.'Catalog Name Snapshot', "")
                                                             Wrap: =false
                               - conInvCntBtns:
                                   Control: GroupContainer
@@ -1148,7 +1148,7 @@ Screens:
                                             =UpdateContext({locBusy: true});
                                             IfError(
                                                 With(
-                                                    {raw: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "ExportCsv", name: "Count " & If(locCnt.Scope = "Department", locCnt.Dept, locCnt.Value), csv: "Result,Asset Tag,Serial Number,Catalog Item,Model,Department,Status,Home Location,Held By" & Char(13) & Char(10) & Concat(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), ID in colInvCntScanned.ID), fxCsv("Found") & "," & fxCsv(Title) & "," & fxCsv(Coalesce(SerialNumber, "")) & "," & fxCsv(Coalesce(CatalogNameSnapshot, "")) & "," & fxCsv(Trim(Coalesce(Make, "") & " " & Coalesce(Model, ""))) & "," & fxCsv(Dept) & "," & fxCsv(Status) & "," & fxCsv(Coalesce(HomeLocation, "")) & "," & fxCsv(Coalesce(CurrentHolderName, "")) & Char(13) & Char(10)) & Concat(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued"), fxCsv("Missing") & "," & fxCsv(Title) & "," & fxCsv(Coalesce(SerialNumber, "")) & "," & fxCsv(Coalesce(CatalogNameSnapshot, "")) & "," & fxCsv(Trim(Coalesce(Make, "") & " " & Coalesce(Model, ""))) & "," & fxCsv(Dept) & "," & fxCsv(Status) & "," & fxCsv(Coalesce(HomeLocation, "")) & "," & fxCsv(Coalesce(CurrentHolderName, "")) & Char(13) & Char(10)) & Concat(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)).ID)), fxCsv("Unexpected here") & "," & fxCsv(Title) & "," & fxCsv(Coalesce(SerialNumber, "")) & "," & fxCsv(Coalesce(CatalogNameSnapshot, "")) & "," & fxCsv(Trim(Coalesce(Make, "") & " " & Coalesce(Model, ""))) & "," & fxCsv(Dept) & "," & fxCsv(Status) & "," & fxCsv(Coalesce(HomeLocation, "")) & "," & fxCsv(Coalesce(CurrentHolderName, "")) & Char(13) & Char(10)) & Concat(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status = "Issued"), fxCsv("Out with people") & "," & fxCsv(Title) & "," & fxCsv(Coalesce(SerialNumber, "")) & "," & fxCsv(Coalesce(CatalogNameSnapshot, "")) & "," & fxCsv(Trim(Coalesce(Make, "") & " " & Coalesce(Model, ""))) & "," & fxCsv(Dept) & "," & fxCsv(Status) & "," & fxCsv(Coalesce(HomeLocation, "")) & "," & fxCsv(Coalesce(CurrentHolderName, "")) & Char(13) & Char(10))})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
+                                                    {raw: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "ExportCsv", name: "Count " & If(locCnt.Scope = "Department", locCnt.Dept, locCnt.Value), csv: "Result,Asset Tag,Serial Number,Catalog Item,Model,Department,Status,Home Location,Held By" & Char(13) & Char(10) & Concat(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), ID in colInvCntScanned.ID), fxCsv("Found") & "," & fxCsv('Asset Tag') & "," & fxCsv(Coalesce('Serial Number', "")) & "," & fxCsv(Coalesce('Catalog Name Snapshot', "")) & "," & fxCsv(Trim(Coalesce(Make, "") & " " & Coalesce(Model, ""))) & "," & fxCsv(Dept) & "," & fxCsv(Status) & "," & fxCsv(Coalesce('Home Location', "")) & "," & fxCsv(Coalesce('Current Holder Name', "")) & Char(13) & Char(10)) & Concat(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued"), fxCsv("Missing") & "," & fxCsv('Asset Tag') & "," & fxCsv(Coalesce('Serial Number', "")) & "," & fxCsv(Coalesce('Catalog Name Snapshot', "")) & "," & fxCsv(Trim(Coalesce(Make, "") & " " & Coalesce(Model, ""))) & "," & fxCsv(Dept) & "," & fxCsv(Status) & "," & fxCsv(Coalesce('Home Location', "")) & "," & fxCsv(Coalesce('Current Holder Name', "")) & Char(13) & Char(10)) & Concat(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)).ID)), fxCsv("Unexpected here") & "," & fxCsv('Asset Tag') & "," & fxCsv(Coalesce('Serial Number', "")) & "," & fxCsv(Coalesce('Catalog Name Snapshot', "")) & "," & fxCsv(Trim(Coalesce(Make, "") & " " & Coalesce(Model, ""))) & "," & fxCsv(Dept) & "," & fxCsv(Status) & "," & fxCsv(Coalesce('Home Location', "")) & "," & fxCsv(Coalesce('Current Holder Name', "")) & Char(13) & Char(10)) & Concat(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status = "Issued"), fxCsv("Out with people") & "," & fxCsv('Asset Tag') & "," & fxCsv(Coalesce('Serial Number', "")) & "," & fxCsv(Coalesce('Catalog Name Snapshot', "")) & "," & fxCsv(Trim(Coalesce(Make, "") & " " & Coalesce(Model, ""))) & "," & fxCsv(Dept) & "," & fxCsv(Status) & "," & fxCsv(Coalesce('Home Location', "")) & "," & fxCsv(Coalesce('Current Holder Name', "")) & Char(13) & Char(10))})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                     If(
                                                         Text(raw.status) = "Success",
                                                         Notify(Text(raw.message) & " Opening it now.", NotificationType.Success); Launch(Text(raw.number)),
@@ -1174,9 +1174,9 @@ Screens:
                                                 With(
                                                     {raw: ParseJSON(With({invPl: JSON({
                                                         actionVersion: fxInvActionVersion, action: "CountSave", countId: Coalesce(locCnt.Id, 0), department: locCnt.Dept, scope: locCnt.Scope, scopeValue: locCnt.Value,
-                                                        scannedTags: Concat(colInvCntScanned, Title, ", "), complete: false, foundIds: ForAll(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), ID in colInvCntScanned.ID), ID),
-                                                        found: CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), ID in colInvCntScanned.ID)), missing: CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued")), unexpected: CountRows(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)).ID))),
-                                                        summary: "Missing: " & Concat(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued"), Title, ", ") & " | Unexpected: " & Concat(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)).ID)), Title & " (listed " & Coalesce(HomeLocation, Dept) & ")", ", ") & " | Out with people: " & Concat(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status = "Issued"), Title & " (" & CurrentHolderName & ")", ", ")
+                                                        scannedTags: Concat(colInvCntScanned, 'Asset Tag', ", "), complete: false, foundIds: ForAll(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), ID in colInvCntScanned.ID), ID),
+                                                        found: CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), ID in colInvCntScanned.ID)), missing: CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued")), unexpected: CountRows(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)).ID))),
+                                                        summary: "Missing: " & Concat(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued"), 'Asset Tag', ", ") & " | Unexpected: " & Concat(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)).ID)), 'Asset Tag' & " (listed " & Coalesce('Home Location', Dept) & ")", ", ") & " | Out with people: " & Concat(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status = "Issued"), 'Asset Tag' & " (" & 'Current Holder Name' & ")", ", ")
                                                     })}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                     UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}});
                                                     If(Text(raw.status) = "Success", UpdateContext({locCnt: Patch(locCnt, {Id: Value(raw.id)})}))
@@ -1201,9 +1201,9 @@ Screens:
                                                 With(
                                                     {raw: ParseJSON(With({invPl: JSON({
                                                         actionVersion: fxInvActionVersion, action: "CountSave", countId: Coalesce(locCnt.Id, 0), department: locCnt.Dept, scope: locCnt.Scope, scopeValue: locCnt.Value,
-                                                        scannedTags: Concat(colInvCntScanned, Title, ", "), complete: true, foundIds: ForAll(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), ID in colInvCntScanned.ID), ID),
-                                                        found: CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), ID in colInvCntScanned.ID)), missing: CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued")), unexpected: CountRows(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)).ID))),
-                                                        summary: "Missing: " & Concat(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued"), Title, ", ") & " | Unexpected: " & Concat(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)).ID)), Title & " (listed " & Coalesce(HomeLocation, Dept) & ")", ", ") & " | Out with people: " & Concat(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && IsActive && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || HomeLocation = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status = "Issued"), Title & " (" & CurrentHolderName & ")", ", ")
+                                                        scannedTags: Concat(colInvCntScanned, 'Asset Tag', ", "), complete: true, foundIds: ForAll(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), ID in colInvCntScanned.ID), ID),
+                                                        found: CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), ID in colInvCntScanned.ID)), missing: CountRows(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued")), unexpected: CountRows(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)).ID))),
+                                                        summary: "Missing: " & Concat(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status <> "Issued"), 'Asset Tag', ", ") & " | Unexpected: " & Concat(Filter(colInvCntScanned, !(ID in Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)).ID)), 'Asset Tag' & " (listed " & Coalesce('Home Location', Dept) & ")", ", ") & " | Out with people: " & Concat(Filter(Filter(gblInvAssets, Dept = locCnt.Dept && 'Is Active' && !(Status in ["Retired", "Lost", "Disposed"]) && (locCnt.Scope = "Department" || 'Home Location' = locCnt.Value)), !(ID in colInvCntScanned.ID) && Status = "Issued"), 'Asset Tag' & " (" & 'Current Holder Name' & ")", ", ")
                                                     })}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                     UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}});
                                                     If(Text(raw.status) = "Success", UpdateContext({locCnt: Patch(locCnt, {Id: Value(raw.id)})}))
@@ -1409,7 +1409,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =13
-                                                      Text: =ThisItem.ScopeValue & " (" & ThisItem.Department.Value & ")  ·  " & ThisItem.CountStatus.Value
+                                                      Text: =ThisItem.'Scope Value' & " (" & ThisItem.Department.Value & ")  ·  " & ThisItem.'Count Status'.Value
                                                       Wrap: =false
                                                 - txtInvCntRecentNums:
                                                     Control: ModernText
@@ -1422,7 +1422,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =12
-                                                      Text: =Text(ThisItem.Created, "mmm d, yyyy") & "  ·  " & fxPersonName(ThisItem.StartedByName) & "  ·  found " & ThisItem.FoundCount & ", missing " & ThisItem.MissingCount & ", unexpected " & ThisItem.UnexpectedCount
+                                                      Text: =Text(ThisItem.Created, "mmm d, yyyy") & "  ·  " & fxPersonName(ThisItem.'Started By Name') & "  ·  found " & ThisItem.'Found Count' & ", missing " & ThisItem.'Missing Count' & ", unexpected " & ThisItem.'Unexpected Count'
                                                       Wrap: =false
                                           - btnInvCntResume:
                                               Control: ModernButton
@@ -1433,7 +1433,7 @@ Screens:
                                                 Icon: ="Play"
                                                 LayoutMinWidth: =0
                                                 OnSelect: |-
-                                                  =Clear(colInvCntScanned); Collect(colInvCntScanned, Filter(gblInvAssets, Title in Split(ThisItem.ScannedTags, ", ").Value)); UpdateContext({locCnt: {Id: ThisItem.ID, Dept: ThisItem.Department.Value, Scope: ThisItem.Scope.Value, Value: ThisItem.ScopeValue}})
+                                                  =Clear(colInvCntScanned); Collect(colInvCntScanned, Filter(gblInvAssets, 'Asset Tag' in Split(ThisItem.'Scanned Tags', ", ").Value)); UpdateContext({locCnt: {Id: ThisItem.ID, Dept: ThisItem.Department.Value, Scope: ThisItem.Scope.Value, Value: ThisItem.'Scope Value'}})
                                                 Text: ="Resume"
-                                                Visible: =ThisItem.CountStatus.Value = "Open" && fxIsInvStaff && IsBlank(locCnt)
+                                                Visible: =ThisItem.'Count Status'.Value = "Open" && fxIsInvStaff && IsBlank(locCnt)
                                                 Width: =110

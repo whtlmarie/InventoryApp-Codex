@@ -203,10 +203,10 @@ Screens:
                                 Refresh(InventoryCheckouts);
                                 Refresh(InventoryReservations);
                                 Refresh(InventoryReceipts);
-                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, AssetStatus.Value, Kind, AssetKind.Value));
-                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, CheckoutStatus.Value = "Active" || CheckoutStatus.Value = "Awaiting Acknowledgement" || CheckoutStatus.Value = "Return Required"), Status, CheckoutStatus.Value));
-                                Set(gblInvReserved, Filter(InventoryReservations, ReservationStatus.Value = "Reserved"));
-                                Set(gblInvLines, Filter(RequestEquipment, NeedsInventoryAction = true));
+                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, 'Asset Status'.Value, Kind, 'Asset Kind'.Value));
+                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, 'Checkout Status'.Value = "Active" || 'Checkout Status'.Value = "Awaiting Acknowledgement" || 'Checkout Status'.Value = "Return Required"), Status, 'Checkout Status'.Value));
+                                Set(gblInvReserved, Filter(InventoryReservations, 'Reservation Status'.Value = "Reserved"));
+                                Set(gblInvLines, Filter(RequestEquipment, 'Needs Inventory Action' = true));
                                 Set(gblInvLoadedAt, Now());
                                 Set(gblInvLoading, false)
                               Text: ="Reload"
@@ -283,12 +283,12 @@ Screens:
                                               gblInvAssets,
                                               (locAstDept = "All" || Dept = locAstDept) &&
                                               ((locAstStatus = "All" && Status <> "Disposed") || Status = locAstStatus) &&
-                                              (!chkInvAstNoCat.Checked || Coalesce(CatalogItemId, 0) = 0) &&
-                                              (IsBlank(Trim(txtInvAstSearch.Text)) || Trim(txtInvAstSearch.Text) in Title || Trim(txtInvAstSearch.Text) in SerialNumber || Trim(txtInvAstSearch.Text) in Make || Trim(txtInvAstSearch.Text) in Model ||
-                                                  Trim(txtInvAstSearch.Text) in CatalogNameSnapshot || Trim(txtInvAstSearch.Text) in CurrentHolderName)
+                                              (!chkInvAstNoCat.Checked || Coalesce('Catalog Item Id', 0) = 0) &&
+                                              (IsBlank(Trim(txtInvAstSearch.Text)) || Trim(txtInvAstSearch.Text) in 'Asset Tag' || Trim(txtInvAstSearch.Text) in 'Serial Number' || Trim(txtInvAstSearch.Text) in Make || Trim(txtInvAstSearch.Text) in Model ||
+                                                  Trim(txtInvAstSearch.Text) in 'Catalog Name Snapshot' || Trim(txtInvAstSearch.Text) in 'Current Holder Name')
                                           ),
                                           "Title"
-                                      ), fxCsv(Title) & "," & fxCsv(Coalesce(SerialNumber, "")) & "," & fxCsv(Dept) & "," & fxCsv(fxOrgAccount(Dept)) & "," & fxCsv(Kind) & "," & fxCsv(Coalesce(CatalogNameSnapshot, "")) & "," & fxCsv(Coalesce(Make, "")) & "," & fxCsv(Coalesce(Model, "")) & "," & fxCsv(Status) & "," & fxCsv(Coalesce(Condition.Value, "")) & "," & fxCsv(Coalesce(HomeLocation, "")) & "," & fxCsv(Coalesce(CurrentHolderName, "")) & "," & fxCsv(Coalesce(CurrentHolderEmail, "")) & "," & fxCsv(If(IsBlank(LastVerifiedDate), "", Text(LastVerifiedDate, "yyyy-mm-dd"))) & "," & fxCsv(If(IsBlank(PurchaseDate), "", Text(PurchaseDate, "yyyy-mm-dd"))) & "," & fxCsv(If(IsBlank(WarrantyEnd), "", Text(WarrantyEnd, "yyyy-mm-dd"))) & "," & fxCsv(Coalesce(Notes, "")), Char(13) & Char(10))})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
+                                      ), fxCsv('Asset Tag') & "," & fxCsv(Coalesce('Serial Number', "")) & "," & fxCsv(Dept) & "," & fxCsv(fxOrgAccount(Dept)) & "," & fxCsv(Kind) & "," & fxCsv(Coalesce('Catalog Name Snapshot', "")) & "," & fxCsv(Coalesce(Make, "")) & "," & fxCsv(Coalesce(Model, "")) & "," & fxCsv(Status) & "," & fxCsv(Coalesce(Condition.Value, "")) & "," & fxCsv(Coalesce('Home Location', "")) & "," & fxCsv(Coalesce('Current Holder Name', "")) & "," & fxCsv(Coalesce('Current Holder Email', "")) & "," & fxCsv(If(IsBlank('Last Verified Date'), "", Text('Last Verified Date', "yyyy-mm-dd"))) & "," & fxCsv(If(IsBlank('Purchase Date'), "", Text('Purchase Date', "yyyy-mm-dd"))) & "," & fxCsv(If(IsBlank('Warranty End'), "", Text('Warranty End', "yyyy-mm-dd"))) & "," & fxCsv(Coalesce(Notes, "")), Char(13) & Char(10))})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                               If(
                                                   Text(raw.status) = "Success",
                                                   Notify(Text(raw.message) & " Opening it now.", NotificationType.Success); Launch(Text(raw.number)),
@@ -403,13 +403,13 @@ Screens:
                                                 If(
                                                     !IsBlank(code),
                                                     With(
-                                                        {exact: Coalesce(LookUp(gblInvAssets, Lower(Title) = code), LookUp(gblInvAssets, Lower(Coalesce(SerialNumber, "")) = code))},
+                                                        {exact: Coalesce(LookUp(gblInvAssets, Lower('Asset Tag') = code), LookUp(gblInvAssets, Lower(Coalesce('Serial Number', "")) = code))},
                                                         If(
                                                             !IsBlank(exact),
                                                             UpdateContext({locScanMsg: "", locScanMatches: Blank()});
                                                             With({hit: exact}, Set(gblInvAssetId, hit.ID); Navigate(scrInvAsset, ScreenTransition.None)),
                                                             With(
-                                                                {m: FirstN(SortByColumns(Filter(gblInvAssets, code in Lower(Title) || code in Lower(Coalesce(SerialNumber, ""))), "Title"), 6)},
+                                                                {m: FirstN(SortByColumns(Filter(gblInvAssets, code in Lower('Asset Tag') || code in Lower(Coalesce('Serial Number', ""))), "Title"), 6)},
                                                                 If(
                                                                     IsEmpty(m), UpdateContext({locScanMsg: "No asset tag or serial number contains " & Trim(Self.Text) & ".", locScanMatches: Blank()}),
                                                                     CountRows(m) = 1, UpdateContext({locScanMsg: "", locScanMatches: Blank()}); With({hit: First(m)}, Set(gblInvAssetId, hit.ID); Navigate(scrInvAsset, ScreenTransition.None)),
@@ -443,7 +443,7 @@ Screens:
                                     - btnInvAstScanPick:
                                         Control: ModernButton
                                         Properties:
-                                          AccessibleLabel: ="Use " & ThisItem.Title
+                                          AccessibleLabel: ="Use " & ThisItem.'Asset Tag'
                                           Align: =Align.Left
                                           Appearance: =ButtonAppearance.Secondary
                                           Height: =34
@@ -451,7 +451,7 @@ Screens:
                                           Layout: =ButtonLayout.IconAfter
                                           OnSelect: |-
                                             =UpdateContext({locScanMatches: Blank(), locScanMsg: ""}); With({hit: ThisItem}, Set(gblInvAssetId, hit.ID); Navigate(scrInvAsset, ScreenTransition.None))
-                                          Text: =ThisItem.Title & "   ·   " & Coalesce(ThisItem.CatalogNameSnapshot, "Equipment") & "   ·   " & ThisItem.Status
+                                          Text: =ThisItem.'Asset Tag' & "   ·   " & Coalesce(ThisItem.'Catalog Name Snapshot', "Equipment") & "   ·   " & ThisItem.Status
                                           Width: =Parent.TemplateWidth - 4
                               - txtInvAstScanMsg:
                                   Control: ModernText
@@ -598,7 +598,7 @@ Screens:
                                     AccessibleLabel: ="Catalog item for the selected assets"
                                     Appearance: =Appearance.Outline
                                     Height: =36
-                                    ItemDisplayText: =ThisItem.Title
+                                    ItemDisplayText: =ThisItem.'Equipment Name'
                                     Items: =fxInvCatalog
                                     LayoutMinWidth: =0
                                     Width: =300
@@ -733,9 +733,9 @@ Screens:
                                               gblInvAssets,
                                               (locAstDept = "All" || Dept = locAstDept) &&
                                               ((locAstStatus = "All" && Status <> "Disposed") || Status = locAstStatus) &&
-                                              (!chkInvAstNoCat.Checked || Coalesce(CatalogItemId, 0) = 0) &&
-                                              (IsBlank(Trim(txtInvAstSearch.Text)) || Trim(txtInvAstSearch.Text) in Title || Trim(txtInvAstSearch.Text) in SerialNumber || Trim(txtInvAstSearch.Text) in Make || Trim(txtInvAstSearch.Text) in Model ||
-                                                  Trim(txtInvAstSearch.Text) in CatalogNameSnapshot || Trim(txtInvAstSearch.Text) in CurrentHolderName)
+                                              (!chkInvAstNoCat.Checked || Coalesce('Catalog Item Id', 0) = 0) &&
+                                              (IsBlank(Trim(txtInvAstSearch.Text)) || Trim(txtInvAstSearch.Text) in 'Asset Tag' || Trim(txtInvAstSearch.Text) in 'Serial Number' || Trim(txtInvAstSearch.Text) in Make || Trim(txtInvAstSearch.Text) in Model ||
+                                                  Trim(txtInvAstSearch.Text) in 'Catalog Name Snapshot' || Trim(txtInvAstSearch.Text) in 'Current Holder Name')
                                           ),
                                           "Title"
                                       )
@@ -768,7 +768,7 @@ Screens:
                                           - chkInvAstPick:
                                               Control: ModernCheckbox
                                               Properties:
-                                                AccessibleLabel: ="Select " & ThisItem.Title
+                                                AccessibleLabel: ="Select " & ThisItem.'Asset Tag'
                                                 Default: =ThisItem.ID in colInvAstSel.ID
                                                 Label: =""
                                                 LayoutMinWidth: =0
@@ -789,7 +789,7 @@ Screens:
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
                                                 Size: =13
-                                                Text: =ThisItem.Title
+                                                Text: =ThisItem.'Asset Tag'
                                                 Width: =140
                                                 Wrap: =false
                                           - conInvAstRowText:
@@ -815,7 +815,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =13
-                                                      Text: =Coalesce(ThisItem.CatalogNameSnapshot, "Not linked to a catalog item") & If(IsBlank(Trim(ThisItem.Make & ThisItem.Model)), "", "  ·  " & Trim(ThisItem.Make & " " & ThisItem.Model))
+                                                      Text: =Coalesce(ThisItem.'Catalog Name Snapshot', "Not linked to a catalog item") & If(IsBlank(Trim(ThisItem.Make & ThisItem.Model)), "", "  ·  " & Trim(ThisItem.Make & " " & ThisItem.Model))
                                                       Wrap: =false
                                                 - txtInvAstMeta:
                                                     Control: ModernText
@@ -828,7 +828,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =12
-                                                      Text: =ThisItem.Dept & "  ·  " & ThisItem.Kind & If(IsBlank(ThisItem.CurrentHolderName), "", "  ·  With " & fxPersonName(ThisItem.CurrentHolderName))
+                                                      Text: =ThisItem.Dept & "  ·  " & ThisItem.Kind & If(IsBlank(ThisItem.'Current Holder Name'), "", "  ·  With " & fxPersonName(ThisItem.'Current Holder Name'))
                                                       Wrap: =false
                                           - txtInvAstStatus:
                                               Control: ModernText
@@ -855,7 +855,7 @@ Screens:
                                           - btnInvAstOpen:
                                               Control: ModernButton
                                               Properties:
-                                                AccessibleLabel: ="Open " & ThisItem.Title
+                                                AccessibleLabel: ="Open " & ThisItem.'Asset Tag'
                                                 Appearance: =ButtonAppearance.Subtle
                                                 Height: =36
                                                 Icon: ="ChevronRight"

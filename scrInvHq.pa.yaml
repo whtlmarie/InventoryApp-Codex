@@ -200,10 +200,10 @@ Screens:
                                 Refresh(InventoryCheckouts);
                                 Refresh(InventoryReservations);
                                 Refresh(InventoryReceipts);
-                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, AssetStatus.Value, Kind, AssetKind.Value));
-                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, CheckoutStatus.Value = "Active" || CheckoutStatus.Value = "Awaiting Acknowledgement" || CheckoutStatus.Value = "Return Required"), Status, CheckoutStatus.Value));
-                                Set(gblInvReserved, Filter(InventoryReservations, ReservationStatus.Value = "Reserved"));
-                                Set(gblInvLines, Filter(RequestEquipment, NeedsInventoryAction = true));
+                                Set(gblInvAssets, AddColumns(ForAll(InventoryAssets, ThisRecord), Dept, Department.Value, Status, 'Asset Status'.Value, Kind, 'Asset Kind'.Value));
+                                Set(gblInvOpenCheckouts, AddColumns(Filter(InventoryCheckouts, 'Checkout Status'.Value = "Active" || 'Checkout Status'.Value = "Awaiting Acknowledgement" || 'Checkout Status'.Value = "Return Required"), Status, 'Checkout Status'.Value));
+                                Set(gblInvReserved, Filter(InventoryReservations, 'Reservation Status'.Value = "Reserved"));
+                                Set(gblInvLines, Filter(RequestEquipment, 'Needs Inventory Action' = true));
                                 Set(gblInvLoadedAt, Now());
                                 Set(gblInvLoading, false)
                               Text: ="Reload"
@@ -439,7 +439,7 @@ Screens:
                                             =UpdateContext({locBusy: true});
                                             IfError(
                                                 With(
-                                                    {raw: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "ExportCsv", name: "HQ comparison", csv: "Result,HQ Serial,HQ Custodian,HQ Item Desc,HQ Mfr,HQ Model,HQ Location,Our Tag,Our Location,Notes" & Char(13) & Char(10) & Concat(colInvHqOnlyHq, fxCsv("On the HQ list, not in our inventory") & "," & fxCsv(Serial) & "," & fxCsv(Custodian) & "," & fxCsv(Desc) & "," & fxCsv(Mfr) & "," & fxCsv(Model) & "," & fxCsv(Location) & "," & fxCsv("") & "," & fxCsv("") & "," & fxCsv("Find it, or add it to Assets") & Char(13) & Char(10)) & Concat(colInvHqDiff, fxCsv("On both lists, but different") & "," & fxCsv(Serial) & "," & fxCsv(Custodian) & "," & fxCsv(Desc) & "," & fxCsv(Mfr) & "," & fxCsv(Model) & "," & fxCsv(Location) & "," & fxCsv(Coalesce(OurTag, "")) & "," & fxCsv(Coalesce(OurLoc, "")) & "," & fxCsv(Coalesce(OurStatus, "") & If(Dept <> OurDept, " | account " & OurDept, "")) & Char(13) & Char(10)) & Concat(colInvHqMatch, fxCsv("On both lists and matching") & "," & fxCsv(Serial) & "," & fxCsv(Custodian) & "," & fxCsv(Desc) & "," & fxCsv(Mfr) & "," & fxCsv(Model) & "," & fxCsv(Location) & "," & fxCsv(Coalesce(OurTag, "")) & "," & fxCsv("") & "," & fxCsv(With({a: LookUp(gblInvAssets, ID = OurId)}, If(IsBlank(a.LastVerifiedDate), "Not counted yet", "Counted " & Text(a.LastVerifiedDate, "yyyy-mm-dd")))) & Char(13) & Char(10)) & Concat(colInvHqOnlyOurs, fxCsv("In our inventory, not on the HQ list") & "," & fxCsv(Coalesce(SerialNumber, "")) & "," & fxCsv(fxOrgAccount(Dept)) & "," & fxCsv(Coalesce(CatalogNameSnapshot, "")) & "," & fxCsv(Coalesce(Make, "")) & "," & fxCsv(Coalesce(Model, "")) & "," & fxCsv("") & "," & fxCsv(Title) & "," & fxCsv(Coalesce(HomeLocation, "")) & "," & fxCsv(Status & " | report to HQ") & Char(13) & Char(10))})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
+                                                    {raw: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "ExportCsv", name: "HQ comparison", csv: "Result,HQ Serial,HQ Custodian,HQ Item Desc,HQ Mfr,HQ Model,HQ Location,Our Tag,Our Location,Notes" & Char(13) & Char(10) & Concat(colInvHqOnlyHq, fxCsv("On the HQ list, not in our inventory") & "," & fxCsv(Serial) & "," & fxCsv(Custodian) & "," & fxCsv(Desc) & "," & fxCsv(Mfr) & "," & fxCsv(Model) & "," & fxCsv(Location) & "," & fxCsv("") & "," & fxCsv("") & "," & fxCsv("Find it, or add it to Assets") & Char(13) & Char(10)) & Concat(colInvHqDiff, fxCsv("On both lists, but different") & "," & fxCsv(Serial) & "," & fxCsv(Custodian) & "," & fxCsv(Desc) & "," & fxCsv(Mfr) & "," & fxCsv(Model) & "," & fxCsv(Location) & "," & fxCsv(Coalesce(OurTag, "")) & "," & fxCsv(Coalesce(OurLoc, "")) & "," & fxCsv(Coalesce(OurStatus, "") & If(Dept <> OurDept, " | account " & OurDept, "")) & Char(13) & Char(10)) & Concat(colInvHqMatch, fxCsv("On both lists and matching") & "," & fxCsv(Serial) & "," & fxCsv(Custodian) & "," & fxCsv(Desc) & "," & fxCsv(Mfr) & "," & fxCsv(Model) & "," & fxCsv(Location) & "," & fxCsv(Coalesce(OurTag, "")) & "," & fxCsv("") & "," & fxCsv(With({a: LookUp(gblInvAssets, ID = OurId)}, If(IsBlank(a.'Last Verified Date'), "Not counted yet", "Counted " & Text(a.'Last Verified Date', "yyyy-mm-dd")))) & Char(13) & Char(10)) & Concat(colInvHqOnlyOurs, fxCsv("In our inventory, not on the HQ list") & "," & fxCsv(Coalesce('Serial Number', "")) & "," & fxCsv(fxOrgAccount(Dept)) & "," & fxCsv(Coalesce('Catalog Name Snapshot', "")) & "," & fxCsv(Coalesce(Make, "")) & "," & fxCsv(Coalesce(Model, "")) & "," & fxCsv("") & "," & fxCsv('Asset Tag') & "," & fxCsv(Coalesce('Home Location', "")) & "," & fxCsv(Status & " | report to HQ") & Char(13) & Char(10))})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
                                                     If(
                                                         Text(raw.status) = "Success",
                                                         Notify(Text(raw.message) & " Opening it now.", NotificationType.Success); Launch(Text(raw.number)),
@@ -510,7 +510,7 @@ Screens:
                                                                     colInvHqOurs,
                                                                     AddColumns(
                                                                         Filter(gblInvAssets, Dept in Distinct(colInvHqList, Dept).Value && Status <> "Retired"),
-                                                                        Key, Lower(Trim(Coalesce(SerialNumber, Title)))
+                                                                        Key, Lower(Trim(Coalesce('Serial Number', 'Asset Tag')))
                                                                     )
                                                                 );
                                                                 ClearCollect(colInvHqOnlyHq, Filter(colInvHqList, !(Key in colInvHqOurs.Key)));
@@ -520,8 +520,8 @@ Screens:
                                                                     Filter(
                                                                         AddColumns(
                                                                             Filter(colInvHqList, Key in colInvHqOurs.Key),
-                                                                            OurTag, With({kk: Key}, LookUp(colInvHqOurs, Key = kk).Title),
-                                                                            OurLoc, With({kk: Key}, Coalesce(LookUp(colInvHqOurs, Key = kk).HomeLocation, "")),
+                                                                            OurTag, With({kk: Key}, LookUp(colInvHqOurs, Key = kk).'Asset Tag'),
+                                                                            OurLoc, With({kk: Key}, Coalesce(LookUp(colInvHqOurs, Key = kk).'Home Location', "")),
                                                                             OurModel, With({kk: Key}, Coalesce(LookUp(colInvHqOurs, Key = kk).Model, "")),
                                                                             OurDept, With({kk: Key}, LookUp(colInvHqOurs, Key = kk).Dept),
                                                                             OurStatus, With({kk: Key}, LookUp(colInvHqOurs, Key = kk).Status)
@@ -536,7 +536,7 @@ Screens:
                                                                     AddColumns(
                                                                         Filter(colInvHqList, Key in colInvHqOurs.Key && !(Key in colInvHqDiff.Key)),
                                                                         OurId, With({kk: Key}, LookUp(colInvHqOurs, Key = kk).ID),
-                                                                        OurTag, With({kk: Key}, LookUp(colInvHqOurs, Key = kk).Title)
+                                                                        OurTag, With({kk: Key}, LookUp(colInvHqOurs, Key = kk).'Asset Tag')
                                                                     )
                                                                 );
                                                                 UpdateContext({locHqDone: true, locHqWhen: Now()})
@@ -864,7 +864,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =12
-                                                      Text: =ThisItem.Title & "  ·  " & Coalesce(ThisItem.CatalogNameSnapshot, "Equipment") & If(IsBlank(Trim(ThisItem.Make & ThisItem.Model)), "", "  ·  " & Trim(ThisItem.Make & " " & ThisItem.Model))
+                                                      Text: =ThisItem.'Asset Tag' & "  ·  " & Coalesce(ThisItem.'Catalog Name Snapshot', "Equipment") & If(IsBlank(Trim(ThisItem.Make & ThisItem.Model)), "", "  ·  " & Trim(ThisItem.Make & " " & ThisItem.Model))
                                                       Wrap: =false
                                                 - txtInvHqOnlyOursL2:
                                                     Control: ModernText
@@ -877,7 +877,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =11
-                                                      Text: =ThisItem.Dept & "  ·  " & ThisItem.Status & If(IsBlank(ThisItem.HomeLocation), "", "  ·  " & ThisItem.HomeLocation) & "  ·  report to HQ"
+                                                      Text: =ThisItem.Dept & "  ·  " & ThisItem.Status & If(IsBlank(ThisItem.'Home Location'), "", "  ·  " & ThisItem.'Home Location') & "  ·  report to HQ"
                                                       Wrap: =false
                         - conInvHqSince:
                             Control: GroupContainer
@@ -929,7 +929,7 @@ Screens:
                                     PaddingTop: =0
                                     Size: =12
                                     Text: |-
-                                      =With({v: AddColumns(colInvHqMatch, A, LookUp(gblInvAssets, ID = OurId))}, CountRows(Filter(v, !IsBlank(A.LastVerifiedDate) && A.LastVerifiedDate >= dteInvHqSince.SelectedDate)) & " seen in a count, " & CountRows(Filter(v, (IsBlank(A.LastVerifiedDate) || A.LastVerifiedDate < dteInvHqSince.SelectedDate) && A.Status = "Issued" && LookUp(gblInvOpenCheckouts, AssetId = A.ID).Status = "Active")) & " out on a signed receipt, " & CountRows(Filter(v, (IsBlank(A.LastVerifiedDate) || A.LastVerifiedDate < dteInvHqSince.SelectedDate) && !(A.Status = "Issued" && LookUp(gblInvOpenCheckouts, AssetId = A.ID).Status = "Active"))) & " not yet verified")
+                                      =With({v: AddColumns(colInvHqMatch, A, LookUp(gblInvAssets, ID = OurId))}, CountRows(Filter(v, !IsBlank(A.'Last Verified Date') && A.'Last Verified Date' >= dteInvHqSince.SelectedDate)) & " seen in a count, " & CountRows(Filter(v, (IsBlank(A.'Last Verified Date') || A.'Last Verified Date' < dteInvHqSince.SelectedDate) && A.Status = "Issued" && LookUp(gblInvOpenCheckouts, 'Asset Id' = A.ID).Status = "Active")) & " out on a signed receipt, " & CountRows(Filter(v, (IsBlank(A.'Last Verified Date') || A.'Last Verified Date' < dteInvHqSince.SelectedDate) && !(A.Status = "Issued" && LookUp(gblInvOpenCheckouts, 'Asset Id' = A.ID).Status = "Active"))) & " not yet verified")
                         - conInvHqMatch:
                             Control: GroupContainer
                             Variant: AutoLayout
@@ -1095,7 +1095,7 @@ Screens:
                                                       PaddingTop: =0
                                                       Size: =11
                                                       Text: |-
-                                                        =With({a: LookUp(gblInvAssets, ID = ThisItem.OurId)}, If(!IsBlank(a.LastVerifiedDate) && a.LastVerifiedDate >= dteInvHqSince.SelectedDate, "✔ Seen in a count " & Text(a.LastVerifiedDate, "mmm d, yyyy") & " by " & fxPersonName(a.LastVerifiedBy), a.Status = "Issued" && LookUp(gblInvOpenCheckouts, AssetId = a.ID).Status = "Active", "✔ Out on a signed receipt with " & fxPersonName(a.CurrentHolderName), "Not yet verified: count it, or check who has it") & "  ·  " & Coalesce(a.HomeLocation, ""))
+                                                        =With({a: LookUp(gblInvAssets, ID = ThisItem.OurId)}, If(!IsBlank(a.'Last Verified Date') && a.'Last Verified Date' >= dteInvHqSince.SelectedDate, "✔ Seen in a count " & Text(a.'Last Verified Date', "mmm d, yyyy") & " by " & fxPersonName(a.'Last Verified By'), a.Status = "Issued" && LookUp(gblInvOpenCheckouts, 'Asset Id' = a.ID).Status = "Active", "✔ Out on a signed receipt with " & fxPersonName(a.'Current Holder Name'), "Not yet verified: count it, or check who has it") & "  ·  " & Coalesce(a.'Home Location', ""))
                                                       Wrap: =false
                         - conInvHqDiff:
                             Control: GroupContainer
