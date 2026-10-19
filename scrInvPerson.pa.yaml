@@ -1567,6 +1567,127 @@ Screens:
                                     Text: ="No receipts yet."
                                     Visible: =galInvPerRcpts.AllItemsCount = 0
                                     Wrap: =false
+                              - conInvPerVoid:
+                                  Control: GroupContainer
+                                  Variant: AutoLayout
+                                  Properties:
+                                    BorderColor: =RGBA(164, 38, 44, 1)
+                                    BorderThickness: =1
+                                    DropShadow: =DropShadow.None
+                                    Fill: =RGBA(253, 243, 244, 1)
+                                    FillPortions: =0
+                                    Height: =28 + 6 + 40 + 6 + 36 + 6 + 40 + 24
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =6
+                                    LayoutMinHeight: =0
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =12
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
+                                    PaddingTop: =12
+                                    RadiusBottomLeft: =6
+                                    RadiusBottomRight: =6
+                                    RadiusTopLeft: =6
+                                    RadiusTopRight: =6
+                                    Visible: =!IsBlank(locPerVoid) && fxIsInvStaff
+                                  Children:
+                                    - txtInvPerVoidTitle:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(164, 38, 44, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =28
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =13
+                                          Text: ="Void " & locPerVoid.Title & "?"
+                                          Wrap: =false
+                                    - txtInvPerVoidHelp:
+                                        Control: ModernText
+                                        Properties:
+                                          AccessibleLabel: =Self.Text
+                                          Color: =RGBA(97, 97, 97, 1)
+                                          Height: =40
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =0
+                                          PaddingLeft: =0
+                                          PaddingTop: =0
+                                          Size: =12
+                                          Text: ="Use this when the receipt was issued by mistake and was not signed. Its " & CountRows(Filter(InventoryCheckouts, 'Receipt Id' = locPerVoid.ID && 'Checkout Status'.Value in ["Active", "Awaiting Acknowledgement", "Return Required"])) & " item(s) are checked back in as Good, and the recipient's link will say the receipt was cancelled."
+                                    - txtInvPerVoidReason:
+                                        Control: ModernTextInput
+                                        Properties:
+                                          AccessibleLabel: ="Reason for voiding the receipt"
+                                          AlignInContainer: =AlignInContainer.Stretch
+                                          Appearance: =Appearance.Outline
+                                          Height: =36
+                                          LayoutMinWidth: =0
+                                          Placeholder: ="Reason (required), for example issued to the wrong person"
+                                          Width: =Parent.Width
+                                    - conInvPerVoidBtns:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.None
+                                          FillPortions: =0
+                                          Height: =40
+                                          LayoutAlignItems: =LayoutAlignItems.Center
+                                          LayoutDirection: =LayoutDirection.Horizontal
+                                          LayoutGap: =8
+                                          LayoutJustifyContent: =LayoutJustifyContent.End
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =0
+                                        Children:
+                                          - btnInvPerVoidCancel:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Keep the receipt"
+                                                Appearance: =ButtonAppearance.Secondary
+                                                Height: =36
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =Reset(txtInvPerVoidReason); UpdateContext({locPerVoid: Blank()})
+                                                Text: ="Keep it"
+                                                Width: =110
+                                          - btnInvPerVoidGo:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Void the receipt"
+                                                DisplayMode: =If(locBusy || IsBlank(Trim(txtInvPerVoidReason.Text)), DisplayMode.Disabled, DisplayMode.Edit)
+                                                Height: =36
+                                                Icon: ="DocumentDismiss"
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =// 1) check the items back in (ReturnBatch closes the receipt), 2) mark it Voided (VoidReceipt).
+                                                  UpdateContext({locBusy: true});
+                                                  Refresh(InventoryCheckouts);
+                                                  With(
+                                                      {open: Filter(InventoryCheckouts, 'Receipt Id' = locPerVoid.ID && 'Checkout Status'.Value in ["Active", "Awaiting Acknowledgement", "Return Required"])},
+                                                      If(
+                                                          !IsEmpty(open),
+                                                          IfError(
+                                                              With({raw: ParseJSON('Inventory-Checkout'.Run(JSON({actionVersion: fxInvActionVersion, action: "ReturnBatch", items: ForAll(open As o, {checkoutId: o.ID, condition: "Good", note: "Receipt " & locPerVoid.Title & " voided: " & Trim(txtInvPerVoidReason.Text)})})).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
+                                                              UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again."}})
+                                                          ),
+                                                          UpdateContext({locResult: {Status: "Success", Message: ""}})
+                                                      )
+                                                  );
+                                                  If(
+                                                      locResult.Status = "Success",
+                                                      IfError(
+                                                          With({raw: ParseJSON('Inventory-Checkout'.Run(JSON({actionVersion: fxInvActionVersion, action: "VoidReceipt", receiptId: locPerVoid.ID, reason: Trim(txtInvPerVoidReason.Text)})).response)}, UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message)}})),
+                                                          UpdateContext({locResult: {Status: "Failed", Message: "The items were checked in, but the receipt could not be voided. Try Void again."}})
+                                                      )
+                                                  );
+                                                  UpdateContext({locBusy: false});
+                                                  Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
+                                                  If(locResult.Status = "Success", Reset(txtInvPerVoidReason); UpdateContext({locPerVoid: Blank()}); Set(gblInvLoadedAt, Blank()); Select(btnInvPerLoad))
+                                                Text: ="Void receipt"
+                                                Width: =150
                               - galInvPerRcpts:
                                   Control: Gallery
                                   Variant: Vertical
@@ -1646,8 +1767,8 @@ Screens:
                                                 AccessibleLabel: =Self.Text
                                                 Align: =Align.Center
                                                 AlignInContainer: =AlignInContainer.Center
-                                                Color: =Switch(ThisItem.'Receipt Status'.Value, "Overdue", RGBA(164, 38, 44, 1), "Awaiting Acknowledgement", RGBA(92, 45, 145, 1), "Return Required", RGBA(131, 82, 0, 1), "Returned", RGBA(16, 110, 16, 1), "Lost", RGBA(164, 38, 44, 1), RGBA(15, 76, 129, 1))
-                                                Fill: =Switch(ThisItem.'Receipt Status'.Value, "Overdue", RGBA(253, 231, 233, 1), "Awaiting Acknowledgement", RGBA(243, 238, 250, 1), "Return Required", RGBA(255, 244, 206, 1), "Returned", RGBA(223, 246, 221, 1), "Lost", RGBA(253, 231, 233, 1), RGBA(230, 240, 250, 1))
+                                                Color: =Switch(ThisItem.'Receipt Status'.Value, "Voided", RGBA(97, 97, 97, 1), "Overdue", RGBA(164, 38, 44, 1), "Awaiting Acknowledgement", RGBA(92, 45, 145, 1), "Return Required", RGBA(131, 82, 0, 1), "Returned", RGBA(16, 110, 16, 1), "Lost", RGBA(164, 38, 44, 1), RGBA(15, 76, 129, 1))
+                                                Fill: =Switch(ThisItem.'Receipt Status'.Value, "Voided", RGBA(240, 240, 240, 1), "Overdue", RGBA(253, 231, 233, 1), "Awaiting Acknowledgement", RGBA(243, 238, 250, 1), "Return Required", RGBA(255, 244, 206, 1), "Returned", RGBA(223, 246, 221, 1), "Lost", RGBA(253, 231, 233, 1), RGBA(230, 240, 250, 1))
                                                 FontWeight: =FontWeight.Semibold
                                                 Height: =24
                                                 LayoutMinWidth: =0
@@ -1729,6 +1850,20 @@ Screens:
                                                 Text: =If(Coalesce(ThisItem.'Signature Method'.Value, "Electronic") = "CAC", "Use electronic", "Use CAC")
                                                 Visible: =ThisItem.'Receipt Status'.Value = "Awaiting Acknowledgement" && fxIsInvStaff
                                                 Width: =140
+                                          - btnInvPerVoid:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Void " & ThisItem.Title
+                                                Appearance: =ButtonAppearance.Subtle
+                                                DisplayMode: =If(locBusy, DisplayMode.Disabled, DisplayMode.Edit)
+                                                Height: =36
+                                                Icon: ="DocumentDismiss"
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =Reset(txtInvPerVoidReason); UpdateContext({locPerVoid: ThisItem})
+                                                Text: ="Void"
+                                                Visible: =ThisItem.'Receipt Status'.Value = "Awaiting Acknowledgement" && IsBlank(ThisItem.'Ack Date') && IsBlank(ThisItem.Supersedes) && fxIsInvStaff && fxCanManage(ThisItem.Department.Value)
+                                                Width: =90
                         - conInvPerHist:
                             Control: GroupContainer
                             Variant: AutoLayout

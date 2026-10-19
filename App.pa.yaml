@@ -24,14 +24,28 @@ App:
       // Which Inventory flow handles an action (the single Inventory - Action flow was split on 2026-10-06).
       fxInvFlowFor(action: Text): Text = If(
           action in ["Reserve", "ReserveBatch", "ReleaseReservation", "CloseLine"], "Requests",
-          action in ["StartReceipt", "Issue", "IssueBatch", "FinishReceipt", "Acknowledge", "Return", "ReturnBatch", "Extend", "ResendApproval", "CacUpload", "SwitchMethod"], "Checkout",
+          action in ["StartReceipt", "Issue", "IssueBatch", "FinishReceipt", "Acknowledge", "Return", "ReturnBatch", "Extend", "ResendApproval", "CacUpload", "SwitchMethod", "VoidReceipt"], "Checkout",
           "Assets"
       );
-      // DAF Form 1297 (Temporary Issue Receipt) statement; electronic acknowledgement accepted locally (2026-10-02).
-      fxCustodyAck = {
-          version: "DAF1297-20260323",
-          text: "I acknowledge receipt of and responsibility IAW DAFI 23-111 for the items described below and will return them by the return date indicated."
-      };
+      // The acknowledgement wording and Conditions of Issue come from the "Inventory - My Receipts" flow (lib/custody-terms.js,
+      // 2026-10-19); the receipt screen shows exactly what the recipient signs.
+      // Icons on the receipt screen (24 px SVG; %c% = colour).
+      fxRcIcon(kind: Text, color: Text): Text = "data:image/svg+xml;utf8," & EncodeUrl(
+          "<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'>" & Substitute(Switch(kind,
+              "doc", "<path d='M6 2h8l4 4v16H6z' fill='none' stroke='%c%' stroke-width='1.6' stroke-linejoin='round'/><path d='M14 2v4h4M9 11h6M9 14h6M9 17h4' fill='none' stroke='%c%' stroke-width='1.6'/>",
+              "check", "<circle cx='12' cy='12' r='11' fill='%c%'/><path d='M7 12.5l3.2 3.2L17 9' fill='none' stroke='#fff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'/>",
+              "pending", "<circle cx='12' cy='12' r='9' fill='none' stroke='#D6DCE4' stroke-width='2.5'/><path d='M12 3a9 9 0 0 1 9 9' fill='none' stroke='%c%' stroke-width='2.5' stroke-linecap='round'/>",
+              "todo", "<circle cx='12' cy='12' r='9' fill='none' stroke='#B8C0CC' stroke-width='1.8'/>",
+              "lock", "<rect x='5' y='10' width='14' height='11' rx='2' fill='%c%'/><path d='M8 10V7a4 4 0 0 1 8 0v3' fill='none' stroke='%c%' stroke-width='2'/><circle cx='12' cy='15.5' r='1.6' fill='#fff'/>",
+              "warning", "<path d='M12 3L2 21h20z' fill='none' stroke='%c%' stroke-width='1.8' stroke-linejoin='round'/><path d='M12 10v5' stroke='%c%' stroke-width='2' stroke-linecap='round'/><circle cx='12' cy='18' r='1.1' fill='%c%'/>",
+              "ban", "<circle cx='12' cy='12' r='9' fill='none' stroke='%c%' stroke-width='2'/><path d='M5.6 5.6l12.8 12.8' stroke='%c%' stroke-width='2'/>",
+              "info", "<circle cx='12' cy='12' r='10' fill='%c%'/><path d='M12 11v6' stroke='#fff' stroke-width='2' stroke-linecap='round'/><circle cx='12' cy='7.5' r='1.2' fill='#fff'/>",
+              "person", "<circle cx='12' cy='8' r='4' fill='none' stroke='%c%' stroke-width='1.6'/><path d='M4 21c0-4 3.6-7 8-7s8 3 8 7' fill='none' stroke='%c%' stroke-width='1.6'/>",
+              "calendar", "<rect x='3' y='5' width='18' height='16' rx='2' fill='none' stroke='%c%' stroke-width='1.6'/><path d='M3 10h18M8 3v4M16 3v4M7 14h2M11 14h2M15 14h2M7 17h2M11 17h2' stroke='%c%' stroke-width='1.6'/>",
+              "circlecheck", "<circle cx='12' cy='12' r='9' fill='none' stroke='%c%' stroke-width='1.6'/><path d='M8 12.5l2.6 2.6L16 9.6' fill='none' stroke='%c%' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/>",
+              ""
+          ), "%c%", color) & "</svg>"
+      );
       fxAssetStatuses = ["Available", "Issued", "In Repair", "Pending Disposal", "Lost", "Retired", "Disposed"];
       fxSettableStatuses = ["Available", "In Repair", "Pending Disposal", "Lost", "Retired"];
       // Pick list for home locations and counts (InventoryLocations; managed on the Locations screen).
@@ -170,5 +184,5 @@ App:
       // Signature method: Electronic (approval) or CAC (signed in Adobe, then uploaded).
       fxInvSwitchPayload(receiptId: Number, method: Text): Text = JSON({actionVersion: fxInvActionVersion, action: "SwitchMethod", receiptId: receiptId, method: method});
       fxInvCacUploadPayload(receiptId: Number, fileName: Text, fileContent: Text): Text = JSON({actionVersion: fxInvActionVersion, action: "CacUpload", receiptId: receiptId, file: {name: fileName, content: fileContent}});
-    StartScreen: =If(!IsBlank(Param("person")), scrInvPerson, !IsBlank(Param("line")), scrInvRequests, scrInvHome)
+    StartScreen: =If(!IsBlank(Param("receipt")), scrInvReceipt, !IsBlank(Param("person")), scrInvPerson, !IsBlank(Param("line")), scrInvRequests, scrInvHome)
     Theme: =PowerAppsTheme

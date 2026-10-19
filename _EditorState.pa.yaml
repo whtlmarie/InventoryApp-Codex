@@ -13,3 +13,4 @@ EditorState:
     - scrInvImport
     - scrInvRequests
     - scrInvLabels
+    - scrInvReceipt

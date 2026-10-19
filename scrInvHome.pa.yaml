@@ -26,6 +26,29 @@ Screens:
             RadiusTopRight: =0
             Width: =Parent.Width
           Children:
+            - tmrInvHomeConsent:
+                Control: Timer
+                Properties:
+                  AutoStart: =true
+                  Duration: =6000
+                  Height: =1
+                  OnTimerEnd: =Set(gblConsentWaited, true)
+                  Visible: =false
+                  Width: =1
+            - txtInvHomeConsent:
+                Control: ModernText
+                Properties:
+                  AccessibleLabel: =Self.Text
+                  Color: =RGBA(131, 82, 0, 1)
+                  Fill: =RGBA(255, 244, 206, 1)
+                  FontWeight: =FontWeight.Semibold
+                  Height: =44
+                  LayoutMinWidth: =0
+                  PaddingLeft: =16
+                  PaddingRight: =16
+                  Size: =13
+                  Text: ="Still loading. If you see ""Allow this app to access your data?"", select Allow. If nothing appears, reload the page."
+                  Visible: =Coalesce(gblConsentWaited, false) && IsBlank(gblInvLoadedAt) && !Coalesce(gblInvMineAnswered, false)
             - conInvHomeHeader:
                 Control: GroupContainer
                 Variant: AutoLayout
@@ -1101,7 +1124,7 @@ Screens:
                                     ),
                                     UpdateContext({locMineMsg: "Your receipts couldn't be loaded. Try again."})
                                 );
-                                UpdateContext({locMineBusy: false})
+                                UpdateContext({locMineBusy: false}); Set(gblInvMineAnswered, true)
                               Text: ="Load"
                               Visible: =false
                               Width: =10
@@ -1211,29 +1234,21 @@ Screens:
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
                                                 Size: =12
-                                                Text: =gblInvMyStatement
+                                                Text: ="Open the receipt to review the equipment and the conditions of issue, then select I Acknowledge."
                                           - btnInvHomeMineAck:
                                               Control: ModernButton
                                               Properties:
-                                                AccessibleLabel: ="I acknowledge receipt " & ThisItem.Number
+                                                AccessibleLabel: ="Review and acknowledge receipt " & ThisItem.Number
                                                 AlignInContainer: =AlignInContainer.Start
-                                                DisplayMode: =If(locMineBusy, DisplayMode.Disabled, DisplayMode.Edit)
                                                 Height: =36
-                                                Icon: ="Checkmark"
+                                                Icon: ="DocumentCheckmark"
                                                 LayoutMinWidth: =0
                                                 OnSelect: |-
-                                                  =UpdateContext({locMineBusy: true, locMineMsg: ""});
-                                                  IfError(
-                                                      With(
-                                                          {raw: ParseJSON('Inventory-MyReceipts'.Run(JSON({action: "Acknowledge", receiptId: ThisItem.Id}, JSONFormat.Compact)).response)},
-                                                          UpdateContext({locMineMsg: Text(raw.message), locMineOk: Text(raw.status) = "Success"})
-                                                      ),
-                                                      UpdateContext({locMineMsg: "Your acknowledgement couldn't be saved. Try again.", locMineOk: false})
-                                                  );
-                                                  UpdateContext({locMineBusy: false});
-                                                  Select(btnInvHomeMineLoad)
-                                                Text: ="I acknowledge"
-                                                Width: =170
+                                                  =// The receipt screen (2026-10-19): the form, conditions of issue and I Acknowledge.
+                                                  Set(gblInvRcId, ThisItem.Id); Set(gblInvRcFromHome, true);
+                                                  Navigate(scrInvReceipt, ScreenTransition.None)
+                                                Text: ="Review and acknowledge"
+                                                Width: =210
                               - txtInvHomeMineEmpty:
                                   Control: ModernText
                                   Properties:
@@ -1251,7 +1266,7 @@ Screens:
                                   Control: ModernText
                                   Properties:
                                     AccessibleLabel: =Self.Text
-                                    Color: =If(locMineOk, RGBA(16, 110, 16, 1), RGBA(164, 38, 44, 1))
+                                    Color: =RGBA(164, 38, 44, 1)
                                     Height: =28
                                     LayoutMinWidth: =0
                                     PaddingBottom: =0
