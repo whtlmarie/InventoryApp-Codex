@@ -156,7 +156,7 @@ const condText = 'locRc.Conditions';
 const formH = [
   '56 + 56 + 56 + 30 + 30', // header, two grid rows, "Equipment issued", column heads
   'Max(1, CountRows(colRcItems)) * 48',
-  `30 + ${lines(condText, 12, IW)} * 17 + CountRows(Split(${condText}, Char(10))) * 17 + 16`,
+  `30 + RoundUp((${lines(condText, 12, IW)} + CountRows(Split(${condText}, Char(10))) * 0.6) * 17, 0) + 16`,
 ].join(' + ');
 
 const head = box('conInvRcHead', {
@@ -205,7 +205,7 @@ const form = box('conInvRcForm', {
     ]),
   ], ind, 'Vertical'),
   text('txtInvRcCondLbl', { FontWeight: '=FontWeight.Bold', Height: '=30', PaddingLeft: '=12', PaddingTop: '=8', Size: '=12', Text: '="CONDITIONS OF ISSUE"', Wrap: '=false' }),
-  text('txtInvRcCond', { Height: `=${lines(condText, 12, IW)} * 17 + CountRows(Split(${condText}, Char(10))) * 17 + 8`, PaddingLeft: '=12', PaddingRight: '=12', Size: '=12', Text: `=${condText}` }),
+  text('txtInvRcCond', { Height: `=RoundUp((${lines(condText, 12, IW)} + CountRows(Split(${condText}, Char(10))) * 0.6) * 17, 0) + 8`, PaddingLeft: '=12', PaddingRight: '=12', Size: '=12', Text: `=${condText}`, VerticalAlign: '=VerticalAlign.Top' }),
 ]);
 
 const sign = box('conInvRcSign', {
@@ -266,7 +266,7 @@ const done = box('conInvRcDone', {
       img('imgInvRcDStat', 'circlecheck', '#1F2937', 26),
       box('conInvRcDStatTxt', { FillPortions: '=1', Height: '=52', LayoutDirection: '=LayoutDirection.Vertical', LayoutJustifyContent: '=LayoutJustifyContent.Center' }, [
         text('txtInvRcDStatLbl', { Color: `=${C.grey}`, Height: '=18', Size: '=12', Text: '="Status"', Wrap: '=false' }),
-        text('txtInvRcDStatVal', { Color: `=${C.green}`, Fill: `=${C.greenBg}`, FontWeight: '=FontWeight.Semibold', Height: '=28', PaddingLeft: '=10', Size: '=13', Text: '="Acknowledged"', Width: '=130', Wrap: '=false', ...rad(4) }),
+        text('txtInvRcDStatVal', { AlignInContainer: '=AlignInContainer.Start', Color: `=${C.green}`, Fill: `=${C.greenBg}`, FontWeight: '=FontWeight.Semibold', Height: '=28', PaddingLeft: '=10', Size: '=13', Text: '="Acknowledged"', Width: '=130', Wrap: '=false', ...rad(4) }),
       ]),
     ]),
   ]),
