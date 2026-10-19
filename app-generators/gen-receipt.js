@@ -64,14 +64,14 @@ const isState = (...s) => `${VIEW} && ${ST} in [${s.map(q).join(', ')}]`;
 const LOAD = [
   '=// The receipt from "Inventory - My Receipts" (Get). Untyped JSON -> typed record and tables.',
   '// A refresh of a receipt already on screen (the PDF check) keeps it visible instead of showing the spinner.',
-  'If(locRcStep <> "view", UpdateContext({locRcStep: "load"}));',
+  'If(!(locRcStep in ["view", "processing"]), UpdateContext({locRcStep: "load"}));',
   'IfError(',
   '    With(',
   '        {r: ParseJSON(\'Inventory-MyReceipts\'.Run(JSON({action: "Get", receiptId: gblInvRcId}, JSONFormat.Compact)).response)},',
   '        UpdateContext({locRc: {',
   '            State: Text(r.state), Contact: Text(r.contact),',
   '            Id: Value(r.receipt.id), Number: Text(r.receipt.number), IssueDate: Text(r.receipt.issueDate), ReturnDate: Text(r.receipt.returnDate),',
-  '            IssuedTo: Text(r.receipt.issuedTo), Org: Text(r.receipt.organization), Office: Text(r.receipt.issuingOffice),',
+  '            IssuedTo: Text(r.receipt.issuedTo), Org: Text(r.receipt.organization), OrgAcct: Text(r.receipt.orgAccountNo), Office: Text(r.receipt.issuingOffice),',
   '            IssuedBy: Text(r.receipt.issuedBy), SupersededBy: Text(r.receipt.supersededBy),',
   '            AckBy: Text(r.receipt.ackBy), AckDate: Text(r.receipt.ackDate),',
   '            PdfReady: Coalesce(Boolean(r.receipt.pdfReady), false), PdfUrl: Text(r.receipt.pdfUrl), ResendPending: Coalesce(Boolean(r.receipt.resendPending), false),',
@@ -85,13 +85,13 @@ const LOAD = [
   ')',
 ].join('\n');
 const ACK = [
-  '=UpdateContext({locRcStep: "processing"});',
+  '=UpdateContext({locRcStep: "processing", locRcProc: 0});',
   'With(',
   '    {r: IfError(ParseJSON(\'Inventory-MyReceipts\'.Run(JSON({action: "Acknowledge", receiptId: gblInvRcId, ackVersion: locRc.Version}, JSONFormat.Compact)).response), Blank())},',
   '    If(',
   '        IsBlank(r), UpdateContext({locRcStep: "view", locRcError: "Your acknowledgement couldn\'t be saved. Check your connection and try again."}),',
   '        Text(r.status) <> "Success", UpdateContext({locRcStep: "view", locRcError: Text(r.message)}),',
-  '        UpdateContext({locRcJustDone: true, locRcError: ""}); Select(btnInvRcLoad)',
+  '        UpdateContext({locRcProc: 5, locRcJustDone: true, locRcError: ""}); Select(btnInvRcLoad)',
   '    )',
   ')',
 ].join('\n');
@@ -131,11 +131,11 @@ const detail = (id, icon, label, value, extra = {}) => box(`conInvRc${id}`, {
 // Message card (states 5-7 in the mockup, plus CAC and errors).
 const MSG = {
   denied: ['lock', '#C41E2A', 'Access Restricted', 'This link is for a specific equipment receipt. You do not have access to view this receipt.'],
-  invalid: ['warning', '#D68C00', 'Link Not Available', 'This equipment receipt link is no longer valid or has expired. If you believe you received this message in error, please contact your IT equipment manager.'],
-  superseded: ['warning', '#D68C00', 'Link Not Available', 'This receipt was replaced by a newer receipt. Check your email for the newer receipt link, or contact your IT equipment manager.'],
-  voided: ['ban', '#1F2937', 'Receipt No Longer Available', 'This equipment receipt has been cancelled or is no longer available for acknowledgement. If you have questions, please contact your IT equipment manager.'],
-  closed: ['ban', '#1F2937', 'Receipt No Longer Available', 'This equipment receipt has been cancelled or is no longer available for acknowledgement. If you have questions, please contact your IT equipment manager.'],
-  cac: ['doc', '#1A5FD0', 'Sign With Your CAC', 'This receipt is signed with your CAC instead of in the app. Your IT equipment manager will give you the receipt to sign.'],
+  invalid: ['warning', '#D68C00', 'Link Not Available', 'This link is no longer valid or has expired. If you believe you received this message in error, please contact IT Support.'],
+  superseded: ['warning', '#D68C00', 'Link Not Available', 'This link is no longer valid or has expired. If you believe you received this message in error, please contact IT Support.'],
+  voided: ['ban', '#1F2937', 'Receipt No Longer Available', 'This equipment receipt has been cancelled or is no longer available for acknowledgement. If you have questions, please contact your IT Support.'],
+  closed: ['ban', '#1F2937', 'Receipt No Longer Available', 'This equipment receipt has been cancelled or is no longer available for acknowledgement. If you have questions, please contact your IT Support.'],
+  cac: ['doc', '#1A5FD0', 'Sign With Your CAC', 'This receipt is signed with your CAC instead of in the app. IT Support will give you the receipt to sign.'],
 };
 const msgPick = (i) => `Switch(If(locRcStep = "error", "error", ${ST}), ${Object.entries(MSG).map(([k, v]) => `${q(k)}, ${q(v[i])}`).join(', ')}, ${q(i === 0 ? 'warning' : i === 1 ? '#D68C00' : i === 2 ? 'Something Went Wrong' : "The receipt service couldn't be reached. Check your connection and try again.")})`;
 const msgText = msgPick(3).replace('Switch(If(locRcStep = "error", "error", locRc.State), ', 'Switch(If(locRcStep = "error", "error", locRc.State), ');
@@ -146,11 +146,9 @@ const bar = box('conInvRcBar', {
   LayoutGap: '=12', PaddingLeft: '=20', PaddingRight: '=20',
 }, [
   button('btnInvRcBack', { AccessibleLabel: '="Back to Home"', Appearance: '=ButtonAppearance.Secondary', Height: '=36', Icon: '="ArrowLeft"', OnSelect: '=Set(gblInvRcFromHome, false); Set(gblInvRcId, 0); Navigate(scrInvHome, ScreenTransition.None)', Text: '="Home"', Visible: '=gblInvRcFromHome', Width: '=100' }),
-  text('txtInvRcOrg', { Color: `=${C.white}`, FillPortions: '=1', FontWeight: '=FontWeight.Bold', Height: '=40', Size: '=14', Text: '="U.S. AIR FORCE"', Wrap: '=false' }),
-  box('conInvRcBarRight', { Height: '=48', Width: '=170', LayoutDirection: '=LayoutDirection.Vertical', LayoutJustifyContent: '=LayoutJustifyContent.Center' }, [
-    text('txtInvRcBarT1', { Align: '=Align.Right', Color: `=${C.white}`, FontWeight: '=FontWeight.Semibold', Height: '=22', Size: '=13', Text: '="Equipment Receipt"', Wrap: '=false' }),
-    text('txtInvRcBarT2', { Align: '=Align.Right', Color: `=${C.white}`, Height: '=20', Size: '=12', Text: '="DAF Form 1297"', Wrap: '=false' }),
-  ]),
+  (ind) => node('imgInvRcLogo', 'Image', { AccessibleLabel: '="USAF Special Operations School patch"', Height: '=48', Image: '=fxUsafsosPatch', Width: '=48' }, null, ind),
+  text('txtInvRcOrg', { Color: `=${C.white}`, FillPortions: '=1', FontWeight: '=FontWeight.Bold', Height: '=40', Size: '=16', Text: '="USAFSOS Inventory"', Wrap: '=false' }),
+  text('txtInvRcBarT1', { Align: '=Align.Right', Color: `=${C.white}`, FontWeight: '=FontWeight.Semibold', Height: '=40', Size: '=14', Text: '="Equipment Receipt"', Width: '=180', Wrap: '=false' }),
 ]);
 
 const IW = `${W} - 48`; // text width inside the card (24 px padding each side)
@@ -158,17 +156,15 @@ const condText = 'locRc.Conditions';
 const formH = [
   '56 + 56 + 56 + 30 + 30', // header, two grid rows, "Equipment issued", column heads
   'Max(1, CountRows(colRcItems)) * 48',
-  `30 + ${textH('locRc.AckText', 12, IW)}`,
-  `30 + ${lines(condText, 12, IW)} * 17 + CountRows(Split(${condText}, Char(10))) * 17 + 8`,
-  '32',
+  `30 + ${lines(condText, 12, IW)} * 17 + CountRows(Split(${condText}, Char(10))) * 17 + 16`,
 ].join(' + ');
 
 const head = box('conInvRcHead', {
   Fill: `=${C.blueBg}`, FillPortions: '=0', Height: '=76', LayoutDirection: '=LayoutDirection.Horizontal', LayoutAlignItems: '=LayoutAlignItems.Center',
-  LayoutGap: '=14', PaddingLeft: '=20', Width: `=${W}`, AlignInContainer: '=AlignInContainer.Center', ...rad(8), Visible: `=${isState('ready')}`,
+  LayoutGap: '=14', LayoutJustifyContent: '=LayoutJustifyContent.Center', Width: `=${W}`, AlignInContainer: '=AlignInContainer.Center', ...rad(8), Visible: `=${isState('ready')}`,
 }, [
   img('imgInvRcHead', 'doc', '#0B2A4A', 36),
-  box('conInvRcHeadTxt', { FillPortions: '=1', Height: '=56', LayoutDirection: '=LayoutDirection.Vertical', LayoutJustifyContent: '=LayoutJustifyContent.Center' }, [
+  box('conInvRcHeadTxt', { Width: '=360', Height: '=56', LayoutDirection: '=LayoutDirection.Vertical', LayoutJustifyContent: '=LayoutJustifyContent.Center' }, [
     text('txtInvRcHeadT', { Color: `=${C.navy}`, FontWeight: '=FontWeight.Bold', Height: '=28', Size: '=18', Text: '="Equipment Receipt Acknowledgement"', Wrap: '=false' }),
     text('txtInvRcHeadS', { Color: `=${C.grey}`, Height: '=22', Size: '=13', Text: '="Please review the equipment details below."', Wrap: '=false' }),
   ]),
@@ -179,6 +175,7 @@ const form = box('conInvRcForm', {
   Height: `=${formH}`, LayoutDirection: '=LayoutDirection.Vertical', Width: `=${W}`, Visible: `=${isState('ready')}`,
 }, [
   box('conInvRcFormTop', { FillPortions: '=0', Height: '=56', LayoutDirection: '=LayoutDirection.Horizontal', LayoutAlignItems: '=LayoutAlignItems.Center', PaddingLeft: '=16', PaddingRight: '=12', BorderColor: `=${C.line}`, BorderThickness: '=1' }, [
+    box('conInvRcFormTopSp', { Height: '=10', Width: '=120' }, []),
     box('conInvRcFormTopL', { FillPortions: '=1', Height: '=48', LayoutDirection: '=LayoutDirection.Vertical', LayoutJustifyContent: '=LayoutJustifyContent.Center' }, [
       text('txtInvRcDept', { Align: '=Align.Center', FontWeight: '=FontWeight.Semibold', Height: '=20', Size: '=12', Text: '="DEPARTMENT OF THE AIR FORCE"', Wrap: '=false' }),
       text('txtInvRcTir', { Align: '=Align.Center', FontWeight: '=FontWeight.Semibold', Height: '=20', Size: '=12', Text: '="TEMPORARY ISSUE RECEIPT"', Wrap: '=false' }),
@@ -190,7 +187,7 @@ const form = box('conInvRcForm', {
     ]),
   ]),
   gridRow('Row1', [cell('No', 'Receipt Number', 'locRc.Number'), cell('Iss', 'Issue Date', 'locRc.IssueDate'), cell('Ret', 'Return Date', 'locRc.ReturnDate')]),
-  gridRow('Row2', [cell('To', 'Issued To', 'locRc.IssuedTo'), cell('OrgV', 'Organization', 'Coalesce(locRc.Org, "–")'), cell('Off', 'Issuing Office', 'Coalesce(locRc.Office, "–")')]),
+  gridRow('Row2', [cell('To', 'Issued To', 'locRc.IssuedTo'), cell('OrgV', 'ORGN Account No.', 'Coalesce(locRc.OrgAcct, "–")'), cell('Off', 'Issuing Office', 'Coalesce(locRc.Office, "–")')]),
   text('txtInvRcEqLbl', { FontWeight: '=FontWeight.Bold', Height: '=30', PaddingLeft: '=12', Size: '=12', Text: '="EQUIPMENT ISSUED"', Wrap: '=false' }),
   box('conInvRcCols', { Fill: 'RGBA(246, 247, 249, 1)'.replace(/^/, '='), FillPortions: '=0', Height: '=30', LayoutDirection: '=LayoutDirection.Horizontal', LayoutAlignItems: '=LayoutAlignItems.Center', PaddingLeft: '=12', PaddingRight: '=12', LayoutGap: '=8', BorderColor: `=${C.line}`, BorderThickness: '=1' }, [
     text('txtInvRcColQ', { Height: '=24', Size: '=11', Text: '="QTY"', Width: '=40', Wrap: '=false' }),
@@ -207,11 +204,8 @@ const form = box('conInvRcForm', {
       text('txtInvRcItA', { FillPortions: '=2', Height: '=40', Size: '=13', Text: '=ThisItem.Tag & If(IsBlank(ThisItem.Serial), "", " / " & ThisItem.Serial)' }),
     ]),
   ], ind, 'Vertical'),
-  text('txtInvRcAckLbl', { FontWeight: '=FontWeight.Bold', Height: '=30', PaddingLeft: '=12', PaddingTop: '=8', Size: '=12', Text: '="ACKNOWLEDGEMENT"', Wrap: '=false' }),
-  text('txtInvRcAck', { Height: `=${textH('locRc.AckText', 12, IW)}`, PaddingLeft: '=12', PaddingRight: '=12', Size: '=12', Text: '=locRc.AckText' }),
   text('txtInvRcCondLbl', { FontWeight: '=FontWeight.Bold', Height: '=30', PaddingLeft: '=12', PaddingTop: '=8', Size: '=12', Text: '="CONDITIONS OF ISSUE"', Wrap: '=false' }),
   text('txtInvRcCond', { Height: `=${lines(condText, 12, IW)} * 17 + CountRows(Split(${condText}, Char(10))) * 17 + 8`, PaddingLeft: '=12', PaddingRight: '=12', Size: '=12', Text: `=${condText}` }),
-  text('txtInvRcTemp', { Align: '=Align.Center', FontWeight: '=FontWeight.Bold', Height: '=32', Size: '=11', Text: '="THIS IS A TEMPORARY ISSUE RECEIPT"', Wrap: '=false' }),
 ]);
 
 const sign = box('conInvRcSign', {
@@ -244,8 +238,9 @@ const proc = box('conInvRcProc', {
   text('txtInvRcProcS', { Align: '=Align.Center', Color: `=${C.grey}`, Height: '=46', PaddingLeft: '=24', PaddingRight: '=24', Size: '=13', Text: '="Please wait while we record your acknowledgement and generate the completed receipt."', Width: '=Parent.Width' }),
   box('conInvRcSteps', { BorderColor: `=${C.line}`, BorderThickness: '=1', Height: `=${STEPS.length * 44 + 12}`, LayoutDirection: '=LayoutDirection.Vertical', PaddingLeft: '=16', PaddingTop: '=6', Width: '=Parent.Width - 64', ...rad(8) },
     STEPS.map((s, i) => box(`conInvRcStep${i}`, { FillPortions: '=0', Height: '=44', LayoutDirection: '=LayoutDirection.Horizontal', LayoutAlignItems: '=LayoutAlignItems.Center', LayoutGap: '=12' }, [
-      img(`imgInvRcStep${i}`, i === 0 ? 'check' : i === 1 ? 'pending' : 'todo', i === 0 ? '#1E803C' : '#1A5FD0', 22),
-      text(`txtInvRcStep${i}`, { Color: i < 2 ? `=${C.ink}` : `=${C.grey}`, FillPortions: '=1', Height: '=24', Size: '=13', Text: `=${q(s)}`, Wrap: '=false' }),
+      (ind) => node(`imgInvRcStep${i}`, 'Image', { AccessibleLabel: '=""', Height: '=22', Width: '=22', Visible: `=locRcProc <> ${i}`, Image: `=If(locRcProc > ${i}, fxRcIcon("check", "#1E803C"), fxRcIcon("todo", "#B8C0CC"))` }, null, ind),
+      (ind) => node(`spnInvRcStep${i}`, 'ModernSpinner', { AccessibleLabel: `=${q(s + ', in progress')}`, Label: '=""', LayoutMinWidth: '=0', Height: '=22', Width: '=22', Visible: `=locRcProc = ${i}` }, null, ind),
+      text(`txtInvRcStep${i}`, { Color: `=If(locRcProc >= ${i}, ${C.ink}, ${C.grey})`, FillPortions: '=1', Height: '=24', Size: '=13', Text: `=${q(s)}`, Wrap: '=false' }),
     ]))),
 ]);
 
@@ -261,7 +256,7 @@ const done = box('conInvRcDone', {
     (ind) => node('imgInvRcBanner', 'Image', { AccessibleLabel: '=""', Height: '=56', Width: '=56', Image: '=fxRcIcon(If(locRcJustDone, "check", "doc"), If(locRcJustDone, "#1E803C", "#0B2A4A"))' }, null, ind),
     text('txtInvRcBanT', { Align: '=Align.Center', Color: `=${C.navy}`, FontWeight: '=FontWeight.Bold', Height: '=34', Size: '=22', Text: '=If(locRcJustDone, "Thank You!", "Already Acknowledged")', Width: '=Parent.Width', Wrap: '=false' }),
     text('txtInvRcBanS', { Align: '=Align.Center', Color: `=If(locRcJustDone, ${C.green}, ${C.ink})`, FontWeight: '=If(locRcJustDone, FontWeight.Semibold, FontWeight.Normal)', Height: '=24', Size: '=14', Text: '=If(locRcJustDone, "Your acknowledgement has been recorded.", "This equipment receipt has already been acknowledged.")', Width: '=Parent.Width', Wrap: '=false' }),
-    text('txtInvRcBanX', { Align: '=Align.Center', Color: `=${C.grey}`, Height: '=46', PaddingLeft: '=24', PaddingRight: '=24', Size: '=13', Text: '=If(locRc.PdfReady, "The completed equipment receipt has been saved to our records and a copy has been emailed to you.", "Your completed receipt is being prepared. A copy will be emailed to you in a few minutes.")', Width: '=Parent.Width' }),
+    text('txtInvRcBanX', { Align: '=Align.Center', Color: `=${C.grey}`, Height: '=46', PaddingLeft: '=24', PaddingRight: '=24', Size: '=13', Text: '=If(!locRcJustDone, "You can view or download a copy of your receipt below.", locRc.PdfReady, "The completed receipt has been saved to our records and a copy has been emailed to you.", "Your completed receipt is being prepared. A copy will be emailed to you as soon as it is ready.")', Width: '=Parent.Width' }),
   ]),
   box('conInvRcDetails', { BorderColor: `=${C.line}`, BorderThickness: '=1', Fill: `=${C.white}`, FillPortions: '=0', Height: '=4 * 58 + 24', LayoutDirection: '=LayoutDirection.Vertical', PaddingTop: '=12', ...rad(8) }, [
     detail('DNo', 'doc', 'Receipt Number', 'locRc.Number'),
@@ -277,7 +272,7 @@ const done = box('conInvRcDone', {
   ]),
   button('btnInvRcPdf', {
     AccessibleLabel: '="View or download the completed receipt (PDF)"', DisplayMode: '=If(locRc.PdfReady, DisplayMode.Edit, DisplayMode.Disabled)',
-    Icon: '="ArrowDownload"', OnSelect: '=Launch(locRc.PdfUrl)', Text: '=If(locRc.PdfReady, "View / Download Completed Receipt (PDF)", "Completed receipt (PDF) is being prepared…")', Width: '=Parent.Width',
+    FontWeight: '=FontWeight.Bold', Icon: '="ArrowDownload"', IconStyle: '=IconStyle.Filled', OnSelect: '=Launch(locRc.PdfUrl)', Text: '=If(locRc.PdfReady, "View / Download Completed Receipt (PDF)", "Completed receipt (PDF) is being prepared…")', Width: '=Parent.Width',
   }),
   button('btnInvRcResend', {
     AccessibleLabel: '="Send another copy to my email"', Appearance: '=ButtonAppearance.Secondary',
@@ -332,11 +327,17 @@ const pdfPoll = (ind) => node('tmrInvRcPdf', 'Timer', {
   OnTimerEnd: '=UpdateContext({locRcPolls: Coalesce(locRcPolls, 0) + 1}); Select(btnInvRcLoad)',
   Start: '=locRcStep = "view" && locRc.State = "acknowledged" && !locRc.PdfReady && Coalesce(locRcPolls, 0) < 10',
 }, null, ind);
+// Moves the processing list along (about 1.2 s a step); the last step waits for the flow's answer.
+const procTick = (ind) => node('tmrInvRcProc', 'Timer', {
+  Duration: '=1200', Height: '=1', Repeat: '=true', Visible: '=false', Width: '=1',
+  OnTimerEnd: '=If(locRcProc < 4, UpdateContext({locRcProc: locRcProc + 1}))',
+  Start: '=locRcStep = "processing" && locRcProc < 4',
+}, null, ind);
 const loadBtn = button('btnInvRcLoad', { AccessibleLabel: '="Load the receipt"', Height: '=10', OnSelect: LOAD, Text: '="Load"', Visible: '=false', Width: '=10' });
 
 const root = box('conInvRcRoot', {
   Fill: `=${C.page}`, Height: '=Parent.Height', LayoutAlignItems: '=LayoutAlignItems.Stretch', LayoutDirection: '=LayoutDirection.Vertical', Width: '=Parent.Width',
-}, [bar, body, loadBtn, pdfPoll]);
+}, [bar, body, loadBtn, pdfPoll, procTick]);
 
 const yaml = [
   'Screens:',
