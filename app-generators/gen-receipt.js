@@ -37,8 +37,12 @@ const C = {
   red: 'RGBA(196, 30, 42, 1)', amber: 'RGBA(214, 140, 0, 1)',
 };
 
+// Stacked (vertical) sections stretch their children to full width unless told otherwise (2026-10-19: text was
+// squeezed into narrow columns on the first run).
 const box = (name, p, kids, variant = 'AutoLayout') => (ind) => node(name, 'GroupContainer', {
-  DropShadow: '=DropShadow.None', LayoutMinHeight: '=0', LayoutMinWidth: '=0', ...flat, ...p,
+  DropShadow: '=DropShadow.None', LayoutMinHeight: '=0', LayoutMinWidth: '=0', ...flat,
+  ...(p.LayoutDirection === '=LayoutDirection.Vertical' && !p.LayoutAlignItems ? { LayoutAlignItems: '=LayoutAlignItems.Stretch' } : {}),
+  ...p,
 }, kids, ind, variant);
 const text = (name, p) => (ind) => node(name, 'ModernText', {
   AccessibleLabel: '=Self.Text', Color: `=${C.ink}`, LayoutMinWidth: '=0', PaddingBottom: '=0', PaddingLeft: '=0', PaddingTop: '=0', ...p,
