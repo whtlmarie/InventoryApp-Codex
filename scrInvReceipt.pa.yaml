@@ -5,7 +5,7 @@ Screens:
       OnVisible: |-
         =// gblInvRcId: from Home ("Review and acknowledge"), else the email link (?receipt=<id>).
         If(IsBlank(gblInvRcId) || gblInvRcId = 0, Set(gblInvRcId, IfError(Value(Param("receipt")), 0)));
-        UpdateContext({locRcChecked: false, locRcJustDone: false, locRcBusy: false, locRcError: ""});
+        UpdateContext({locRcChecked: false, locRcJustDone: false, locRcBusy: false, locRcError: "", locRcPolls: 0, locRcStep: "load"});
         Reset(chkInvRcAgree);
         Select(btnInvRcLoad)
     Children:
@@ -1897,7 +1897,8 @@ Screens:
                   AccessibleLabel: ="Load the receipt"
                   OnSelect: |-
                     =// The receipt from "Inventory - My Receipts" (Get). Untyped JSON -> typed record and tables.
-                    UpdateContext({locRcStep: "load"});
+                    // A refresh of a receipt already on screen (the PDF check) keeps it visible instead of showing the spinner.
+                    If(locRcStep <> "view", UpdateContext({locRcStep: "load"}));
                     IfError(
                         With(
                             {r: ParseJSON('Inventory-MyReceipts'.Run(JSON({action: "Get", receiptId: gblInvRcId}, JSONFormat.Compact)).response)},
@@ -1919,3 +1920,14 @@ Screens:
                   Text: ="Load"
                   Visible: =false
                   Width: =10
+            - tmrInvRcPdf:
+                Control: Timer
+                Properties:
+                  Duration: =20000
+                  Height: =1
+                  Repeat: =true
+                  Visible: =false
+                  Width: =1
+                  OnTimerEnd: |-
+                    =UpdateContext({locRcPolls: Coalesce(locRcPolls, 0) + 1}); Select(btnInvRcLoad)
+                  Start: =locRcStep = "view" && locRc.State = "acknowledged" && !locRc.PdfReady && Coalesce(locRcPolls, 0) < 10

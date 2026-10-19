@@ -63,7 +63,8 @@ const VIEW = 'locRcStep = "view"';
 const isState = (...s) => `${VIEW} && ${ST} in [${s.map(q).join(', ')}]`;
 const LOAD = [
   '=// The receipt from "Inventory - My Receipts" (Get). Untyped JSON -> typed record and tables.',
-  'UpdateContext({locRcStep: "load"});',
+  '// A refresh of a receipt already on screen (the PDF check) keeps it visible instead of showing the spinner.',
+  'If(locRcStep <> "view", UpdateContext({locRcStep: "load"}));',
   'IfError(',
   '    With(',
   '        {r: ParseJSON(\'Inventory-MyReceipts\'.Run(JSON({action: "Get", receiptId: gblInvRcId}, JSONFormat.Compact)).response)},',
@@ -325,11 +326,17 @@ const body = box('conInvRcBody', {
   LayoutOverflowY: '=LayoutOverflow.Scroll', PaddingBottom: '=32', PaddingTop: '=20',
 }, [loading, head, form, sign, proc, done, msg]);
 
+// Acknowledged but the PDF is still being built (about 30-90 s): check again every 20 s, up to 10 times.
+const pdfPoll = (ind) => node('tmrInvRcPdf', 'Timer', {
+  Duration: '=20000', Height: '=1', Repeat: '=true', Visible: '=false', Width: '=1',
+  OnTimerEnd: '=UpdateContext({locRcPolls: Coalesce(locRcPolls, 0) + 1}); Select(btnInvRcLoad)',
+  Start: '=locRcStep = "view" && locRc.State = "acknowledged" && !locRc.PdfReady && Coalesce(locRcPolls, 0) < 10',
+}, null, ind);
 const loadBtn = button('btnInvRcLoad', { AccessibleLabel: '="Load the receipt"', Height: '=10', OnSelect: LOAD, Text: '="Load"', Visible: '=false', Width: '=10' });
 
 const root = box('conInvRcRoot', {
   Fill: `=${C.page}`, Height: '=Parent.Height', LayoutAlignItems: '=LayoutAlignItems.Stretch', LayoutDirection: '=LayoutDirection.Vertical', Width: '=Parent.Width',
-}, [bar, body, loadBtn]);
+}, [bar, body, loadBtn, pdfPoll]);
 
 const yaml = [
   'Screens:',
@@ -339,7 +346,7 @@ const yaml = [
   '      OnVisible: |-',
   '        =// gblInvRcId: from Home ("Review and acknowledge"), else the email link (?receipt=<id>).',
   '        If(IsBlank(gblInvRcId) || gblInvRcId = 0, Set(gblInvRcId, IfError(Value(Param("receipt")), 0)));',
-  '        UpdateContext({locRcChecked: false, locRcJustDone: false, locRcBusy: false, locRcError: ""});',
+  '        UpdateContext({locRcChecked: false, locRcJustDone: false, locRcBusy: false, locRcError: "", locRcPolls: 0, locRcStep: "load"});',
   '        Reset(chkInvRcAgree);',
   '        Select(btnInvRcLoad)',
   '    Children:',
