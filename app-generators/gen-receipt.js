@@ -246,7 +246,7 @@ const proc = box('conInvRcProc', {
 
 const done = box('conInvRcDone', {
   AlignInContainer: '=AlignInContainer.Center', FillPortions: '=0',
-  Height: '=210 + 12 + 4 * 58 + 24 + 12 + 52 + If(locRc.PdfReady, 52 + 8, 0) + 12 + 76',
+  Height: '=210 + 12 + 4 * 58 + 24 + 12 + 52 + If(locRc.PdfReady, 52 + 8, 0) + If(locRc.PdfReady || !locRcJustDone, 12 + 76, 0)',
   LayoutDirection: '=LayoutDirection.Vertical', LayoutGap: '=12', Width: `=${W}`, Visible: `=${isState('acknowledged')}`,
 }, [
   box('conInvRcBanner', {
@@ -279,7 +279,7 @@ const done = box('conInvRcDone', {
     DisplayMode: '=If(locRcBusy || locRc.ResendPending, DisplayMode.Disabled, DisplayMode.Edit)', Icon: '="Mail"', OnSelect: RESEND,
     Text: '=If(locRc.ResendPending, "A copy is on its way to your email", "Send Another Copy to My Email")', Visible: '=locRc.PdfReady', Width: '=Parent.Width',
   }),
-  box('conInvRcNote', { Fill: `=${C.blueBg}`, FillPortions: '=0', Height: '=76', LayoutDirection: '=LayoutDirection.Horizontal', LayoutAlignItems: '=LayoutAlignItems.Center', LayoutGap: '=12', PaddingLeft: '=16', PaddingRight: '=16', ...rad(8) }, [
+  box('conInvRcNote', { Fill: `=${C.blueBg}`, FillPortions: '=0', Height: '=76', Visible: '=locRc.PdfReady || !locRcJustDone', LayoutDirection: '=LayoutDirection.Horizontal', LayoutAlignItems: '=LayoutAlignItems.Center', LayoutGap: '=12', PaddingLeft: '=16', PaddingRight: '=16', ...rad(8) }, [
     img('imgInvRcNote', 'info', '#1A5FD0', 24),
     box('conInvRcNoteTxt', { FillPortions: '=1', Height: '=60', LayoutDirection: '=LayoutDirection.Vertical', LayoutJustifyContent: '=LayoutJustifyContent.Center' }, [
       text('txtInvRcNoteT', { FontWeight: '=FontWeight.Semibold', Height: '=22', Size: '=13', Text: '=If(locRcJustDone, "You may safely close this window.", "Need another copy?")', Wrap: '=false' }),
