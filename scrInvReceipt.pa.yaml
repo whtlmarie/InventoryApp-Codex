@@ -14,16 +14,14 @@ Screens:
           Variant: AutoLayout
           Properties:
             DropShadow: =DropShadow.None
-            LayoutMinHeight: =0
-            LayoutMinWidth: =0
-            RadiusBottomLeft: =0
-            RadiusBottomRight: =0
-            RadiusTopLeft: =0
-            RadiusTopRight: =0
             Fill: =RGBA(244, 246, 249, 1)
             Height: =Parent.Height
             LayoutAlignItems: =LayoutAlignItems.Stretch
             LayoutDirection: =LayoutDirection.Vertical
+            RadiusBottomLeft: =0
+            RadiusBottomRight: =0
+            RadiusTopLeft: =0
+            RadiusTopRight: =0
             Width: =Parent.Width
           Children:
             - conInvRcBar:
@@ -31,29 +29,29 @@ Screens:
                 Variant: AutoLayout
                 Properties:
                   DropShadow: =DropShadow.None
+                  Fill: =RGBA(11, 42, 74, 1)
+                  FillPortions: =0
+                  Height: =64
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Horizontal
+                  LayoutGap: =12
                   LayoutMinHeight: =0
                   LayoutMinWidth: =0
+                  PaddingLeft: =20
+                  PaddingRight: =20
                   RadiusBottomLeft: =0
                   RadiusBottomRight: =0
                   RadiusTopLeft: =0
                   RadiusTopRight: =0
-                  Fill: =RGBA(11, 42, 74, 1)
-                  FillPortions: =0
-                  Height: =64
-                  LayoutDirection: =LayoutDirection.Horizontal
-                  LayoutAlignItems: =LayoutAlignItems.Center
-                  LayoutGap: =12
-                  PaddingLeft: =20
-                  PaddingRight: =20
                 Children:
                   - btnInvRcBack:
                       Control: ModernButton
                       Properties:
-                        LayoutMinWidth: =0
-                        Height: =36
                         AccessibleLabel: ="Back to Home"
                         Appearance: =ButtonAppearance.Secondary
+                        Height: =36
                         Icon: ="ArrowLeft"
+                        LayoutMinWidth: =0
                         OnSelect: =Set(gblInvRcFromHome, false); Set(gblInvRcId, 0); Navigate(scrInvHome, ScreenTransition.None)
                         Text: ="Home"
                         Visible: =gblInvRcFromHome
@@ -70,13 +68,13 @@ Screens:
                       Properties:
                         AccessibleLabel: =Self.Text
                         Color: =RGBA(255, 255, 255, 1)
+                        FillPortions: =1
+                        FontWeight: =FontWeight.Bold
+                        Height: =40
                         LayoutMinWidth: =0
                         PaddingBottom: =0
                         PaddingLeft: =0
                         PaddingTop: =0
-                        FillPortions: =1
-                        FontWeight: =FontWeight.Bold
-                        Height: =40
                         Size: =16
                         Text: ="USAFSOS Inventory"
                         Wrap: =false
@@ -84,14 +82,14 @@ Screens:
                       Control: ModernText
                       Properties:
                         AccessibleLabel: =Self.Text
+                        Align: =Align.Right
                         Color: =RGBA(255, 255, 255, 1)
+                        FontWeight: =FontWeight.Semibold
+                        Height: =40
                         LayoutMinWidth: =0
                         PaddingBottom: =0
                         PaddingLeft: =0
                         PaddingTop: =0
-                        Align: =Align.Right
-                        FontWeight: =FontWeight.Semibold
-                        Height: =40
                         Size: =14
                         Text: ="Equipment Receipt"
                         Width: =180
@@ -101,39 +99,38 @@ Screens:
                 Variant: AutoLayout
                 Properties:
                   DropShadow: =DropShadow.None
+                  LayoutAlignItems: =LayoutAlignItems.Center
+                  LayoutDirection: =LayoutDirection.Vertical
+                  LayoutGap: =16
                   LayoutMinHeight: =0
                   LayoutMinWidth: =0
+                  LayoutOverflowY: =LayoutOverflow.Scroll
+                  PaddingBottom: =32
+                  PaddingTop: =20
                   RadiusBottomLeft: =0
                   RadiusBottomRight: =0
                   RadiusTopLeft: =0
                   RadiusTopRight: =0
-                  FillPortions: =1
-                  LayoutAlignItems: =LayoutAlignItems.Center
-                  LayoutDirection: =LayoutDirection.Vertical
-                  LayoutGap: =16
-                  LayoutOverflowY: =LayoutOverflow.Scroll
-                  PaddingBottom: =32
-                  PaddingTop: =20
                 Children:
                   - conInvRcLoading:
                       Control: GroupContainer
                       Variant: AutoLayout
                       Properties:
+                        AlignInContainer: =AlignInContainer.Center
                         DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Height: =If(Coalesce(gblConsentWaited, false), 180, 120)
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutJustifyContent: =LayoutJustifyContent.Center
                         LayoutMinHeight: =0
                         LayoutMinWidth: =0
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
-                        AlignInContainer: =AlignInContainer.Center
-                        FillPortions: =0
-                        Height: =If(Coalesce(gblConsentWaited, false), 180, 120)
-                        LayoutAlignItems: =LayoutAlignItems.Center
-                        LayoutDirection: =LayoutDirection.Vertical
-                        LayoutJustifyContent: =LayoutJustifyContent.Center
-                        Width: =Min(760, App.Width - 32)
                         Visible: =locRcStep = "load"
+                        Width: =Min(760, App.Width - 32)
                       Children:
                         - spnInvRcLoad:
                             Control: ModernSpinner
@@ -155,14 +152,14 @@ Screens:
                             Control: ModernText
                             Properties:
                               AccessibleLabel: =Self.Text
+                              Align: =Align.Center
                               Color: =RGBA(131, 82, 0, 1)
+                              Height: =48
                               LayoutMinWidth: =0
                               PaddingBottom: =0
                               PaddingLeft: =16
-                              PaddingTop: =0
-                              Align: =Align.Center
-                              Height: =48
                               PaddingRight: =16
+                              PaddingTop: =0
                               Size: =13
                               Text: ="Still loading. If you see ""Allow this app to access your data?"", select Allow. If nothing appears, reload the page."
                               Visible: =Coalesce(gblConsentWaited, false)
@@ -171,59 +168,58 @@ Screens:
                       Control: GroupContainer
                       Variant: AutoLayout
                       Properties:
+                        AlignInContainer: =AlignInContainer.Center
                         DropShadow: =DropShadow.None
+                        Fill: =RGBA(236, 243, 253, 1)
+                        FillPortions: =0
+                        Height: =76
+                        LayoutAlignItems: =LayoutAlignItems.Center
+                        LayoutDirection: =LayoutDirection.Horizontal
+                        LayoutGap: =14
+                        LayoutJustifyContent: =LayoutJustifyContent.Center
                         LayoutMinHeight: =0
                         LayoutMinWidth: =0
                         RadiusBottomLeft: =8
                         RadiusBottomRight: =8
                         RadiusTopLeft: =8
                         RadiusTopRight: =8
-                        Fill: =RGBA(236, 243, 253, 1)
-                        FillPortions: =0
-                        Height: =76
-                        LayoutDirection: =LayoutDirection.Horizontal
-                        LayoutAlignItems: =LayoutAlignItems.Center
-                        LayoutGap: =14
-                        LayoutJustifyContent: =LayoutJustifyContent.Center
-                        Width: =Min(760, App.Width - 32)
-                        AlignInContainer: =AlignInContainer.Center
                         Visible: =locRcStep = "view" && locRc.State in ["ready"]
+                        Width: =Min(760, App.Width - 32)
                       Children:
                         - imgInvRcHead:
                             Control: Image
                             Properties:
-                              AccessibleLabel: =""
                               Height: =36
-                              Width: =36
                               Image: =fxRcIcon("doc", "#0B2A4A")
+                              Width: =36
                         - conInvRcHeadTxt:
                             Control: GroupContainer
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
+                              Height: =56
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
+                              LayoutJustifyContent: =LayoutJustifyContent.Center
                               LayoutMinHeight: =0
                               LayoutMinWidth: =0
                               RadiusBottomLeft: =0
                               RadiusBottomRight: =0
                               RadiusTopLeft: =0
                               RadiusTopRight: =0
-                              LayoutAlignItems: =LayoutAlignItems.Stretch
                               Width: =360
-                              Height: =56
-                              LayoutDirection: =LayoutDirection.Vertical
-                              LayoutJustifyContent: =LayoutJustifyContent.Center
                             Children:
                               - txtInvRcHeadT:
                                   Control: ModernText
                                   Properties:
                                     AccessibleLabel: =Self.Text
                                     Color: =RGBA(11, 42, 74, 1)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =28
                                     LayoutMinWidth: =0
                                     PaddingBottom: =0
                                     PaddingLeft: =0
                                     PaddingTop: =0
-                                    FontWeight: =FontWeight.Bold
-                                    Height: =28
                                     Size: =18
                                     Text: ="Equipment Receipt Acknowledgement"
                                     Wrap: =false
@@ -232,11 +228,11 @@ Screens:
                                   Properties:
                                     AccessibleLabel: =Self.Text
                                     Color: =RGBA(84, 96, 112, 1)
+                                    Height: =22
                                     LayoutMinWidth: =0
                                     PaddingBottom: =0
                                     PaddingLeft: =0
                                     PaddingTop: =0
-                                    Height: =22
                                     Size: =13
                                     Text: ="Please review the equipment details below."
                                     Wrap: =false
@@ -244,86 +240,86 @@ Screens:
                       Control: GroupContainer
                       Variant: AutoLayout
                       Properties:
+                        AlignInContainer: =AlignInContainer.Center
+                        BorderColor: =RGBA(26, 32, 44, 1)
+                        BorderThickness: =1
                         DropShadow: =DropShadow.None
+                        Fill: =RGBA(255, 255, 255, 1)
+                        FillPortions: =0
+                        Height: =56 + 56 + 56 + 30 + 30 + Max(1, CountRows(colRcItems)) * 48 + 30 + RoundUp((Max(1, RoundUp(Len(locRc.Conditions) * 6.60 / (Min(760, App.Width - 32) - 48), 0)) + CountRows(Split(locRc.Conditions, Char(10))) * 0.6) * 17, 0) + 16
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutDirection: =LayoutDirection.Vertical
                         LayoutMinHeight: =0
                         LayoutMinWidth: =0
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
-                        LayoutAlignItems: =LayoutAlignItems.Stretch
-                        AlignInContainer: =AlignInContainer.Center
-                        BorderColor: =RGBA(26, 32, 44, 1)
-                        BorderThickness: =1
-                        Fill: =RGBA(255, 255, 255, 1)
-                        FillPortions: =0
-                        Height: =56 + 56 + 56 + 30 + 30 + Max(1, CountRows(colRcItems)) * 48 + 30 + RoundUp((Max(1, RoundUp(Len(locRc.Conditions) * 6.60 / (Min(760, App.Width - 32) - 48), 0)) + CountRows(Split(locRc.Conditions, Char(10))) * 0.6) * 17, 0) + 16
-                        LayoutDirection: =LayoutDirection.Vertical
-                        Width: =Min(760, App.Width - 32)
                         Visible: =locRcStep = "view" && locRc.State in ["ready"]
+                        Width: =Min(760, App.Width - 32)
                       Children:
                         - conInvRcFormTop:
                             Control: GroupContainer
                             Variant: AutoLayout
                             Properties:
+                              BorderColor: =RGBA(214, 220, 228, 1)
+                              BorderThickness: =1
                               DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =56
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
                               LayoutMinHeight: =0
                               LayoutMinWidth: =0
+                              PaddingLeft: =16
+                              PaddingRight: =12
                               RadiusBottomLeft: =0
                               RadiusBottomRight: =0
                               RadiusTopLeft: =0
                               RadiusTopRight: =0
-                              FillPortions: =0
-                              Height: =56
-                              LayoutDirection: =LayoutDirection.Horizontal
-                              LayoutAlignItems: =LayoutAlignItems.Center
-                              PaddingLeft: =16
-                              PaddingRight: =12
-                              BorderColor: =RGBA(214, 220, 228, 1)
-                              BorderThickness: =1
                             Children:
                               - conInvRcFormTopSp:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
+                                    Height: =10
+                                    LayoutDirection: =LayoutDirection.Horizontal
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    Height: =10
                                     Width: =120
                               - conInvRcFormTopL:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
+                                    Height: =48
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutJustifyContent: =LayoutJustifyContent.Center
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    LayoutAlignItems: =LayoutAlignItems.Stretch
-                                    FillPortions: =1
-                                    Height: =48
-                                    LayoutDirection: =LayoutDirection.Vertical
-                                    LayoutJustifyContent: =LayoutJustifyContent.Center
                                   Children:
                                     - txtInvRcDept:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
+                                          Align: =Align.Center
                                           Color: =RGBA(26, 32, 44, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =20
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          Align: =Align.Center
-                                          FontWeight: =FontWeight.Semibold
-                                          Height: =20
                                           Size: =12
                                           Text: ="DEPARTMENT OF THE AIR FORCE"
                                           Wrap: =false
@@ -331,14 +327,14 @@ Screens:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
+                                          Align: =Align.Center
                                           Color: =RGBA(26, 32, 44, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =20
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          Align: =Align.Center
-                                          FontWeight: =FontWeight.Semibold
-                                          Height: =20
                                           Size: =12
                                           Text: ="TEMPORARY ISSUE RECEIPT"
                                           Wrap: =false
@@ -347,30 +343,30 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
+                                    Height: =50
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutJustifyContent: =LayoutJustifyContent.Center
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    LayoutAlignItems: =LayoutAlignItems.Stretch
-                                    Height: =50
                                     Width: =120
-                                    LayoutDirection: =LayoutDirection.Vertical
-                                    LayoutJustifyContent: =LayoutJustifyContent.Center
                                   Children:
                                     - txtInvRcFormNo:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
+                                          Align: =Align.Right
                                           Color: =RGBA(26, 32, 44, 1)
+                                          FontWeight: =FontWeight.Bold
+                                          Height: =18
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          Align: =Align.Right
-                                          FontWeight: =FontWeight.Bold
-                                          Height: =18
                                           Size: =12
                                           Text: ="DAF Form 1297"
                                           Wrap: =false
@@ -378,13 +374,13 @@ Screens:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
+                                          Align: =Align.Right
                                           Color: =RGBA(26, 32, 44, 1)
+                                          Height: =16
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          Align: =Align.Right
-                                          Height: =16
                                           Size: =11
                                           Text: ="20260323"
                                           Wrap: =false
@@ -392,13 +388,13 @@ Screens:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
+                                          Align: =Align.Right
                                           Color: =RGBA(26, 32, 44, 1)
+                                          Height: =16
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          Align: =Align.Right
-                                          Height: =16
                                           Size: =11
                                           Text: ="Page 1 of 1"
                                           Wrap: =false
@@ -407,48 +403,47 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =56
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Horizontal
                               LayoutMinHeight: =0
                               LayoutMinWidth: =0
                               RadiusBottomLeft: =0
                               RadiusBottomRight: =0
                               RadiusTopLeft: =0
                               RadiusTopRight: =0
-                              FillPortions: =0
-                              Height: =56
-                              LayoutDirection: =LayoutDirection.Horizontal
-                              LayoutAlignItems: =LayoutAlignItems.Stretch
                             Children:
                               - conInvRcNo:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
+                                    BorderColor: =RGBA(214, 220, 228, 1)
+                                    BorderThickness: =1
                                     DropShadow: =DropShadow.None
+                                    Height: =56
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
+                                    PaddingLeft: =10
+                                    PaddingTop: =6
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    LayoutAlignItems: =LayoutAlignItems.Stretch
-                                    FillPortions: =1
-                                    Height: =56
-                                    LayoutDirection: =LayoutDirection.Vertical
-                                    LayoutGap: =2
-                                    PaddingLeft: =10
-                                    PaddingTop: =6
-                                    BorderColor: =RGBA(214, 220, 228, 1)
-                                    BorderThickness: =1
                                   Children:
                                     - txtInvRcNoLbl:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =RGBA(84, 96, 112, 1)
+                                          Height: =18
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          Height: =18
                                           Size: =11
                                           Text: ="Receipt Number"
                                           Wrap: =false
@@ -457,12 +452,12 @@ Screens:
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =RGBA(26, 32, 44, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =24
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          FontWeight: =FontWeight.Semibold
-                                          Height: =24
                                           Size: =13
                                           Text: =locRc.Number
                                           Wrap: =false
@@ -470,33 +465,32 @@ Screens:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
+                                    BorderColor: =RGBA(214, 220, 228, 1)
+                                    BorderThickness: =1
                                     DropShadow: =DropShadow.None
+                                    Height: =56
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
+                                    PaddingLeft: =10
+                                    PaddingTop: =6
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    LayoutAlignItems: =LayoutAlignItems.Stretch
-                                    FillPortions: =1
-                                    Height: =56
-                                    LayoutDirection: =LayoutDirection.Vertical
-                                    LayoutGap: =2
-                                    PaddingLeft: =10
-                                    PaddingTop: =6
-                                    BorderColor: =RGBA(214, 220, 228, 1)
-                                    BorderThickness: =1
                                   Children:
                                     - txtInvRcIssLbl:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =RGBA(84, 96, 112, 1)
+                                          Height: =18
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          Height: =18
                                           Size: =11
                                           Text: ="Issue Date"
                                           Wrap: =false
@@ -505,12 +499,12 @@ Screens:
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =RGBA(26, 32, 44, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =24
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          FontWeight: =FontWeight.Semibold
-                                          Height: =24
                                           Size: =13
                                           Text: =locRc.IssueDate
                                           Wrap: =false
@@ -518,33 +512,32 @@ Screens:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
+                                    BorderColor: =RGBA(214, 220, 228, 1)
+                                    BorderThickness: =1
                                     DropShadow: =DropShadow.None
+                                    Height: =56
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
+                                    PaddingLeft: =10
+                                    PaddingTop: =6
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    LayoutAlignItems: =LayoutAlignItems.Stretch
-                                    FillPortions: =1
-                                    Height: =56
-                                    LayoutDirection: =LayoutDirection.Vertical
-                                    LayoutGap: =2
-                                    PaddingLeft: =10
-                                    PaddingTop: =6
-                                    BorderColor: =RGBA(214, 220, 228, 1)
-                                    BorderThickness: =1
                                   Children:
                                     - txtInvRcRetLbl:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =RGBA(84, 96, 112, 1)
+                                          Height: =18
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          Height: =18
                                           Size: =11
                                           Text: ="Return Date"
                                           Wrap: =false
@@ -553,12 +546,12 @@ Screens:
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =RGBA(26, 32, 44, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =24
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          FontWeight: =FontWeight.Semibold
-                                          Height: =24
                                           Size: =13
                                           Text: =locRc.ReturnDate
                                           Wrap: =false
@@ -567,48 +560,47 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =56
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Horizontal
                               LayoutMinHeight: =0
                               LayoutMinWidth: =0
                               RadiusBottomLeft: =0
                               RadiusBottomRight: =0
                               RadiusTopLeft: =0
                               RadiusTopRight: =0
-                              FillPortions: =0
-                              Height: =56
-                              LayoutDirection: =LayoutDirection.Horizontal
-                              LayoutAlignItems: =LayoutAlignItems.Stretch
                             Children:
                               - conInvRcTo:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
+                                    BorderColor: =RGBA(214, 220, 228, 1)
+                                    BorderThickness: =1
                                     DropShadow: =DropShadow.None
+                                    Height: =56
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
+                                    PaddingLeft: =10
+                                    PaddingTop: =6
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    LayoutAlignItems: =LayoutAlignItems.Stretch
-                                    FillPortions: =1
-                                    Height: =56
-                                    LayoutDirection: =LayoutDirection.Vertical
-                                    LayoutGap: =2
-                                    PaddingLeft: =10
-                                    PaddingTop: =6
-                                    BorderColor: =RGBA(214, 220, 228, 1)
-                                    BorderThickness: =1
                                   Children:
                                     - txtInvRcToLbl:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =RGBA(84, 96, 112, 1)
+                                          Height: =18
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          Height: =18
                                           Size: =11
                                           Text: ="Issued To"
                                           Wrap: =false
@@ -617,12 +609,12 @@ Screens:
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =RGBA(26, 32, 44, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =24
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          FontWeight: =FontWeight.Semibold
-                                          Height: =24
                                           Size: =13
                                           Text: =locRc.IssuedTo
                                           Wrap: =false
@@ -630,33 +622,32 @@ Screens:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
+                                    BorderColor: =RGBA(214, 220, 228, 1)
+                                    BorderThickness: =1
                                     DropShadow: =DropShadow.None
+                                    Height: =56
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
+                                    PaddingLeft: =10
+                                    PaddingTop: =6
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    LayoutAlignItems: =LayoutAlignItems.Stretch
-                                    FillPortions: =1
-                                    Height: =56
-                                    LayoutDirection: =LayoutDirection.Vertical
-                                    LayoutGap: =2
-                                    PaddingLeft: =10
-                                    PaddingTop: =6
-                                    BorderColor: =RGBA(214, 220, 228, 1)
-                                    BorderThickness: =1
                                   Children:
                                     - txtInvRcOrgVLbl:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =RGBA(84, 96, 112, 1)
+                                          Height: =18
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          Height: =18
                                           Size: =11
                                           Text: ="ORGN Account No."
                                           Wrap: =false
@@ -665,12 +656,12 @@ Screens:
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =RGBA(26, 32, 44, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =24
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          FontWeight: =FontWeight.Semibold
-                                          Height: =24
                                           Size: =13
                                           Text: =Coalesce(locRc.OrgAcct, "–")
                                           Wrap: =false
@@ -678,33 +669,32 @@ Screens:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
+                                    BorderColor: =RGBA(214, 220, 228, 1)
+                                    BorderThickness: =1
                                     DropShadow: =DropShadow.None
+                                    Height: =56
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutGap: =2
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
+                                    PaddingLeft: =10
+                                    PaddingTop: =6
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    LayoutAlignItems: =LayoutAlignItems.Stretch
-                                    FillPortions: =1
-                                    Height: =56
-                                    LayoutDirection: =LayoutDirection.Vertical
-                                    LayoutGap: =2
-                                    PaddingLeft: =10
-                                    PaddingTop: =6
-                                    BorderColor: =RGBA(214, 220, 228, 1)
-                                    BorderThickness: =1
                                   Children:
                                     - txtInvRcOffLbl:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =RGBA(84, 96, 112, 1)
+                                          Height: =18
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          Height: =18
                                           Size: =11
                                           Text: ="Issuing Office"
                                           Wrap: =false
@@ -713,12 +703,12 @@ Screens:
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =RGBA(26, 32, 44, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =24
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          FontWeight: =FontWeight.Semibold
-                                          Height: =24
                                           Size: =13
                                           Text: =Coalesce(locRc.Office, "–")
                                           Wrap: =false
@@ -727,12 +717,12 @@ Screens:
                             Properties:
                               AccessibleLabel: =Self.Text
                               Color: =RGBA(26, 32, 44, 1)
+                              FontWeight: =FontWeight.Bold
+                              Height: =30
                               LayoutMinWidth: =0
                               PaddingBottom: =0
                               PaddingLeft: =12
                               PaddingTop: =0
-                              FontWeight: =FontWeight.Bold
-                              Height: =30
                               Size: =12
                               Text: ="EQUIPMENT ISSUED"
                               Wrap: =false
@@ -740,34 +730,34 @@ Screens:
                             Control: GroupContainer
                             Variant: AutoLayout
                             Properties:
+                              BorderColor: =RGBA(214, 220, 228, 1)
+                              BorderThickness: =1
                               DropShadow: =DropShadow.None
+                              Fill: =RGBA(246, 247, 249, 1)
+                              FillPortions: =0
+                              Height: =30
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =8
                               LayoutMinHeight: =0
                               LayoutMinWidth: =0
+                              PaddingLeft: =12
+                              PaddingRight: =12
                               RadiusBottomLeft: =0
                               RadiusBottomRight: =0
                               RadiusTopLeft: =0
                               RadiusTopRight: =0
-                              Fill: =RGBA(246, 247, 249, 1)
-                              FillPortions: =0
-                              Height: =30
-                              LayoutDirection: =LayoutDirection.Horizontal
-                              LayoutAlignItems: =LayoutAlignItems.Center
-                              PaddingLeft: =12
-                              PaddingRight: =12
-                              LayoutGap: =8
-                              BorderColor: =RGBA(214, 220, 228, 1)
-                              BorderThickness: =1
                             Children:
                               - txtInvRcColQ:
                                   Control: ModernText
                                   Properties:
                                     AccessibleLabel: =Self.Text
                                     Color: =RGBA(26, 32, 44, 1)
+                                    Height: =24
                                     LayoutMinWidth: =0
                                     PaddingBottom: =0
                                     PaddingLeft: =0
                                     PaddingTop: =0
-                                    Height: =24
                                     Size: =11
                                     Text: ="QTY"
                                     Width: =40
@@ -777,12 +767,12 @@ Screens:
                                   Properties:
                                     AccessibleLabel: =Self.Text
                                     Color: =RGBA(26, 32, 44, 1)
+                                    FillPortions: =3
+                                    Height: =24
                                     LayoutMinWidth: =0
                                     PaddingBottom: =0
                                     PaddingLeft: =0
                                     PaddingTop: =0
-                                    FillPortions: =3
-                                    Height: =24
                                     Size: =11
                                     Text: ="DESCRIPTION"
                                     Wrap: =false
@@ -791,12 +781,12 @@ Screens:
                                   Properties:
                                     AccessibleLabel: =Self.Text
                                     Color: =RGBA(26, 32, 44, 1)
+                                    FillPortions: =2
+                                    Height: =24
                                     LayoutMinWidth: =0
                                     PaddingBottom: =0
                                     PaddingLeft: =0
                                     PaddingTop: =0
-                                    FillPortions: =2
-                                    Height: =24
                                     Size: =11
                                     Text: ="ASSET NUMBER / SERIAL NUMBER"
                                     Wrap: =false
@@ -819,33 +809,31 @@ Screens:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
+                                    BorderColor: =RGBA(214, 220, 228, 1)
+                                    BorderThickness: =1
                                     DropShadow: =DropShadow.None
-                                    LayoutMinHeight: =0
-                                    LayoutMinWidth: =0
+                                    Height: =Parent.TemplateHeight
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =8
+                                    PaddingLeft: =12
+                                    PaddingRight: =12
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    Height: =Parent.TemplateHeight
                                     Width: =Parent.TemplateWidth
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    PaddingLeft: =12
-                                    PaddingRight: =12
-                                    LayoutGap: =8
-                                    BorderColor: =RGBA(214, 220, 228, 1)
-                                    BorderThickness: =1
                                   Children:
                                     - txtInvRcItQ:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =RGBA(26, 32, 44, 1)
+                                          Height: =24
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          Height: =24
                                           Size: =13
                                           Text: =ThisItem.Qty
                                           Width: =40
@@ -855,12 +843,12 @@ Screens:
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =RGBA(26, 32, 44, 1)
+                                          FillPortions: =3
+                                          Height: =40
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          FillPortions: =3
-                                          Height: =40
                                           Size: =13
                                           Text: =ThisItem.Desc
                                     - txtInvRcItA:
@@ -868,12 +856,12 @@ Screens:
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =RGBA(26, 32, 44, 1)
+                                          FillPortions: =2
+                                          Height: =40
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          FillPortions: =2
-                                          Height: =40
                                           Size: =13
                                           Text: =ThisItem.Tag & If(IsBlank(ThisItem.Serial), "", " / " & ThisItem.Serial)
                         - txtInvRcCondLbl:
@@ -881,12 +869,12 @@ Screens:
                             Properties:
                               AccessibleLabel: =Self.Text
                               Color: =RGBA(26, 32, 44, 1)
+                              FontWeight: =FontWeight.Bold
+                              Height: =30
                               LayoutMinWidth: =0
                               PaddingBottom: =0
                               PaddingLeft: =12
                               PaddingTop: =8
-                              FontWeight: =FontWeight.Bold
-                              Height: =30
                               Size: =12
                               Text: ="CONDITIONS OF ISSUE"
                               Wrap: =false
@@ -895,12 +883,12 @@ Screens:
                             Properties:
                               AccessibleLabel: =Self.Text
                               Color: =RGBA(26, 32, 44, 1)
+                              Height: =RoundUp((Max(1, RoundUp(Len(locRc.Conditions) * 6.60 / (Min(760, App.Width - 32) - 48), 0)) + CountRows(Split(locRc.Conditions, Char(10))) * 0.6) * 17, 0) + 8
                               LayoutMinWidth: =0
                               PaddingBottom: =0
                               PaddingLeft: =12
-                              PaddingTop: =0
-                              Height: =RoundUp((Max(1, RoundUp(Len(locRc.Conditions) * 6.60 / (Min(760, App.Width - 32) - 48), 0)) + CountRows(Split(locRc.Conditions, Char(10))) * 0.6) * 17, 0) + 8
                               PaddingRight: =12
+                              PaddingTop: =0
                               Size: =12
                               Text: =locRc.Conditions
                               VerticalAlign: =VerticalAlign.Top
@@ -908,61 +896,60 @@ Screens:
                       Control: GroupContainer
                       Variant: AutoLayout
                       Properties:
+                        AlignInContainer: =AlignInContainer.Center
                         DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Height: =Max(1, RoundUp(Len(locRc.CheckboxText) * 7.15 / (Min(760, App.Width - 32) - 60), 0)) * 19 + 6 + 16 + 52 + If(IsBlank(locRcError), 0, 40)
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =8
                         LayoutMinHeight: =0
                         LayoutMinWidth: =0
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
-                        LayoutAlignItems: =LayoutAlignItems.Stretch
-                        AlignInContainer: =AlignInContainer.Center
-                        FillPortions: =0
-                        Height: =Max(1, RoundUp(Len(locRc.CheckboxText) * 7.15 / (Min(760, App.Width - 32) - 60), 0)) * 19 + 6 + 16 + 52 + If(IsBlank(locRcError), 0, 40)
-                        LayoutDirection: =LayoutDirection.Vertical
-                        LayoutGap: =8
-                        Width: =Min(760, App.Width - 32)
                         Visible: =locRcStep = "view" && locRc.State in ["ready"]
+                        Width: =Min(760, App.Width - 32)
                       Children:
                         - conInvRcCheck:
                             Control: GroupContainer
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
+                              FillPortions: =0
+                              Height: =Max(1, RoundUp(Len(locRc.CheckboxText) * 7.15 / (Min(760, App.Width - 32) - 60), 0)) * 19 + 6 + 8
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =8
                               LayoutMinHeight: =0
                               LayoutMinWidth: =0
                               RadiusBottomLeft: =0
                               RadiusBottomRight: =0
                               RadiusTopLeft: =0
                               RadiusTopRight: =0
-                              FillPortions: =0
-                              Height: =Max(1, RoundUp(Len(locRc.CheckboxText) * 7.15 / (Min(760, App.Width - 32) - 60), 0)) * 19 + 6 + 8
-                              LayoutDirection: =LayoutDirection.Horizontal
-                              LayoutGap: =8
                             Children:
                               - chkInvRcAgree:
                                   Control: ModernCheckbox
                                   Properties:
                                     AccessibleLabel: =locRc.CheckboxText
-                                    Default: =false
                                     Label: =""
                                     LayoutMinWidth: =0
-                                    Width: =32
                                     OnCheck: |-
                                       =UpdateContext({locRcChecked: true})
                                     OnUncheck: |-
                                       =UpdateContext({locRcChecked: false})
+                                    Width: =32
                               - txtInvRcAgree:
                                   Control: ModernText
                                   Properties:
                                     AccessibleLabel: =Self.Text
                                     Color: =RGBA(26, 32, 44, 1)
+                                    FillPortions: =1
+                                    Height: =Max(1, RoundUp(Len(locRc.CheckboxText) * 7.15 / (Min(760, App.Width - 32) - 60), 0)) * 19 + 6
                                     LayoutMinWidth: =0
                                     PaddingBottom: =0
                                     PaddingLeft: =0
                                     PaddingTop: =0
-                                    FillPortions: =1
-                                    Height: =Max(1, RoundUp(Len(locRc.CheckboxText) * 7.15 / (Min(760, App.Width - 32) - 60), 0)) * 19 + 6
                                     Size: =13
                                     Text: =locRc.CheckboxText
                         - txtInvRcErr:
@@ -970,22 +957,22 @@ Screens:
                             Properties:
                               AccessibleLabel: =Self.Text
                               Color: =RGBA(196, 30, 42, 1)
+                              Height: =36
                               LayoutMinWidth: =0
                               PaddingBottom: =0
                               PaddingLeft: =0
                               PaddingTop: =0
-                              Height: =36
                               Size: =13
                               Text: =locRcError
                               Visible: =!IsBlank(locRcError)
                         - btnInvRcAck:
                             Control: ModernButton
                             Properties:
-                              LayoutMinWidth: =0
-                              Height: =44
                               AccessibleLabel: ="I Acknowledge receipt " & locRc.Number
                               DisplayMode: =If(locRcChecked, DisplayMode.Edit, DisplayMode.Disabled)
+                              Height: =44
                               Icon: ="CheckmarkCircle"
+                              LayoutMinWidth: =0
                               OnSelect: |-
                                 =UpdateContext({locRcStep: "processing", locRcProc: 0});
                                 With(
@@ -1002,44 +989,43 @@ Screens:
                       Control: GroupContainer
                       Variant: AutoLayout
                       Properties:
-                        DropShadow: =DropShadow.None
-                        LayoutMinHeight: =0
-                        LayoutMinWidth: =0
-                        RadiusBottomLeft: =8
-                        RadiusBottomRight: =8
-                        RadiusTopLeft: =8
-                        RadiusTopRight: =8
                         AlignInContainer: =AlignInContainer.Center
+                        DropShadow: =DropShadow.None
                         Fill: =RGBA(255, 255, 255, 1)
                         FillPortions: =0
                         Height: =464
                         LayoutAlignItems: =LayoutAlignItems.Center
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =10
+                        LayoutMinHeight: =0
+                        LayoutMinWidth: =0
                         PaddingTop: =40
-                        Width: =Min(760, App.Width - 32)
+                        RadiusBottomLeft: =8
+                        RadiusBottomRight: =8
+                        RadiusTopLeft: =8
+                        RadiusTopRight: =8
                         Visible: =locRcStep = "processing"
+                        Width: =Min(760, App.Width - 32)
                       Children:
                         - spnInvRc:
                             Control: ModernSpinner
                             Properties:
                               AccessibleLabel: ="Processing"
-                              Label: =""
-                              LayoutMinWidth: =0
                               Height: =64
+                              LayoutMinWidth: =0
                               Width: =64
                         - txtInvRcProcT:
                             Control: ModernText
                             Properties:
                               AccessibleLabel: =Self.Text
+                              Align: =Align.Center
                               Color: =RGBA(11, 42, 74, 1)
+                              FontWeight: =FontWeight.Bold
+                              Height: =34
                               LayoutMinWidth: =0
                               PaddingBottom: =0
                               PaddingLeft: =0
                               PaddingTop: =0
-                              Align: =Align.Center
-                              FontWeight: =FontWeight.Bold
-                              Height: =34
                               Size: =20
                               Text: ="Processing Your Acknowledgement"
                               Width: =Parent.Width
@@ -1048,14 +1034,14 @@ Screens:
                             Control: ModernText
                             Properties:
                               AccessibleLabel: =Self.Text
+                              Align: =Align.Center
                               Color: =RGBA(84, 96, 112, 1)
+                              Height: =46
                               LayoutMinWidth: =0
                               PaddingBottom: =0
                               PaddingLeft: =24
-                              PaddingTop: =0
-                              Align: =Align.Center
-                              Height: =46
                               PaddingRight: =24
+                              PaddingTop: =0
                               Size: =13
                               Text: ="Please wait while we record your acknowledgement and generate the completed receipt."
                               Width: =Parent.Width
@@ -1063,20 +1049,20 @@ Screens:
                             Control: GroupContainer
                             Variant: AutoLayout
                             Properties:
+                              BorderColor: =RGBA(214, 220, 228, 1)
+                              BorderThickness: =1
                               DropShadow: =DropShadow.None
+                              Height: =232
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
                               LayoutMinHeight: =0
                               LayoutMinWidth: =0
+                              PaddingLeft: =16
+                              PaddingTop: =6
                               RadiusBottomLeft: =8
                               RadiusBottomRight: =8
                               RadiusTopLeft: =8
                               RadiusTopRight: =8
-                              LayoutAlignItems: =LayoutAlignItems.Stretch
-                              BorderColor: =RGBA(214, 220, 228, 1)
-                              BorderThickness: =1
-                              Height: =232
-                              LayoutDirection: =LayoutDirection.Vertical
-                              PaddingLeft: =16
-                              PaddingTop: =6
                               Width: =Parent.Width - 64
                             Children:
                               - conInvRcStep0:
@@ -1084,46 +1070,44 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =44
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =12
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    FillPortions: =0
-                                    Height: =44
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutGap: =12
                                   Children:
                                     - imgInvRcStep0:
                                         Control: Image
                                         Properties:
-                                          AccessibleLabel: =""
                                           Height: =22
-                                          Width: =22
-                                          Visible: =locRcProc <> 0
                                           Image: =If(locRcProc > 0, fxRcIcon("check", "#1E803C"), fxRcIcon("todo", "#B8C0CC"))
+                                          Visible: =locRcProc <> 0
+                                          Width: =22
                                     - spnInvRcStep0:
                                         Control: ModernSpinner
                                         Properties:
                                           AccessibleLabel: ="Validating your identity, in progress"
-                                          Label: =""
-                                          LayoutMinWidth: =0
                                           Height: =22
-                                          Width: =22
+                                          LayoutMinWidth: =0
                                           Visible: =locRcProc = 0
+                                          Width: =22
                                     - txtInvRcStep0:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =If(locRcProc >= 0, RGBA(26, 32, 44, 1), RGBA(84, 96, 112, 1))
+                                          FillPortions: =1
+                                          Height: =24
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          FillPortions: =1
-                                          Height: =24
                                           Size: =13
                                           Text: ="Validating your identity"
                                           Wrap: =false
@@ -1132,46 +1116,44 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =44
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =12
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    FillPortions: =0
-                                    Height: =44
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutGap: =12
                                   Children:
                                     - imgInvRcStep1:
                                         Control: Image
                                         Properties:
-                                          AccessibleLabel: =""
                                           Height: =22
-                                          Width: =22
-                                          Visible: =locRcProc <> 1
                                           Image: =If(locRcProc > 1, fxRcIcon("check", "#1E803C"), fxRcIcon("todo", "#B8C0CC"))
+                                          Visible: =locRcProc <> 1
+                                          Width: =22
                                     - spnInvRcStep1:
                                         Control: ModernSpinner
                                         Properties:
                                           AccessibleLabel: ="Recording acknowledgement, in progress"
-                                          Label: =""
-                                          LayoutMinWidth: =0
                                           Height: =22
-                                          Width: =22
+                                          LayoutMinWidth: =0
                                           Visible: =locRcProc = 1
+                                          Width: =22
                                     - txtInvRcStep1:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =If(locRcProc >= 1, RGBA(26, 32, 44, 1), RGBA(84, 96, 112, 1))
+                                          FillPortions: =1
+                                          Height: =24
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          FillPortions: =1
-                                          Height: =24
                                           Size: =13
                                           Text: ="Recording acknowledgement"
                                           Wrap: =false
@@ -1180,46 +1162,44 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =44
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =12
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    FillPortions: =0
-                                    Height: =44
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutGap: =12
                                   Children:
                                     - imgInvRcStep2:
                                         Control: Image
                                         Properties:
-                                          AccessibleLabel: =""
                                           Height: =22
-                                          Width: =22
-                                          Visible: =locRcProc <> 2
                                           Image: =If(locRcProc > 2, fxRcIcon("check", "#1E803C"), fxRcIcon("todo", "#B8C0CC"))
+                                          Visible: =locRcProc <> 2
+                                          Width: =22
                                     - spnInvRcStep2:
                                         Control: ModernSpinner
                                         Properties:
                                           AccessibleLabel: ="Generating completed receipt, in progress"
-                                          Label: =""
-                                          LayoutMinWidth: =0
                                           Height: =22
-                                          Width: =22
+                                          LayoutMinWidth: =0
                                           Visible: =locRcProc = 2
+                                          Width: =22
                                     - txtInvRcStep2:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =If(locRcProc >= 2, RGBA(26, 32, 44, 1), RGBA(84, 96, 112, 1))
+                                          FillPortions: =1
+                                          Height: =24
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          FillPortions: =1
-                                          Height: =24
                                           Size: =13
                                           Text: ="Generating completed receipt"
                                           Wrap: =false
@@ -1228,46 +1208,44 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =44
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =12
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    FillPortions: =0
-                                    Height: =44
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutGap: =12
                                   Children:
                                     - imgInvRcStep3:
                                         Control: Image
                                         Properties:
-                                          AccessibleLabel: =""
                                           Height: =22
-                                          Width: =22
-                                          Visible: =locRcProc <> 3
                                           Image: =If(locRcProc > 3, fxRcIcon("check", "#1E803C"), fxRcIcon("todo", "#B8C0CC"))
+                                          Visible: =locRcProc <> 3
+                                          Width: =22
                                     - spnInvRcStep3:
                                         Control: ModernSpinner
                                         Properties:
                                           AccessibleLabel: ="Saving to secure records, in progress"
-                                          Label: =""
-                                          LayoutMinWidth: =0
                                           Height: =22
-                                          Width: =22
+                                          LayoutMinWidth: =0
                                           Visible: =locRcProc = 3
+                                          Width: =22
                                     - txtInvRcStep3:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =If(locRcProc >= 3, RGBA(26, 32, 44, 1), RGBA(84, 96, 112, 1))
+                                          FillPortions: =1
+                                          Height: =24
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          FillPortions: =1
-                                          Height: =24
                                           Size: =13
                                           Text: ="Saving to secure records"
                                           Wrap: =false
@@ -1276,46 +1254,44 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =44
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =12
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    FillPortions: =0
-                                    Height: =44
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutGap: =12
                                   Children:
                                     - imgInvRcStep4:
                                         Control: Image
                                         Properties:
-                                          AccessibleLabel: =""
                                           Height: =22
-                                          Width: =22
-                                          Visible: =locRcProc <> 4
                                           Image: =If(locRcProc > 4, fxRcIcon("check", "#1E803C"), fxRcIcon("todo", "#B8C0CC"))
+                                          Visible: =locRcProc <> 4
+                                          Width: =22
                                     - spnInvRcStep4:
                                         Control: ModernSpinner
                                         Properties:
                                           AccessibleLabel: ="Sending confirmation email, in progress"
-                                          Label: =""
-                                          LayoutMinWidth: =0
                                           Height: =22
-                                          Width: =22
+                                          LayoutMinWidth: =0
                                           Visible: =locRcProc = 4
+                                          Width: =22
                                     - txtInvRcStep4:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =If(locRcProc >= 4, RGBA(26, 32, 44, 1), RGBA(84, 96, 112, 1))
+                                          FillPortions: =1
+                                          Height: =24
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          FillPortions: =1
-                                          Height: =24
                                           Size: =13
                                           Text: ="Sending confirmation email"
                                           Wrap: =false
@@ -1323,60 +1299,59 @@ Screens:
                       Control: GroupContainer
                       Variant: AutoLayout
                       Properties:
+                        AlignInContainer: =AlignInContainer.Center
                         DropShadow: =DropShadow.None
+                        FillPortions: =0
+                        Height: =210 + 12 + 4 * 58 + 24 + 12 + 52 + If(locRc.PdfReady, 52 + 8, 0) + 12 + 76
+                        LayoutAlignItems: =LayoutAlignItems.Stretch
+                        LayoutDirection: =LayoutDirection.Vertical
+                        LayoutGap: =12
                         LayoutMinHeight: =0
                         LayoutMinWidth: =0
                         RadiusBottomLeft: =0
                         RadiusBottomRight: =0
                         RadiusTopLeft: =0
                         RadiusTopRight: =0
-                        LayoutAlignItems: =LayoutAlignItems.Stretch
-                        AlignInContainer: =AlignInContainer.Center
-                        FillPortions: =0
-                        Height: =210 + 12 + 4 * 58 + 24 + 12 + 52 + If(locRc.PdfReady, 52 + 8, 0) + 12 + 76
-                        LayoutDirection: =LayoutDirection.Vertical
-                        LayoutGap: =12
-                        Width: =Min(760, App.Width - 32)
                         Visible: =locRcStep = "view" && locRc.State in ["acknowledged"]
+                        Width: =Min(760, App.Width - 32)
                       Children:
                         - conInvRcBanner:
                             Control: GroupContainer
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
-                              LayoutMinHeight: =0
-                              LayoutMinWidth: =0
-                              RadiusBottomLeft: =8
-                              RadiusBottomRight: =8
-                              RadiusTopLeft: =8
-                              RadiusTopRight: =8
                               Fill: =If(locRcJustDone, RGBA(233, 246, 236, 1), RGBA(236, 243, 253, 1))
                               FillPortions: =0
                               Height: =210
                               LayoutAlignItems: =LayoutAlignItems.Center
                               LayoutDirection: =LayoutDirection.Vertical
                               LayoutGap: =6
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
                               PaddingTop: =20
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
                             Children:
                               - imgInvRcBanner:
                                   Control: Image
                                   Properties:
-                                    AccessibleLabel: =""
                                     Height: =56
-                                    Width: =56
                                     Image: =fxRcIcon(If(locRcJustDone, "check", "doc"), If(locRcJustDone, "#1E803C", "#0B2A4A"))
+                                    Width: =56
                               - txtInvRcBanT:
                                   Control: ModernText
                                   Properties:
                                     AccessibleLabel: =Self.Text
+                                    Align: =Align.Center
                                     Color: =RGBA(11, 42, 74, 1)
+                                    FontWeight: =FontWeight.Bold
+                                    Height: =34
                                     LayoutMinWidth: =0
                                     PaddingBottom: =0
                                     PaddingLeft: =0
                                     PaddingTop: =0
-                                    Align: =Align.Center
-                                    FontWeight: =FontWeight.Bold
-                                    Height: =34
                                     Size: =22
                                     Text: =If(locRcJustDone, "Thank You!", "Already Acknowledged")
                                     Width: =Parent.Width
@@ -1385,14 +1360,14 @@ Screens:
                                   Control: ModernText
                                   Properties:
                                     AccessibleLabel: =Self.Text
+                                    Align: =Align.Center
                                     Color: =If(locRcJustDone, RGBA(30, 128, 60, 1), RGBA(26, 32, 44, 1))
+                                    FontWeight: =If(locRcJustDone, FontWeight.Semibold, FontWeight.Normal)
+                                    Height: =24
                                     LayoutMinWidth: =0
                                     PaddingBottom: =0
                                     PaddingLeft: =0
                                     PaddingTop: =0
-                                    Align: =Align.Center
-                                    FontWeight: =If(locRcJustDone, FontWeight.Semibold, FontWeight.Normal)
-                                    Height: =24
                                     Size: =14
                                     Text: =If(locRcJustDone, "Your acknowledgement has been recorded.", "This equipment receipt has already been acknowledged.")
                                     Width: =Parent.Width
@@ -1401,14 +1376,14 @@ Screens:
                                   Control: ModernText
                                   Properties:
                                     AccessibleLabel: =Self.Text
+                                    Align: =Align.Center
                                     Color: =RGBA(84, 96, 112, 1)
+                                    Height: =46
                                     LayoutMinWidth: =0
                                     PaddingBottom: =0
                                     PaddingLeft: =24
-                                    PaddingTop: =0
-                                    Align: =Align.Center
-                                    Height: =46
                                     PaddingRight: =24
+                                    PaddingTop: =0
                                     Size: =13
                                     Text: =If(!locRcJustDone, "You can view or download a copy of your receipt below.", locRc.PdfReady, "The completed receipt has been saved to our records and a copy has been emailed to you.", "Your completed receipt is being prepared. A copy will be emailed to you as soon as it is ready.")
                                     Width: =Parent.Width
@@ -1416,74 +1391,72 @@ Screens:
                             Control: GroupContainer
                             Variant: AutoLayout
                             Properties:
+                              BorderColor: =RGBA(214, 220, 228, 1)
+                              BorderThickness: =1
                               DropShadow: =DropShadow.None
+                              Fill: =RGBA(255, 255, 255, 1)
+                              FillPortions: =0
+                              Height: =4 * 58 + 24
+                              LayoutAlignItems: =LayoutAlignItems.Stretch
+                              LayoutDirection: =LayoutDirection.Vertical
                               LayoutMinHeight: =0
                               LayoutMinWidth: =0
+                              PaddingTop: =12
                               RadiusBottomLeft: =8
                               RadiusBottomRight: =8
                               RadiusTopLeft: =8
                               RadiusTopRight: =8
-                              LayoutAlignItems: =LayoutAlignItems.Stretch
-                              BorderColor: =RGBA(214, 220, 228, 1)
-                              BorderThickness: =1
-                              Fill: =RGBA(255, 255, 255, 1)
-                              FillPortions: =0
-                              Height: =4 * 58 + 24
-                              LayoutDirection: =LayoutDirection.Vertical
-                              PaddingTop: =12
                             Children:
                               - conInvRcDNo:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =58
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =14
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
+                                    PaddingLeft: =16
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    FillPortions: =0
-                                    Height: =58
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutGap: =14
-                                    PaddingLeft: =16
                                   Children:
                                     - imgInvRcDNo:
                                         Control: Image
                                         Properties:
-                                          AccessibleLabel: =""
                                           Height: =26
-                                          Width: =26
                                           Image: =fxRcIcon("doc", "#1F2937")
+                                          Width: =26
                                     - conInvRcDNoTxt:
                                         Control: GroupContainer
                                         Variant: AutoLayout
                                         Properties:
                                           DropShadow: =DropShadow.None
+                                          Height: =46
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutJustifyContent: =LayoutJustifyContent.Center
                                           LayoutMinHeight: =0
                                           LayoutMinWidth: =0
                                           RadiusBottomLeft: =0
                                           RadiusBottomRight: =0
                                           RadiusTopLeft: =0
                                           RadiusTopRight: =0
-                                          LayoutAlignItems: =LayoutAlignItems.Stretch
-                                          FillPortions: =1
-                                          Height: =46
-                                          LayoutDirection: =LayoutDirection.Vertical
-                                          LayoutJustifyContent: =LayoutJustifyContent.Center
                                         Children:
                                           - txtInvRcDNoLbl:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
                                                 Color: =RGBA(84, 96, 112, 1)
+                                                Height: =18
                                                 LayoutMinWidth: =0
                                                 PaddingBottom: =0
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
-                                                Height: =18
                                                 Size: =12
                                                 Text: ="Receipt Number"
                                                 Wrap: =false
@@ -1492,12 +1465,12 @@ Screens:
                                               Properties:
                                                 AccessibleLabel: =Self.Text
                                                 Color: =RGBA(26, 32, 44, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =24
                                                 LayoutMinWidth: =0
                                                 PaddingBottom: =0
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
-                                                FontWeight: =FontWeight.Semibold
-                                                Height: =24
                                                 Size: =14
                                                 Text: =locRc.Number
                                                 Wrap: =false
@@ -1506,53 +1479,51 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =58
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =14
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
+                                    PaddingLeft: =16
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    FillPortions: =0
-                                    Height: =58
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutGap: =14
-                                    PaddingLeft: =16
                                   Children:
                                     - imgInvRcDBy:
                                         Control: Image
                                         Properties:
-                                          AccessibleLabel: =""
                                           Height: =26
-                                          Width: =26
                                           Image: =fxRcIcon("person", "#1F2937")
+                                          Width: =26
                                     - conInvRcDByTxt:
                                         Control: GroupContainer
                                         Variant: AutoLayout
                                         Properties:
                                           DropShadow: =DropShadow.None
+                                          Height: =46
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutJustifyContent: =LayoutJustifyContent.Center
                                           LayoutMinHeight: =0
                                           LayoutMinWidth: =0
                                           RadiusBottomLeft: =0
                                           RadiusBottomRight: =0
                                           RadiusTopLeft: =0
                                           RadiusTopRight: =0
-                                          LayoutAlignItems: =LayoutAlignItems.Stretch
-                                          FillPortions: =1
-                                          Height: =46
-                                          LayoutDirection: =LayoutDirection.Vertical
-                                          LayoutJustifyContent: =LayoutJustifyContent.Center
                                         Children:
                                           - txtInvRcDByLbl:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
                                                 Color: =RGBA(84, 96, 112, 1)
+                                                Height: =18
                                                 LayoutMinWidth: =0
                                                 PaddingBottom: =0
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
-                                                Height: =18
                                                 Size: =12
                                                 Text: ="Acknowledged By"
                                                 Wrap: =false
@@ -1561,12 +1532,12 @@ Screens:
                                               Properties:
                                                 AccessibleLabel: =Self.Text
                                                 Color: =RGBA(26, 32, 44, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =24
                                                 LayoutMinWidth: =0
                                                 PaddingBottom: =0
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
-                                                FontWeight: =FontWeight.Semibold
-                                                Height: =24
                                                 Size: =14
                                                 Text: =locRc.AckBy
                                                 Wrap: =false
@@ -1575,53 +1546,51 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =58
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =14
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
+                                    PaddingLeft: =16
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    FillPortions: =0
-                                    Height: =58
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutGap: =14
-                                    PaddingLeft: =16
                                   Children:
                                     - imgInvRcDDate:
                                         Control: Image
                                         Properties:
-                                          AccessibleLabel: =""
                                           Height: =26
-                                          Width: =26
                                           Image: =fxRcIcon("calendar", "#1F2937")
+                                          Width: =26
                                     - conInvRcDDateTxt:
                                         Control: GroupContainer
                                         Variant: AutoLayout
                                         Properties:
                                           DropShadow: =DropShadow.None
+                                          Height: =46
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutJustifyContent: =LayoutJustifyContent.Center
                                           LayoutMinHeight: =0
                                           LayoutMinWidth: =0
                                           RadiusBottomLeft: =0
                                           RadiusBottomRight: =0
                                           RadiusTopLeft: =0
                                           RadiusTopRight: =0
-                                          LayoutAlignItems: =LayoutAlignItems.Stretch
-                                          FillPortions: =1
-                                          Height: =46
-                                          LayoutDirection: =LayoutDirection.Vertical
-                                          LayoutJustifyContent: =LayoutJustifyContent.Center
                                         Children:
                                           - txtInvRcDDateLbl:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
                                                 Color: =RGBA(84, 96, 112, 1)
+                                                Height: =18
                                                 LayoutMinWidth: =0
                                                 PaddingBottom: =0
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
-                                                Height: =18
                                                 Size: =12
                                                 Text: ="Acknowledgement Date"
                                                 Wrap: =false
@@ -1630,12 +1599,12 @@ Screens:
                                               Properties:
                                                 AccessibleLabel: =Self.Text
                                                 Color: =RGBA(26, 32, 44, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =24
                                                 LayoutMinWidth: =0
                                                 PaddingBottom: =0
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
-                                                FontWeight: =FontWeight.Semibold
-                                                Height: =24
                                                 Size: =14
                                                 Text: =locRc.AckDate
                                                 Wrap: =false
@@ -1644,53 +1613,51 @@ Screens:
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
+                                    FillPortions: =0
+                                    Height: =58
+                                    LayoutAlignItems: =LayoutAlignItems.Center
+                                    LayoutDirection: =LayoutDirection.Horizontal
+                                    LayoutGap: =14
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
+                                    PaddingLeft: =16
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    FillPortions: =0
-                                    Height: =58
-                                    LayoutDirection: =LayoutDirection.Horizontal
-                                    LayoutAlignItems: =LayoutAlignItems.Center
-                                    LayoutGap: =14
-                                    PaddingLeft: =16
                                   Children:
                                     - imgInvRcDStat:
                                         Control: Image
                                         Properties:
-                                          AccessibleLabel: =""
                                           Height: =26
-                                          Width: =26
                                           Image: =fxRcIcon("circlecheck", "#1F2937")
+                                          Width: =26
                                     - conInvRcDStatTxt:
                                         Control: GroupContainer
                                         Variant: AutoLayout
                                         Properties:
                                           DropShadow: =DropShadow.None
+                                          Height: =52
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutJustifyContent: =LayoutJustifyContent.Center
                                           LayoutMinHeight: =0
                                           LayoutMinWidth: =0
                                           RadiusBottomLeft: =0
                                           RadiusBottomRight: =0
                                           RadiusTopLeft: =0
                                           RadiusTopRight: =0
-                                          LayoutAlignItems: =LayoutAlignItems.Stretch
-                                          FillPortions: =1
-                                          Height: =52
-                                          LayoutDirection: =LayoutDirection.Vertical
-                                          LayoutJustifyContent: =LayoutJustifyContent.Center
                                         Children:
                                           - txtInvRcDStatLbl:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
                                                 Color: =RGBA(84, 96, 112, 1)
+                                                Height: =18
                                                 LayoutMinWidth: =0
                                                 PaddingBottom: =0
                                                 PaddingLeft: =0
                                                 PaddingTop: =0
-                                                Height: =18
                                                 Size: =12
                                                 Text: ="Status"
                                                 Wrap: =false
@@ -1698,45 +1665,45 @@ Screens:
                                               Control: ModernText
                                               Properties:
                                                 AccessibleLabel: =Self.Text
+                                                AlignInContainer: =AlignInContainer.Start
                                                 Color: =RGBA(30, 128, 60, 1)
+                                                Fill: =RGBA(233, 246, 236, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =28
                                                 LayoutMinWidth: =0
                                                 PaddingBottom: =0
                                                 PaddingLeft: =10
                                                 PaddingTop: =0
-                                                AlignInContainer: =AlignInContainer.Start
-                                                Fill: =RGBA(233, 246, 236, 1)
-                                                FontWeight: =FontWeight.Semibold
-                                                Height: =28
-                                                Size: =13
-                                                Text: ="Acknowledged"
-                                                Width: =130
-                                                Wrap: =false
                                                 RadiusBottomLeft: =4
                                                 RadiusBottomRight: =4
                                                 RadiusTopLeft: =4
                                                 RadiusTopRight: =4
+                                                Size: =13
+                                                Text: ="Acknowledged"
+                                                Width: =130
+                                                Wrap: =false
                         - btnInvRcPdf:
                             Control: ModernButton
                             Properties:
-                              LayoutMinWidth: =0
-                              Height: =44
                               AccessibleLabel: ="View or download the completed receipt (PDF)"
                               DisplayMode: =If(locRc.PdfReady, DisplayMode.Edit, DisplayMode.Disabled)
                               FontWeight: =FontWeight.Bold
+                              Height: =44
                               Icon: ="ArrowDownload"
                               IconStyle: =IconStyle.Filled
+                              LayoutMinWidth: =0
                               OnSelect: =Launch(locRc.PdfUrl)
                               Text: =If(locRc.PdfReady, "View / Download Completed Receipt (PDF)", "Completed receipt (PDF) is being prepared…")
                               Width: =Parent.Width
                         - btnInvRcResend:
                             Control: ModernButton
                             Properties:
-                              LayoutMinWidth: =0
-                              Height: =44
                               AccessibleLabel: ="Send another copy to my email"
                               Appearance: =ButtonAppearance.Secondary
                               DisplayMode: =If(locRcBusy || locRc.ResendPending, DisplayMode.Disabled, DisplayMode.Edit)
+                              Height: =44
                               Icon: ="Mail"
+                              LayoutMinWidth: =0
                               OnSelect: |-
                                 =UpdateContext({locRcBusy: true});
                                 With(
@@ -1753,56 +1720,54 @@ Screens:
                             Variant: AutoLayout
                             Properties:
                               DropShadow: =DropShadow.None
+                              Fill: =RGBA(236, 243, 253, 1)
+                              FillPortions: =0
+                              Height: =76
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =12
                               LayoutMinHeight: =0
                               LayoutMinWidth: =0
+                              PaddingLeft: =16
+                              PaddingRight: =16
                               RadiusBottomLeft: =8
                               RadiusBottomRight: =8
                               RadiusTopLeft: =8
                               RadiusTopRight: =8
-                              Fill: =RGBA(236, 243, 253, 1)
-                              FillPortions: =0
-                              Height: =76
-                              LayoutDirection: =LayoutDirection.Horizontal
-                              LayoutAlignItems: =LayoutAlignItems.Center
-                              LayoutGap: =12
-                              PaddingLeft: =16
-                              PaddingRight: =16
                             Children:
                               - imgInvRcNote:
                                   Control: Image
                                   Properties:
-                                    AccessibleLabel: =""
                                     Height: =24
-                                    Width: =24
                                     Image: =fxRcIcon("info", "#1A5FD0")
+                                    Width: =24
                               - conInvRcNoteTxt:
                                   Control: GroupContainer
                                   Variant: AutoLayout
                                   Properties:
                                     DropShadow: =DropShadow.None
+                                    Height: =60
+                                    LayoutAlignItems: =LayoutAlignItems.Stretch
+                                    LayoutDirection: =LayoutDirection.Vertical
+                                    LayoutJustifyContent: =LayoutJustifyContent.Center
                                     LayoutMinHeight: =0
                                     LayoutMinWidth: =0
                                     RadiusBottomLeft: =0
                                     RadiusBottomRight: =0
                                     RadiusTopLeft: =0
                                     RadiusTopRight: =0
-                                    LayoutAlignItems: =LayoutAlignItems.Stretch
-                                    FillPortions: =1
-                                    Height: =60
-                                    LayoutDirection: =LayoutDirection.Vertical
-                                    LayoutJustifyContent: =LayoutJustifyContent.Center
                                   Children:
                                     - txtInvRcNoteT:
                                         Control: ModernText
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =RGBA(26, 32, 44, 1)
+                                          FontWeight: =FontWeight.Semibold
+                                          Height: =22
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          FontWeight: =FontWeight.Semibold
-                                          Height: =22
                                           Size: =13
                                           Text: =If(locRcJustDone, "You may safely close this window.", "Need another copy?")
                                           Wrap: =false
@@ -1811,56 +1776,54 @@ Screens:
                                         Properties:
                                           AccessibleLabel: =Self.Text
                                           Color: =RGBA(84, 96, 112, 1)
+                                          Height: =36
                                           LayoutMinWidth: =0
                                           PaddingBottom: =0
                                           PaddingLeft: =0
                                           PaddingTop: =0
-                                          Height: =36
                                           Size: =12
                                           Text: =If(locRcJustDone, "A copy of the completed receipt has been sent to your email.", "A copy was also sent to your email. You can use this link at any time to view your completed receipt.")
                   - conInvRcMsg:
                       Control: GroupContainer
                       Variant: AutoLayout
                       Properties:
-                        DropShadow: =DropShadow.None
-                        LayoutMinHeight: =0
-                        LayoutMinWidth: =0
-                        RadiusBottomLeft: =8
-                        RadiusBottomRight: =8
-                        RadiusTopLeft: =8
-                        RadiusTopRight: =8
                         AlignInContainer: =AlignInContainer.Center
                         BorderColor: =RGBA(214, 220, 228, 1)
                         BorderThickness: =1
+                        DropShadow: =DropShadow.None
                         Fill: =RGBA(255, 255, 255, 1)
                         FillPortions: =0
                         Height: =300
                         LayoutAlignItems: =LayoutAlignItems.Center
                         LayoutDirection: =LayoutDirection.Vertical
                         LayoutGap: =10
+                        LayoutMinHeight: =0
+                        LayoutMinWidth: =0
                         PaddingTop: =36
-                        Width: =Min(760, App.Width - 32)
+                        RadiusBottomLeft: =8
+                        RadiusBottomRight: =8
+                        RadiusTopLeft: =8
+                        RadiusTopRight: =8
                         Visible: =locRcStep = "error" || locRcStep = "view" && locRc.State in ["denied", "invalid", "superseded", "voided", "closed", "cac"]
+                        Width: =Min(760, App.Width - 32)
                       Children:
                         - imgInvRcMsg:
                             Control: Image
                             Properties:
-                              AccessibleLabel: =""
                               Height: =52
-                              Width: =52
                               Image: =fxRcIcon(Switch(If(locRcStep = "error", "error", locRc.State), "denied", "lock", "invalid", "warning", "superseded", "warning", "voided", "ban", "closed", "ban", "cac", "doc", "warning"), Switch(If(locRcStep = "error", "error", locRc.State), "denied", "#C41E2A", "invalid", "#D68C00", "superseded", "#D68C00", "voided", "#1F2937", "closed", "#1F2937", "cac", "#1A5FD0", "#D68C00"))
+                              Width: =52
                         - txtInvRcMsgT:
                             Control: ModernText
                             Properties:
                               AccessibleLabel: =Self.Text
+                              Align: =Align.Center
                               Color: =RGBA(11, 42, 74, 1)
+                              FontWeight: =FontWeight.Bold
                               LayoutMinWidth: =0
                               PaddingBottom: =0
                               PaddingLeft: =0
                               PaddingTop: =0
-                              Align: =Align.Center
-                              FontWeight: =FontWeight.Bold
-                              Height: =32
                               Size: =19
                               Text: =Switch(If(locRcStep = "error", "error", locRc.State), "denied", "Access Restricted", "invalid", "Link Not Available", "superseded", "Link Not Available", "voided", "Receipt No Longer Available", "closed", "Receipt No Longer Available", "cac", "Sign With Your CAC", "Something Went Wrong")
                               Width: =Parent.Width
@@ -1869,34 +1832,34 @@ Screens:
                             Control: ModernText
                             Properties:
                               AccessibleLabel: =Self.Text
+                              Align: =Align.Center
                               Color: =RGBA(84, 96, 112, 1)
+                              Height: =80
                               LayoutMinWidth: =0
                               PaddingBottom: =0
                               PaddingLeft: =32
-                              PaddingTop: =0
-                              Align: =Align.Center
-                              Height: =80
                               PaddingRight: =32
+                              PaddingTop: =0
                               Size: =13
                               Text: =Switch(If(locRcStep = "error", "error", locRc.State), "denied", "This link is for a specific equipment receipt. You do not have access to view this receipt.", "invalid", "This link is no longer valid or has expired. If you believe you received this message in error, please contact IT Support.", "superseded", "This link is no longer valid or has expired. If you believe you received this message in error, please contact IT Support.", "voided", "This equipment receipt has been cancelled or is no longer available for acknowledgement. If you have questions, please contact your IT Support.", "closed", "This equipment receipt has been cancelled or is no longer available for acknowledgement. If you have questions, please contact your IT Support.", "cac", "This receipt is signed with your CAC instead of in the app. IT Support will give you the receipt to sign.", "The receipt service couldn't be reached. Check your connection and try again.")
                               Width: =Parent.Width
                         - btnInvRcMsg:
                             Control: ModernButton
                             Properties:
-                              LayoutMinWidth: =0
-                              Height: =44
                               AccessibleLabel: =Self.Text
                               Appearance: =ButtonAppearance.Secondary
+                              Height: =44
                               Icon: =If(locRcStep = "error", "ArrowClockwise", locRc.State = "denied", "ArrowLeft", "Mail")
+                              LayoutMinWidth: =0
                               OnSelect: =If(locRcStep = "error", Select(btnInvRcLoad), locRc.State = "denied" || IsBlank(locRc.Contact), Exit(), Launch("mailto:" & locRc.Contact & "?subject=" & EncodeUrl("Equipment receipt " & Coalesce(locRc.Number, "link"))))
                               Text: =If(locRcStep = "error", "Try Again", locRc.State = "denied" || IsBlank(locRc.Contact), "Close", "Contact IT Support")
                               Width: =260
             - btnInvRcLoad:
                 Control: ModernButton
                 Properties:
-                  LayoutMinWidth: =0
-                  Height: =10
                   AccessibleLabel: ="Load the receipt"
+                  Height: =10
+                  LayoutMinWidth: =0
                   OnSelect: |-
                     =// The receipt from "Inventory - My Receipts" (Get). Untyped JSON -> typed record and tables.
                     // A refresh of a receipt already on screen (the PDF check) keeps it visible instead of showing the spinner.
@@ -1927,20 +1890,20 @@ Screens:
                 Properties:
                   Duration: =20000
                   Height: =1
-                  Repeat: =true
-                  Visible: =false
-                  Width: =1
                   OnTimerEnd: |-
                     =UpdateContext({locRcPolls: Coalesce(locRcPolls, 0) + 1}); Select(btnInvRcLoad)
+                  Repeat: =true
                   Start: =locRcStep = "view" && locRc.State = "acknowledged" && !locRc.PdfReady && Coalesce(locRcPolls, 0) < 10
+                  Visible: =false
+                  Width: =1
             - tmrInvRcProc:
                 Control: Timer
                 Properties:
                   Duration: =1200
                   Height: =1
-                  Repeat: =true
-                  Visible: =false
-                  Width: =1
                   OnTimerEnd: |-
                     =If(locRcProc < 4, UpdateContext({locRcProc: locRcProc + 1}))
+                  Repeat: =true
                   Start: =locRcStep = "processing" && locRcProc < 4
+                  Visible: =false
+                  Width: =1
