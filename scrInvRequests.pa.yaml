@@ -905,7 +905,7 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =12
-                                          Text: ="Reserve units for each item for the course dates. Close an item short if not every unit can be provided."
+                                          Text: ="Reserve units for each item for the course dates. If not every unit can be provided, use Can't provide all."
                                           Wrap: =false
                               - galInvRqItems:
                                   Control: Gallery
@@ -1040,14 +1040,14 @@ Screens:
                                           - btnInvRqItemShort:
                                               Control: ModernButton
                                               Properties:
-                                                AccessibleLabel: ="Close " & ThisItem.Item & " short"
+                                                AccessibleLabel: ="Can't provide all " & ThisItem.Item & ", finish this item with fewer units"
                                                 Appearance: =ButtonAppearance.Subtle
                                                 Height: =36
                                                 LayoutMinWidth: =0
                                                 OnSelect: |-
                                                   =UpdateContext({locReqSel: ThisItem}); Reset(txtInvRqNote)
-                                                Text: ="Close short"
-                                                Width: =120
+                                                Text: ="Can't provide all"
+                                                Width: =150
                         - conInvRqPick:
                             Control: GroupContainer
                             Variant: AutoLayout
@@ -2155,7 +2155,7 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =12
-                                          Text: ="Close this item with " & locReqSel.Issued & " of " & locReqSel.Qty & " provided. Units reserved for it but not issued are released."
+                                          Text: ="Finish this item with " & locReqSel.Issued & " of " & locReqSel.Qty & " provided. Units reserved for it but not issued are released."
                                           Wrap: =false
                               - conInvRqFNote:
                                   Control: GroupContainer
@@ -2227,7 +2227,7 @@ Screens:
                                             UpdateContext({locBusy: false});
                                             Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
                                             If(locResult.Status = "Success", Reset(txtInvRqNote); UpdateContext({locReqSel: Blank()}); Set(gblInvLoadedAt, Blank()); Select(btnInvRqReload); Select(btnInvRqLoad))
-                                          Text: ="Close with " & locReqSel.Issued & " of " & locReqSel.Qty & " provided"
+                                          Text: ="Finish with " & locReqSel.Issued & " of " & locReqSel.Qty & " provided"
                                           Width: =260
                         - txtInvRqNoAccess:
                             Control: ModernText
