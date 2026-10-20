@@ -1110,16 +1110,19 @@ Screens:
                                     Icon: ="ArrowUndo"
                                     LayoutMinWidth: =0
                                     OnSelect: |-
-                                      =// Check in every scanned item with its own condition (Damaged needs a note).
+                                      =// Check in every scanned item with its own condition in one ReturnBatch call (2026-10-19: one call per item took about a minute for a 6-item kit).
                                       UpdateContext({locBusy: true});
                                       With(
-                                          {results: ForAll(colInvRetItems As it, With({r: IfError(ParseJSON(With({invPl: fxInvReturnPayload(it.CheckoutId, it.Condition, it.Note)}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response), Blank())}, {Tag: it.Tag, Ok: !IsBlank(r) && Text(r.status) = "Success", Message: If(IsBlank(r), "The service could not be reached.", Text(r.message))}))},
+                                          {r: IfError(ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "ReturnBatch", items: ForAll(colInvRetItems As it, {checkoutId: it.CheckoutId, condition: it.Condition, note: Trim(it.Note)})})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response), Blank())},
                                           UpdateContext({locBusy: false});
-                                          Notify(
-                                              CountRows(Filter(results, Ok)) & " of " & CountRows(results) & " checked in." & If(CountRows(Filter(results, !Ok)) > 0, " Not checked in: " & Concat(Filter(results, !Ok), Tag & " (" & Message & ")", "; "), ""),
-                                              If(CountRows(Filter(results, !Ok)) = 0, NotificationType.Success, NotificationType.Warning)
-                                          );
-                                          RemoveIf(colInvRetItems, Tag in Filter(results, Ok).Tag)
+                                          If(
+                                              IsBlank(r), Notify("The service could not be reached. Reload to see what was checked in.", NotificationType.Error),
+                                              With(
+                                                  {bad: Concat(Table(r.failed), Text(Value), "|")},
+                                                  Notify(Text(r.message), If(Text(r.status) = "Success" && IsBlank(bad), NotificationType.Success, NotificationType.Warning));
+                                                  If(Text(r.status) = "Success", RemoveIf(colInvRetItems, IsBlank(Find(Tag & ":", bad))))
+                                              )
+                                          )
                                       );
                                       Set(gblInvLoadedAt, Blank()); Select(btnInvRetReload)
                                     Text: ="Check in all"
