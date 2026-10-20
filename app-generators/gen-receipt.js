@@ -183,7 +183,7 @@ const form = box('conInvRcForm', {
     box('conInvRcFormTopR', { Height: '=50', Width: '=120', LayoutDirection: '=LayoutDirection.Vertical', LayoutJustifyContent: '=LayoutJustifyContent.Center' }, [
       text('txtInvRcFormNo', { Align: '=Align.Right', FontWeight: '=FontWeight.Bold', Height: '=18', Size: '=12', Text: '="DAF Form 1297"', Wrap: '=false' }),
       text('txtInvRcFormDate', { Align: '=Align.Right', Height: '=16', Size: '=11', Text: '="20260323"', Wrap: '=false' }),
-      text('txtInvRcFormPage', { Align: '=Align.Right', Height: '=16', Size: '=11', Text: '="Page 1 of 1"', Wrap: '=false' }),
+      text('txtInvRcFormPage', { Align: '=Align.Right', Height: '=16', Size: '=11', Text: '=' + "With({n: CountRows(colRcItems)}, With({p: If(n <= 9, 1, 1 + RoundUp((n - 9) / 14, 0))}, n & If(n = 1, \" item\", \" items\") & \"  ·  PDF \" & p & If(p = 1, \" page\", \" pages\")))", Wrap: '=false' }),
     ]),
   ]),
   gridRow('Row1', [cell('No', 'Receipt Number', 'locRc.Number'), cell('Iss', 'Issue Date', 'locRc.IssueDate'), cell('Ret', 'Return Date', 'locRc.ReturnDate')]),
