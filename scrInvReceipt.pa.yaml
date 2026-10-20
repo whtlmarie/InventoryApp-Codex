@@ -1716,9 +1716,24 @@ Screens:
                                   Control: ModernSpinner
                                   Properties:
                                     AccessibleLabel: ="Preparing the completed receipt (PDF)"
-                                    Label: ="Preparing your completed receipt (PDF)…"
+                                    Height: =28
                                     LayoutMinWidth: =0
+                                    Width: =28
+                              - txtInvRcPdfWait:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =RGBA(36, 36, 36, 1)
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =24
+                                    LayoutMinWidth: =0
+                                    PaddingBottom: =0
+                                    PaddingLeft: =0
+                                    PaddingTop: =0
+                                    Size: =14
+                                    Text: ="Preparing your completed receipt (PDF)…"
                                     Width: =320
+                                    Wrap: =false
                         - btnInvRcResend:
                             Control: ModernButton
                             Properties:

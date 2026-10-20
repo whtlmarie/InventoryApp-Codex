@@ -276,7 +276,9 @@ const done = box('conInvRcDone', {
   }),
   // While the PDF is being made: a spinner in the button's place (2026-10-19, user).
   box('conInvRcPdfWait', { Fill: '=RGBA(240, 240, 240, 1)', FillPortions: '=0', Height: '=44', Visible: '=!locRc.PdfReady', LayoutDirection: '=LayoutDirection.Horizontal', LayoutAlignItems: '=LayoutAlignItems.Center', LayoutJustifyContent: '=LayoutJustifyContent.Center', LayoutGap: '=10', ...rad(4) }, [
-    (ind) => node('spnInvRcPdfWait', 'ModernSpinner', { AccessibleLabel: '="Preparing the completed receipt (PDF)"', Label: '="Preparing your completed receipt (PDF)…"', LayoutMinWidth: '=0', Width: '=320' }, null, ind),
+    (ind) => node('spnInvRcPdfWait', 'ModernSpinner', { AccessibleLabel: '="Preparing the completed receipt (PDF)"', Height: '=28', Label: '=""', LayoutMinWidth: '=0', Width: '=28' }, null, ind),
+    // The sentence in its own text: the spinner's label was cut off (2026-10-19, user).
+    text('txtInvRcPdfWait', { Color: '=RGBA(36, 36, 36, 1)', FontWeight: '=FontWeight.Semibold', Height: '=24', Size: '=14', Text: '="Preparing your completed receipt (PDF)…"', Width: '=320', Wrap: '=false' }),
   ]),
   button('btnInvRcResend', {
     AccessibleLabel: '="Send another copy to my email"', Appearance: '=ButtonAppearance.Secondary',
