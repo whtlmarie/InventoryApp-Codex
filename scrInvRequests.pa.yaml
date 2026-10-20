@@ -376,51 +376,6 @@ Screens:
                                     OnSelect: =Select(btnInvRqReload)
                                     Text: ="Refresh"
                                     Width: =120
-                        - conInvRqIssueMsg:
-                            Control: GroupContainer
-                            Variant: AutoLayout
-                            Properties:
-                              DropShadow: =DropShadow.None
-                              Fill: =If(locIssueOk, RGBA(223, 246, 221, 1), RGBA(255, 244, 206, 1))
-                              FillPortions: =0
-                              Height: =64
-                              LayoutAlignItems: =LayoutAlignItems.Center
-                              LayoutDirection: =LayoutDirection.Horizontal
-                              LayoutGap: =12
-                              LayoutMinHeight: =0
-                              LayoutMinWidth: =0
-                              PaddingLeft: =16
-                              PaddingRight: =8
-                              RadiusBottomLeft: =8
-                              RadiusBottomRight: =8
-                              RadiusTopLeft: =8
-                              RadiusTopRight: =8
-                              Visible: =!IsBlank(locIssueMsg)
-                            Children:
-                              - txtInvRqIssueMsg:
-                                  Control: ModernText
-                                  Properties:
-                                    AccessibleLabel: =Self.Text
-                                    Color: =If(locIssueOk, RGBA(16, 92, 16, 1), RGBA(131, 82, 0, 1))
-                                    FillPortions: =1
-                                    FontWeight: =FontWeight.Semibold
-                                    Height: =56
-                                    LayoutMinWidth: =0
-                                    Size: =13
-                                    Text: |-
-                                      =If(locIssueOk, "Issued.  ", "Check this:  ") & locIssueMsg
-                                    VerticalAlign: =VerticalAlign.Middle
-                                    Wrap: =true
-                              - btnInvRqIssueMsgClose:
-                                  Control: ModernButton
-                                  Properties:
-                                    AccessibleLabel: ="Dismiss the issue result"
-                                    Appearance: =ButtonAppearance.Subtle
-                                    Height: =36
-                                    LayoutMinWidth: =0
-                                    OnSelect: =UpdateContext({locIssueMsg: ""})
-                                    Text: ="Dismiss"
-                                    Width: =100
                         - conInvRqList:
                             Control: GroupContainer
                             Variant: AutoLayout
@@ -2295,3 +2250,47 @@ Screens:
                               Size: =14
                               Text: ="Request items are for AV and IT inventory staff."
                               Visible: =!fxIsInvStaff
+                        - conInvRqIssueMsg:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =If(locIssueOk, RGBA(223, 246, 221, 1), RGBA(255, 244, 206, 1))
+                              FillPortions: =0
+                              Height: =64
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =12
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              PaddingLeft: =16
+                              PaddingRight: =8
+                              RadiusBottomLeft: =8
+                              RadiusBottomRight: =8
+                              RadiusTopLeft: =8
+                              RadiusTopRight: =8
+                              Visible: =!IsBlank(locIssueMsg)
+                            Children:
+                              - txtInvRqIssueMsg:
+                                  Control: ModernText
+                                  Properties:
+                                    AccessibleLabel: =Self.Text
+                                    Color: =If(locIssueOk, RGBA(16, 92, 16, 1), RGBA(131, 82, 0, 1))
+                                    FillPortions: =1
+                                    FontWeight: =FontWeight.Semibold
+                                    Height: =56
+                                    LayoutMinWidth: =0
+                                    Size: =13
+                                    Text: |-
+                                      =If(locIssueOk, "Issued.  ", "Check this:  ") & locIssueMsg
+                              - btnInvRqIssueMsgClose:
+                                  Control: ModernButton
+                                  Properties:
+                                    AccessibleLabel: ="Dismiss the issue result"
+                                    Appearance: =ButtonAppearance.Subtle
+                                    Height: =36
+                                    LayoutMinWidth: =0
+                                    OnSelect: |-
+                                      =UpdateContext({locIssueMsg: ""})
+                                    Text: ="Dismiss"
+                                    Width: =100
