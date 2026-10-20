@@ -219,6 +219,8 @@ Screens:
                               LayoutMinWidth: =0
                               OnSelect: |-
                                 =// Asset, its open checkout, reservations and history (re-run after every change).
+                                // Fresh rows after a change made by a flow (2026-10-19: kit edits showed old parts and history until the asset was reopened).
+                                Refresh(InventoryAssets); Refresh(InventoryHistory);
                                 UpdateContext({locAsset: If(gblInvAssetId > 0, LookUp(InventoryAssets, ID = gblInvAssetId))});
                                 UpdateContext({
                                     locCheckout: If(Coalesce(locAsset.'Current Checkout Id', 0) > 0, LookUp(InventoryCheckouts, ID = locAsset.'Current Checkout Id')),
