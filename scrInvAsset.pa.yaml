@@ -2464,7 +2464,7 @@ Screens:
                                                       PaddingLeft: =0
                                                       PaddingTop: =0
                                                       Size: =12
-                                                      Text: =Switch(locKitMode, "kit", "Tracked parts go out on the kit's receipt and are checked in with it.", "part", "Part of a kit.", "Tracked parts can be linked to a kit, such as an AV Projector Kit.")
+                                                      Text: =Switch(locKitMode, "kit", "Tracked parts go out on the kit's receipt and are checked in with it.", "part", "Part of a kit.", "Tracked parts can be linked to a kit, such as an AV Travel Kit.")
                                                       Wrap: =false
                                           - txtInvAsdKitPartOf:
                                               Control: ModernText
