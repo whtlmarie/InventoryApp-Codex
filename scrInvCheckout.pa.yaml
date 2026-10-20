@@ -972,6 +972,7 @@ Screens:
                                                                   If(
                                                                   hit.ID in colInvCoItems.ID, UpdateContext({locScanMsg: hit.'Asset Tag' & " is already on this receipt."}),
                                                                   hit.Status <> "Available", UpdateContext({locScanMsg: hit.'Asset Tag' & " is " & hit.Status & " and can't be issued."}),
+                                                                  Coalesce(hit.'Parent Asset Id', 0) > 0, UpdateContext({locScanMsg: hit.'Asset Tag' & " is a kit part. Scan the kit it belongs to; its parts go out with it."}),
                                                                   hit.Kind = "Installed in Room", UpdateContext({locScanMsg: hit.'Asset Tag' & " is installed in " & Coalesce(hit.'Home Location', "a room") & " and is not loaned out."}),
                                                                   hit.Dept <> drpInvCoDept.Selected.Value, UpdateContext({locScanMsg: hit.'Asset Tag' & " is " & hit.Dept & " equipment. This receipt is for " & drpInvCoDept.Selected.Value & "."}),
                                                                   !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only issue " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),
@@ -992,6 +993,7 @@ Screens:
                                                                   If(
                                                                   hit.ID in colInvCoItems.ID, UpdateContext({locScanMsg: hit.'Asset Tag' & " is already on this receipt."}),
                                                                   hit.Status <> "Available", UpdateContext({locScanMsg: hit.'Asset Tag' & " is " & hit.Status & " and can't be issued."}),
+                                                                  Coalesce(hit.'Parent Asset Id', 0) > 0, UpdateContext({locScanMsg: hit.'Asset Tag' & " is a kit part. Scan the kit it belongs to; its parts go out with it."}),
                                                                   hit.Kind = "Installed in Room", UpdateContext({locScanMsg: hit.'Asset Tag' & " is installed in " & Coalesce(hit.'Home Location', "a room") & " and is not loaned out."}),
                                                                   hit.Dept <> drpInvCoDept.Selected.Value, UpdateContext({locScanMsg: hit.'Asset Tag' & " is " & hit.Dept & " equipment. This receipt is for " & drpInvCoDept.Selected.Value & "."}),
                                                                   !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only issue " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),
@@ -1045,6 +1047,7 @@ Screens:
                                                                   If(
                                                                   hit.ID in colInvCoItems.ID, UpdateContext({locScanMsg: hit.'Asset Tag' & " is already on this receipt."}),
                                                                   hit.Status <> "Available", UpdateContext({locScanMsg: hit.'Asset Tag' & " is " & hit.Status & " and can't be issued."}),
+                                                                  Coalesce(hit.'Parent Asset Id', 0) > 0, UpdateContext({locScanMsg: hit.'Asset Tag' & " is a kit part. Scan the kit it belongs to; its parts go out with it."}),
                                                                   hit.Kind = "Installed in Room", UpdateContext({locScanMsg: hit.'Asset Tag' & " is installed in " & Coalesce(hit.'Home Location', "a room") & " and is not loaned out."}),
                                                                   hit.Dept <> drpInvCoDept.Selected.Value, UpdateContext({locScanMsg: hit.'Asset Tag' & " is " & hit.Dept & " equipment. This receipt is for " & drpInvCoDept.Selected.Value & "."}),
                                                                   !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only issue " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),

@@ -1062,7 +1062,7 @@ Screens:
                                         AddColumns(
                                             Filter(
                                                 gblInvAssets,
-                                                Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                Status = "Available" && 'Is Active' && Coalesce('Parent Asset Id', 0) = 0 && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
                                                     (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
                                                     !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
                                                     (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
@@ -1276,7 +1276,7 @@ Screens:
                                                     AddColumns(
                                                         Filter(
                                                             gblInvAssets,
-                                                            Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                            Status = "Available" && 'Is Active' && Coalesce('Parent Asset Id', 0) = 0 && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
                                                                 (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
                                                                 !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
                                                                 (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
@@ -1291,7 +1291,7 @@ Screens:
                                                     AddColumns(
                                                         Filter(
                                                             gblInvAssets,
-                                                            Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                            Status = "Available" && 'Is Active' && Coalesce('Parent Asset Id', 0) = 0 && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
                                                                 (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
                                                                 !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
                                                                 (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
@@ -1312,7 +1312,7 @@ Screens:
                                                     AddColumns(
                                                         Filter(
                                                             gblInvAssets,
-                                                            Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                            Status = "Available" && 'Is Active' && Coalesce('Parent Asset Id', 0) = 0 && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
                                                                 (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
                                                                 !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
                                                                 (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
@@ -1329,7 +1329,7 @@ Screens:
                                                     AddColumns(
                                                         Filter(
                                                             gblInvAssets,
-                                                            Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                            Status = "Available" && 'Is Active' && Coalesce('Parent Asset Id', 0) = 0 && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
                                                                 (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
                                                                 !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
                                                                 (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
@@ -1352,7 +1352,7 @@ Screens:
                                                     AddColumns(
                                                         Filter(
                                                             gblInvAssets,
-                                                            Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                            Status = "Available" && 'Is Active' && Coalesce('Parent Asset Id', 0) = 0 && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
                                                                 (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
                                                                 !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
                                                                 (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
@@ -1379,7 +1379,7 @@ Screens:
                                                     AddColumns(
                                                         Filter(
                                                             gblInvAssets,
-                                                            Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                            Status = "Available" && 'Is Active' && Coalesce('Parent Asset Id', 0) = 0 && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
                                                                 (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
                                                                 !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
                                                                 (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
@@ -1403,7 +1403,7 @@ Screens:
                                               AddColumns(
                                                   Filter(
                                                       gblInvAssets,
-                                                      Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                      Status = "Available" && 'Is Active' && Coalesce('Parent Asset Id', 0) = 0 && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
                                                           (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
                                                           !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
                                                           (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
@@ -1420,7 +1420,7 @@ Screens:
                                               AddColumns(
                                                   Filter(
                                                       gblInvAssets,
-                                                      Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                      Status = "Available" && 'Is Active' && Coalesce('Parent Asset Id', 0) = 0 && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
                                                           (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
                                                           !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
                                                           (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
@@ -1668,7 +1668,7 @@ Screens:
                                                           AddColumns(
                                                               Filter(
                                                                   gblInvAssets,
-                                                                  Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                  Status = "Available" && 'Is Active' && Coalesce('Parent Asset Id', 0) = 0 && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
                                                                       (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
                                                                       !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
                                                                       (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
@@ -1690,7 +1690,7 @@ Screens:
                                                           AddColumns(
                                                               Filter(
                                                                   gblInvAssets,
-                                                                  Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                  Status = "Available" && 'Is Active' && Coalesce('Parent Asset Id', 0) = 0 && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
                                                                       (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
                                                                       !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
                                                                       (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
@@ -1727,7 +1727,7 @@ Screens:
                                                           AddColumns(
                                                               Filter(
                                                                   gblInvAssets,
-                                                                  Status = "Available" && 'Is Active' && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
+                                                                  Status = "Available" && 'Is Active' && Coalesce('Parent Asset Id', 0) = 0 && Kind <> "Installed in Room" && Dept in cl.Route && fxCanManage(Dept) &&
                                                                       (Coalesce('Catalog Item Id', 0) = 0 || 'Catalog Item Id' = cl.CatalogId) &&
                                                                       !(ID in Filter(gblInvReserved, 'Start Date' <= e && 'End Date' >= s).'Asset Id') &&
                                                                       (IsBlank(q) || q in Lower('Asset Tag') || q in Lower(Coalesce('Serial Number', "")) || q in Lower(Coalesce(Model, "")))
