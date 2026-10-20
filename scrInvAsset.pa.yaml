@@ -225,6 +225,13 @@ Screens:
                                     locRes: Filter(InventoryReservations, 'Asset Id' = gblInvAssetId && 'Reservation Status'.Value = "Reserved"),
                                     locHist: Sort(Filter(InventoryHistory, 'Asset Id' = gblInvAssetId), Created, SortOrder.Descending)
                                 });
+                                // Kits (2026-10-19): a kit lists its tracked parts; a part shows its kit.
+                                UpdateContext({
+                                    locKitMode: If(Coalesce(locAsset.'Is Kit', false), "kit", Coalesce(locAsset.'Parent Asset Id', 0) > 0, "part", "none"),
+                                    locKitParts: AddColumns(Filter(InventoryAssets, 'Parent Asset Id' = gblInvAssetId && 'Is Active' = true), PStatus, 'Asset Status'.Value),
+                                    locKitOf: LookUp(InventoryAssets, ID = Coalesce(locAsset.'Parent Asset Id', -1))
+                                });
+                                Reset(txtInvAsdKitContents); Reset(txtInvAsdKitAddTag);
                                 Reset(txtInvAsdTag); Reset(txtInvAsdMake); Reset(txtInvAsdModel); Reset(drpInvAsdHome); Reset(txtInvAsdNotes);
                                 Reset(drpInvAsdDept); Reset(drpInvAsdCatalog); Reset(drpInvAsdKind); Reset(drpInvAsdCond); Reset(dteInvAsdPurchase); Reset(dteInvAsdWarranty)
                               Text: ="Load"
@@ -348,7 +355,7 @@ Screens:
                               DropShadow: =DropShadow.None
                               FillPortions: =0
                               Height: |-
-                                =With({l: (20 + 48 + 12 + 5 * (If(App.Width >= 700, 60, 128) + 12) + 96 + 12 + 40 + 24) + If(locNew, 0, 16 + (20 + 48 + 12 + If(conInvAsdFileUp.Visible, (90 + 8 + 60 + 8 + 40) + 12, 0) + Max(24, galInvAsdFiles.Height) + 24)), r: If(locNew, 0, (20 + 48 + 12 + 40 + 12 + 60 + 12 + 60 + 12 + 36 + 12 + If(conInvAsdInc.Visible, (28 + 6 + 2 * (60 + 6) + 96 + 6 + 40 + 24), If(btnInvAsdIncOpen.Visible, 36, 0)) + If(conInvAsdDisp.Visible, 12 + (28 + 6 + 4 * (60 + 6) + 40 + 24), If(btnInvAsdDispOpen.Visible, 12 + 36, 0)) + 24) + 16 + If(conInvAsdIncs.Visible, (20 + 48 + 12 + Max(24, galInvAsdIncs.Height) + 24) + 16, 0) + (20 + 48 + 12 + Max(galInvAsdRes.Height, If(galInvAsdRes.AllItemsCount = 0, 24, 0)) + 24) + 16 + (20 + 48 + 12 + Max(galInvAsdHist.Height, If(galInvAsdHist.AllItemsCount = 0, 24, 0)) + 24))}, If(App.Width >= 1250, Max(l, r), l + 16 + r))
+                                =With({l: (20 + 48 + 12 + 5 * (If(App.Width >= 700, 60, 128) + 12) + 96 + 12 + 40 + 24) + If(locNew, 0, 16 + (20 + 48 + 12 + If(conInvAsdFileUp.Visible, (90 + 8 + 60 + 8 + 40) + 12, 0) + Max(24, galInvAsdFiles.Height) + 24)), r: If(locNew, 0, (20 + 48 + 12 + 40 + 12 + 60 + 12 + 60 + 12 + 36 + 12 + If(conInvAsdInc.Visible, (28 + 6 + 2 * (60 + 6) + 96 + 6 + 40 + 24), If(btnInvAsdIncOpen.Visible, 36, 0)) + If(conInvAsdDisp.Visible, 12 + (28 + 6 + 4 * (60 + 6) + 40 + 24), If(btnInvAsdDispOpen.Visible, 12 + 36, 0)) + 24) + 16 + If(conInvAsdIncs.Visible, (20 + 48 + 12 + Max(24, galInvAsdIncs.Height) + 24) + 16, 0) + If(!locNew && !IsBlank(locAsset) && (locKitMode <> "none" || fxCanManage(locAsset.Department.Value)), (20 + 48 + 24 + If(locKitMode = "part", 12 + 40 + 12 + 36, 0) + If(locKitMode = "none", 12 + 24 + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0), 0) + If(locKitMode = "kit", If(locAsset.'Asset Status'.Value = "Incomplete", 12 + 40, 0) + 12 + Max(24, CountRows(locKitParts) * 44) + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0) + 12 + 20 + 12 + 120 + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0), 0)) + 16, 0) + (20 + 48 + 12 + Max(galInvAsdRes.Height, If(galInvAsdRes.AllItemsCount = 0, 24, 0)) + 24) + 16 + (20 + 48 + 12 + Max(galInvAsdHist.Height, If(galInvAsdHist.AllItemsCount = 0, 24, 0)) + 24))}, If(App.Width >= 1250, Max(l, r), l + 16 + r))
                               LayoutAlignItems: =If(App.Width >= 1250, LayoutAlignItems.Start, LayoutAlignItems.Stretch)
                               LayoutDirection: =If(App.Width >= 1250, LayoutDirection.Horizontal, LayoutDirection.Vertical)
                               LayoutGap: =16
@@ -1332,7 +1339,7 @@ Screens:
                                   Properties:
                                     DropShadow: =DropShadow.None
                                     FillPortions: =If(App.Width >= 1250, 2, 0)
-                                    Height: =If(locNew, 0, (20 + 48 + 12 + 40 + 12 + 60 + 12 + 60 + 12 + 36 + 12 + If(conInvAsdInc.Visible, (28 + 6 + 2 * (60 + 6) + 96 + 6 + 40 + 24), If(btnInvAsdIncOpen.Visible, 36, 0)) + If(conInvAsdDisp.Visible, 12 + (28 + 6 + 4 * (60 + 6) + 40 + 24), If(btnInvAsdDispOpen.Visible, 12 + 36, 0)) + 24) + 16 + If(conInvAsdIncs.Visible, (20 + 48 + 12 + Max(24, galInvAsdIncs.Height) + 24) + 16, 0) + (20 + 48 + 12 + Max(galInvAsdRes.Height, If(galInvAsdRes.AllItemsCount = 0, 24, 0)) + 24) + 16 + (20 + 48 + 12 + Max(galInvAsdHist.Height, If(galInvAsdHist.AllItemsCount = 0, 24, 0)) + 24))
+                                    Height: =If(locNew, 0, (20 + 48 + 12 + 40 + 12 + 60 + 12 + 60 + 12 + 36 + 12 + If(conInvAsdInc.Visible, (28 + 6 + 2 * (60 + 6) + 96 + 6 + 40 + 24), If(btnInvAsdIncOpen.Visible, 36, 0)) + If(conInvAsdDisp.Visible, 12 + (28 + 6 + 4 * (60 + 6) + 40 + 24), If(btnInvAsdDispOpen.Visible, 12 + 36, 0)) + 24) + 16 + If(conInvAsdIncs.Visible, (20 + 48 + 12 + Max(24, galInvAsdIncs.Height) + 24) + 16, 0) + If(!locNew && !IsBlank(locAsset) && (locKitMode <> "none" || fxCanManage(locAsset.Department.Value)), (20 + 48 + 24 + If(locKitMode = "part", 12 + 40 + 12 + 36, 0) + If(locKitMode = "none", 12 + 24 + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0), 0) + If(locKitMode = "kit", If(locAsset.'Asset Status'.Value = "Incomplete", 12 + 40, 0) + 12 + Max(24, CountRows(locKitParts) * 44) + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0) + 12 + 20 + 12 + 120 + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0), 0)) + 16, 0) + (20 + 48 + 12 + Max(galInvAsdRes.Height, If(galInvAsdRes.AllItemsCount = 0, 24, 0)) + 24) + 16 + (20 + 48 + 12 + Max(galInvAsdHist.Height, If(galInvAsdHist.AllItemsCount = 0, 24, 0)) + 24))
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =16
@@ -2395,6 +2402,377 @@ Screens:
                                                             Size: =12
                                                             Text: =ThisItem.Circumstances & "  (" & fxPersonName(ThisItem.'Reported By Name') & ")"
                                                             Wrap: =false
+                                    - conInvAsdKit:
+                                        Control: GroupContainer
+                                        Variant: AutoLayout
+                                        Properties:
+                                          DropShadow: =DropShadow.Semilight
+                                          Fill: =RGBA(255, 255, 255, 1)
+                                          FillPortions: =0
+                                          Height: =20 + 48 + 24 + If(locKitMode = "part", 12 + 40 + 12 + 36, 0) + If(locKitMode = "none", 12 + 24 + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0), 0) + If(locKitMode = "kit", If(locAsset.'Asset Status'.Value = "Incomplete", 12 + 40, 0) + 12 + Max(24, CountRows(locKitParts) * 44) + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0) + 12 + 20 + 12 + 120 + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0), 0)
+                                          LayoutAlignItems: =LayoutAlignItems.Stretch
+                                          LayoutDirection: =LayoutDirection.Vertical
+                                          LayoutGap: =12
+                                          LayoutMinHeight: =0
+                                          LayoutMinWidth: =0
+                                          PaddingBottom: =24
+                                          PaddingLeft: =24
+                                          PaddingRight: =24
+                                          PaddingTop: =20
+                                          RadiusBottomLeft: =8
+                                          RadiusBottomRight: =8
+                                          RadiusTopLeft: =8
+                                          RadiusTopRight: =8
+                                          Visible: =!locNew && !IsBlank(locAsset) && (locKitMode <> "none" || fxCanManage(locAsset.Department.Value))
+                                        Children:
+                                          - conInvAsdKitHead:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                FillPortions: =0
+                                                Height: =48
+                                                LayoutAlignItems: =LayoutAlignItems.Stretch
+                                                LayoutDirection: =LayoutDirection.Vertical
+                                                LayoutGap: =2
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                              Children:
+                                                - txtInvAsdKitTitle:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(36, 36, 36, 1)
+                                                      FontWeight: =FontWeight.Semibold
+                                                      Height: =26
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =16
+                                                      Text: =If(locKitMode = "kit", "Kit parts (" & CountRows(locKitParts) & ")", "Kit")
+                                                - txtInvAsdKitDesc:
+                                                    Control: ModernText
+                                                    Properties:
+                                                      AccessibleLabel: =Self.Text
+                                                      Color: =RGBA(97, 97, 97, 1)
+                                                      Height: =20
+                                                      LayoutMinWidth: =0
+                                                      PaddingBottom: =0
+                                                      PaddingLeft: =0
+                                                      PaddingTop: =0
+                                                      Size: =12
+                                                      Text: =Switch(locKitMode, "kit", "Tracked parts go out on the kit's receipt and are checked in with it.", "part", "Part of a kit.", "Tracked parts can be linked to a kit, such as an AV Projector Kit.")
+                                                      Wrap: =false
+                                          - txtInvAsdKitPartOf:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(36, 36, 36, 1)
+                                                Height: =40
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =13
+                                                Text: ="This is a part of kit " & Coalesce(locKitOf.'Asset Tag', "(not found)") & ". It is issued on the kit's receipt and checked in with the kit, never on its own."
+                                                Visible: =locKitMode = "part"
+                                          - btnInvAsdKitOpen:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Open the kit this part belongs to"
+                                                AlignInContainer: =AlignInContainer.Start
+                                                Appearance: =ButtonAppearance.Secondary
+                                                DisplayMode: =If(IsBlank(locKitOf), DisplayMode.Disabled, DisplayMode.Edit)
+                                                Height: =36
+                                                Icon: ="ChevronRight"
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =Set(gblInvAssetId, locKitOf.ID); UpdateContext({locEdit: false}); Select(btnInvAsdLoad)
+                                                Text: ="Open kit " & locKitOf.'Asset Tag'
+                                                Visible: =locKitMode = "part"
+                                                Width: =200
+                                          - txtInvAsdKitNone:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(97, 97, 97, 1)
+                                                Height: =24
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =13
+                                                Text: ="Not a kit."
+                                                Visible: =locKitMode = "none"
+                                                Wrap: =false
+                                          - btnInvAsdKitMake:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Make this asset a kit"
+                                                AlignInContainer: =AlignInContainer.Start
+                                                Appearance: =ButtonAppearance.Secondary
+                                                DisplayMode: =If(locBusy, DisplayMode.Disabled, DisplayMode.Edit)
+                                                Height: =36
+                                                Icon: ="Add"
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =UpdateContext({locBusy: true});
+                                                  IfError(
+                                                      With(
+                                                          {raw: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "KitSave", assetId: gblInvAssetId, isKit: true, contents: ""})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
+                                                          UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message), Id: Value(raw.id)}})
+                                                      ),
+                                                      UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again.", Id: 0}})
+                                                  );
+                                                  UpdateContext({locBusy: false});
+                                                  Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
+                                                  If(locResult.Status = "Success", Set(gblInvLoadedAt, Blank()); Select(btnInvAsdLoad))
+                                                Text: ="Make this a kit"
+                                                Visible: =locKitMode = "none" && fxCanManage(locAsset.Department.Value)
+                                                Width: =170
+                                          - txtInvAsdKitMissing:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(164, 38, 44, 1)
+                                                Fill: =RGBA(253, 231, 233, 1)
+                                                Height: =40
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =12
+                                                PaddingRight: =12
+                                                PaddingTop: =0
+                                                RadiusBottomLeft: =6
+                                                RadiusBottomRight: =6
+                                                RadiusTopLeft: =6
+                                                RadiusTopRight: =6
+                                                Size: =13
+                                                Text: |-
+                                                  ="Incomplete: " & Concat(Filter(locKitParts, PStatus = "Lost"), 'Asset Tag', ", ") & " missing. It can't be issued until the part is found (set it Available) or removed from the kit."
+                                                Visible: =locKitMode = "kit" && locAsset.'Asset Status'.Value = "Incomplete"
+                                          - txtInvAsdKitEmpty:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(97, 97, 97, 1)
+                                                Height: =24
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =13
+                                                Text: ="No parts yet. Add each tracked part by its tag or serial number."
+                                                Visible: =locKitMode = "kit" && IsEmpty(locKitParts)
+                                                Wrap: =false
+                                          - galInvAsdKitParts:
+                                              Control: Gallery
+                                              Variant: Vertical
+                                              Properties:
+                                                AccessibleLabel: ="Kit parts"
+                                                FillPortions: =0
+                                                Height: =CountRows(locKitParts) * 44
+                                                Items: =SortByColumns(locKitParts, "Title")
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                                ShowScrollbar: =false
+                                                TabIndex: =0
+                                                TemplatePadding: =0
+                                                TemplateSize: =44
+                                                Visible: =locKitMode = "kit" && !IsEmpty(locKitParts)
+                                              Children:
+                                                - conInvAsdKitRow:
+                                                    Control: GroupContainer
+                                                    Variant: AutoLayout
+                                                    Properties:
+                                                      DropShadow: =DropShadow.None
+                                                      Height: =Parent.TemplateHeight
+                                                      LayoutAlignItems: =LayoutAlignItems.Center
+                                                      LayoutDirection: =LayoutDirection.Horizontal
+                                                      LayoutGap: =12
+                                                      Width: =Parent.TemplateWidth
+                                                    Children:
+                                                      - txtInvAsdKitRowTag:
+                                                          Control: ModernText
+                                                          Properties:
+                                                            AccessibleLabel: =Self.Text
+                                                            Color: =RGBA(15, 76, 129, 1)
+                                                            FontWeight: =FontWeight.Semibold
+                                                            Height: =20
+                                                            LayoutMinWidth: =0
+                                                            PaddingBottom: =0
+                                                            PaddingLeft: =0
+                                                            PaddingTop: =0
+                                                            Size: =13
+                                                            Text: =ThisItem.'Asset Tag'
+                                                            Width: =170
+                                                            Wrap: =false
+                                                      - txtInvAsdKitRowModel:
+                                                          Control: ModernText
+                                                          Properties:
+                                                            AccessibleLabel: =Self.Text
+                                                            Color: =RGBA(36, 36, 36, 1)
+                                                            FillPortions: =1
+                                                            Height: =20
+                                                            LayoutMinWidth: =0
+                                                            PaddingBottom: =0
+                                                            PaddingLeft: =0
+                                                            PaddingTop: =0
+                                                            Size: =12
+                                                            Text: =Trim(Coalesce(ThisItem.Make, "") & " " & Coalesce(ThisItem.Model, "")) & If(IsBlank(ThisItem.'Serial Number'), "", "  ·  SN " & ThisItem.'Serial Number')
+                                                            Wrap: =false
+                                                      - txtInvAsdKitRowStatus:
+                                                          Control: ModernText
+                                                          Properties:
+                                                            AccessibleLabel: =Self.Text
+                                                            Color: =If(ThisItem.PStatus = "Lost", RGBA(164, 38, 44, 1), ThisItem.PStatus = "Available", RGBA(16, 124, 16, 1), RGBA(97, 97, 97, 1))
+                                                            FontWeight: =FontWeight.Semibold
+                                                            Height: =20
+                                                            LayoutMinWidth: =0
+                                                            PaddingBottom: =0
+                                                            PaddingLeft: =0
+                                                            PaddingTop: =0
+                                                            Size: =12
+                                                            Text: =ThisItem.PStatus
+                                                            Width: =90
+                                                            Wrap: =false
+                                                      - btnInvAsdKitRowOpen:
+                                                          Control: ModernButton
+                                                          Properties:
+                                                            AccessibleLabel: ="Open " & ThisItem.'Asset Tag'
+                                                            Appearance: =ButtonAppearance.Subtle
+                                                            LayoutMinWidth: =0
+                                                            OnSelect: |-
+                                                              =Set(gblInvAssetId, ThisItem.ID); UpdateContext({locEdit: false}); Select(btnInvAsdLoad)
+                                                            Text: ="Open"
+                                                            Width: =70
+                                                      - btnInvAsdKitRowRemove:
+                                                          Control: ModernButton
+                                                          Properties:
+                                                            AccessibleLabel: ="Remove " & ThisItem.'Asset Tag' & " from the kit"
+                                                            Appearance: =ButtonAppearance.Subtle
+                                                            DisplayMode: =If(locBusy || locAsset.'Asset Status'.Value = "Issued", DisplayMode.Disabled, DisplayMode.Edit)
+                                                            LayoutMinWidth: =0
+                                                            OnSelect: |-
+                                                              =UpdateContext({locBusy: true});
+                                                              IfError(
+                                                                  With(
+                                                                      {raw: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "KitPart", kitId: gblInvAssetId, partId: ThisItem.ID, remove: true})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
+                                                                      UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message), Id: Value(raw.id)}})
+                                                                  ),
+                                                                  UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again.", Id: 0}})
+                                                              );
+                                                              UpdateContext({locBusy: false});
+                                                              Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
+                                                              If(locResult.Status = "Success", Set(gblInvLoadedAt, Blank()); Select(btnInvAsdLoad))
+                                                            Text: ="Remove"
+                                                            Visible: =fxCanManage(locAsset.Department.Value)
+                                                            Width: =86
+                                          - conInvAsdKitAdd:
+                                              Control: GroupContainer
+                                              Variant: AutoLayout
+                                              Properties:
+                                                DropShadow: =DropShadow.None
+                                                FillPortions: =0
+                                                Height: =36
+                                                LayoutAlignItems: =LayoutAlignItems.Center
+                                                LayoutDirection: =LayoutDirection.Horizontal
+                                                LayoutGap: =8
+                                                LayoutMinHeight: =0
+                                                LayoutMinWidth: =0
+                                                Visible: =locKitMode = "kit" && fxCanManage(locAsset.Department.Value)
+                                              Children:
+                                                - txtInvAsdKitAddTag:
+                                                    Control: ModernTextInput
+                                                    Properties:
+                                                      AccessibleLabel: ="Tag or serial number of the part to add"
+                                                      Appearance: =Appearance.Outline
+                                                      FillPortions: =1
+                                                      Height: =36
+                                                      LayoutMinWidth: =0
+                                                      Placeholder: ="Part tag or serial number"
+                                                - btnInvAsdKitAdd:
+                                                    Control: ModernButton
+                                                    Properties:
+                                                      AccessibleLabel: ="Add the part to this kit"
+                                                      DisplayMode: =If(locBusy || IsBlank(Trim(txtInvAsdKitAddTag.Text)), DisplayMode.Disabled, DisplayMode.Edit)
+                                                      Height: =36
+                                                      Icon: ="Add"
+                                                      LayoutMinWidth: =0
+                                                      OnSelect: |-
+                                                        =With(
+                                                            {code: Lower(Trim(txtInvAsdKitAddTag.Text))},
+                                                            With(
+                                                                {hit: Coalesce(LookUp(gblInvAssets, Lower('Asset Tag') = code), LookUp(gblInvAssets, Lower(Coalesce('Serial Number', "")) = code))},
+                                                                If(
+                                                                    IsBlank(hit), Notify("No asset has the tag or serial number " & txtInvAsdKitAddTag.Text & ".", NotificationType.Warning),
+                                                                    UpdateContext({locBusy: true});
+                                                                    IfError(
+                                                                        With(
+                                                                            {raw: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "KitPart", kitId: gblInvAssetId, partId: hit.ID, remove: false})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
+                                                                            UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message), Id: Value(raw.id)}})
+                                                                        ),
+                                                                        UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again.", Id: 0}})
+                                                                    );
+                                                                    UpdateContext({locBusy: false});
+                                                                    Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
+                                                                    If(locResult.Status = "Success", Set(gblInvLoadedAt, Blank()); Reset(txtInvAsdKitAddTag); Select(btnInvAsdLoad))
+                                                                )
+                                                            )
+                                                        )
+                                                      Text: ="Add part"
+                                                      Width: =130
+                                          - txtInvAsdKitContentsLbl:
+                                              Control: ModernText
+                                              Properties:
+                                                AccessibleLabel: =Self.Text
+                                                Color: =RGBA(36, 36, 36, 1)
+                                                FontWeight: =FontWeight.Semibold
+                                                Height: =20
+                                                LayoutMinWidth: =0
+                                                PaddingBottom: =0
+                                                PaddingLeft: =0
+                                                PaddingTop: =0
+                                                Size: =13
+                                                Text: ="Also in the kit (cords and adapters, one per line; listed on the receipt, not tracked)"
+                                                Visible: =locKitMode = "kit"
+                                                Wrap: =false
+                                          - txtInvAsdKitContents:
+                                              Control: ModernTextInput
+                                              Properties:
+                                                AccessibleLabel: ="Cords and adapters in the kit, one per line"
+                                                Appearance: =Appearance.Outline
+                                                Default: =locAsset.'Kit Contents'
+                                                DisplayMode: =If(fxCanManage(locAsset.Department.Value), DisplayMode.Edit, DisplayMode.View)
+                                                Height: =120
+                                                LayoutMinWidth: =0
+                                                Placeholder: ="e.g. HDMI cable (6 ft) x2"
+                                                Type: =TextInputType.Multiline
+                                                Visible: =locKitMode = "kit"
+                                          - btnInvAsdKitSave:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Save the kit contents"
+                                                AlignInContainer: =AlignInContainer.End
+                                                DisplayMode: =If(locBusy || txtInvAsdKitContents.Text = Coalesce(locAsset.'Kit Contents', ""), DisplayMode.Disabled, DisplayMode.Edit)
+                                                Height: =36
+                                                Icon: ="Checkmark"
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =UpdateContext({locBusy: true});
+                                                  IfError(
+                                                      With(
+                                                          {raw: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "KitSave", assetId: gblInvAssetId, isKit: true, contents: txtInvAsdKitContents.Text})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
+                                                          UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message), Id: Value(raw.id)}})
+                                                      ),
+                                                      UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again.", Id: 0}})
+                                                  );
+                                                  UpdateContext({locBusy: false});
+                                                  Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
+                                                  If(locResult.Status = "Success", Set(gblInvLoadedAt, Blank()); Select(btnInvAsdLoad))
+                                                Text: ="Save contents"
+                                                Visible: =locKitMode = "kit" && fxCanManage(locAsset.Department.Value)
+                                                Width: =150
                                     - conInvAsdRes:
                                         Control: GroupContainer
                                         Variant: AutoLayout

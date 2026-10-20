@@ -395,9 +395,9 @@ Screens:
                                                         SortByColumns(
                                                             ForAll(
                                                                 Filter(gblInvOpenCheckouts As c, (q in Lower(c.'Receipt Number') || q in Lower(Coalesce(c.'Request Number', "")) || q in Lower(Coalesce(c.'Recipient Name', "")) || q in Lower(Coalesce(c.'Recipient Email', ""))) && fxCanManage(LookUp(gblInvAssets, ID = c.'Asset Id').Dept)) As co,
-                                                                {CheckoutId: co.ID, Tag: co.'Asset Tag Snapshot', Desc: Coalesce(LookUp(gblInvAssets, ID = co.'Asset Id').'Catalog Name Snapshot', "Equipment"), Holder: co.'Recipient Name', Receipt: co.'Receipt Number', Req: Coalesce(co.'Request Number', ""), Due: co.'Due Date', Pick: true, Condition: "Good", Note: ""}
+                                                                {CheckoutId: co.ID, Tag: co.'Asset Tag Snapshot', Desc: If(Coalesce(co.'Parent Checkout Id', 0) > 0, "↳ Kit part: " & Coalesce(LookUp(gblInvAssets, ID = co.'Asset Id').Model, "Equipment"), Coalesce(LookUp(gblInvAssets, ID = co.'Asset Id').'Catalog Name Snapshot', "Equipment") & If(Coalesce(co.'Kit Tag', "") = co.'Asset Tag Snapshot', " · kit (its parts are listed below)", "")), Holder: co.'Recipient Name', Receipt: co.'Receipt Number', Req: Coalesce(co.'Request Number', ""), Due: co.'Due Date', Pick: true, Condition: "Good", Note: "", IsKit: Coalesce(co.'Kit Tag', "") = co.'Asset Tag Snapshot', KitKey: Coalesce(co.'Kit Tag', co.'Asset Tag Snapshot') & If(Coalesce(co.'Parent Checkout Id', 0) > 0, "|1|", "|0|") & co.'Asset Tag Snapshot'}
                                                             ),
-                                                            "Holder", SortOrder.Ascending, "Receipt", SortOrder.Ascending, "Tag", SortOrder.Ascending
+                                                            "Holder", SortOrder.Ascending, "Receipt", SortOrder.Ascending, "KitKey", SortOrder.Ascending
                                                         )
                                                     );
                                                     UpdateContext({locFindMsg: If(IsEmpty(colInvRetBulk), "Nothing of yours is out for """ & Trim(txtInvRetFind.Text) & """.", "")})
@@ -505,7 +505,7 @@ Screens:
                                             ={Value: "Good"}
                                           Height: =36
                                           ItemDisplayText: =ThisItem.Value
-                                          Items: =fxConditions
+                                          Items: =fxReturnConditions
                                           LayoutMinWidth: =0
                                           Width: =130
                                     - btnInvRetBulkSet:
@@ -606,7 +606,7 @@ Screens:
                                                 DisplayMode: =If(ThisItem.Pick, DisplayMode.Edit, DisplayMode.Disabled)
                                                 Height: =36
                                                 ItemDisplayText: =ThisItem.Value
-                                                Items: =fxConditions
+                                                Items: =fxReturnConditions
                                                 LayoutMinWidth: =0
                                                 OnChange: |-
                                                   =Patch(colInvRetBulk, ThisItem, {Condition: Self.Selected.Value})
@@ -622,7 +622,7 @@ Screens:
                                                 LayoutMinWidth: =0
                                                 OnChange: |-
                                                   =Patch(colInvRetBulk, ThisItem, {Note: Self.Text})
-                                                Placeholder: =If(ThisItem.Condition = "Damaged", "Describe the damage (required)", "Note (optional)")
+                                                Placeholder: =If(ThisItem.Condition = "Damaged", "Describe the damage (required)", ThisItem.IsKit, "Missing cords or adapters? List them", "Note (optional)")
                                                 Width: =220
                               - conInvRetBulkFoot:
                                   Control: GroupContainer
@@ -736,7 +736,8 @@ Screens:
                                           PaddingLeft: =0
                                           PaddingTop: =0
                                           Size: =12
-                                          Text: ="Scan or type each returned item. Set the condition; Damaged sends it to In Repair."
+                                          Text: |-
+                                            ="Scan or type each returned item. Set the condition: Damaged sends it to In Repair, Missing marks it Lost."
                                           Wrap: =false
                               - conInvRetScan:
                                   Control: GroupContainer
@@ -811,7 +812,11 @@ Screens:
                                                           hit.ID in colInvRetItems.AssetId, UpdateContext({locScanMsg: hit.'Asset Tag' & " is already in the list."}),
                                                           IsBlank(co), UpdateContext({locScanMsg: hit.'Asset Tag' & " is not checked out (" & hit.Status & ")."}),
                                                           !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only check in " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),
-                                                          Collect(colInvRetItems, {AssetId: hit.ID, Tag: hit.'Asset Tag', Desc: Coalesce(hit.'Catalog Name Snapshot', "Equipment"), CheckoutId: co.ID, Holder: co.'Recipient Name', Receipt: co.'Receipt Number', Due: co.'Due Date', Condition: "Good", Note: ""})
+                                                          Collect(colInvRetItems, {AssetId: hit.ID, Tag: hit.'Asset Tag', Desc: Coalesce(hit.'Catalog Name Snapshot', "Equipment") & If(Coalesce(hit.'Is Kit', false), " · kit (its parts are listed below)", ""), CheckoutId: co.ID, Holder: co.'Recipient Name', Receipt: co.'Receipt Number', Due: co.'Due Date', Condition: "Good", Note: "", IsKit: Coalesce(hit.'Is Kit', false)});
+                                                          With(
+                                                              {parts: Filter(gblInvOpenCheckouts, 'Parent Checkout Id' = co.ID && !('Asset Id' in colInvRetItems.AssetId))},
+                                                              ForAll(parts As pc, Collect(colInvRetItems, {AssetId: pc.'Asset Id', Tag: pc.'Asset Tag Snapshot', Desc: "↳ Kit part: " & Coalesce(LookUp(gblInvAssets, ID = pc.'Asset Id').Model, "Equipment"), CheckoutId: pc.ID, Holder: pc.'Recipient Name', Receipt: pc.'Receipt Number', Due: pc.'Due Date', Condition: "Good", Note: "", IsKit: false}))
+                                                          )
                                                       )
                                                   )),
                                                                   With(
@@ -824,7 +829,11 @@ Screens:
                                                           hit.ID in colInvRetItems.AssetId, UpdateContext({locScanMsg: hit.'Asset Tag' & " is already in the list."}),
                                                           IsBlank(co), UpdateContext({locScanMsg: hit.'Asset Tag' & " is not checked out (" & hit.Status & ")."}),
                                                           !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only check in " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),
-                                                          Collect(colInvRetItems, {AssetId: hit.ID, Tag: hit.'Asset Tag', Desc: Coalesce(hit.'Catalog Name Snapshot', "Equipment"), CheckoutId: co.ID, Holder: co.'Recipient Name', Receipt: co.'Receipt Number', Due: co.'Due Date', Condition: "Good", Note: ""})
+                                                          Collect(colInvRetItems, {AssetId: hit.ID, Tag: hit.'Asset Tag', Desc: Coalesce(hit.'Catalog Name Snapshot', "Equipment") & If(Coalesce(hit.'Is Kit', false), " · kit (its parts are listed below)", ""), CheckoutId: co.ID, Holder: co.'Recipient Name', Receipt: co.'Receipt Number', Due: co.'Due Date', Condition: "Good", Note: "", IsKit: Coalesce(hit.'Is Kit', false)});
+                                                          With(
+                                                              {parts: Filter(gblInvOpenCheckouts, 'Parent Checkout Id' = co.ID && !('Asset Id' in colInvRetItems.AssetId))},
+                                                              ForAll(parts As pc, Collect(colInvRetItems, {AssetId: pc.'Asset Id', Tag: pc.'Asset Tag Snapshot', Desc: "↳ Kit part: " & Coalesce(LookUp(gblInvAssets, ID = pc.'Asset Id').Model, "Equipment"), CheckoutId: pc.ID, Holder: pc.'Recipient Name', Receipt: pc.'Receipt Number', Due: pc.'Due Date', Condition: "Good", Note: "", IsKit: false}))
+                                                          )
                                                       )
                                                   )),
                                                                           UpdateContext({locScanMsg: "", locScanMatches: m})
@@ -870,7 +879,11 @@ Screens:
                                                           hit.ID in colInvRetItems.AssetId, UpdateContext({locScanMsg: hit.'Asset Tag' & " is already in the list."}),
                                                           IsBlank(co), UpdateContext({locScanMsg: hit.'Asset Tag' & " is not checked out (" & hit.Status & ")."}),
                                                           !fxCanManage(hit.Dept), UpdateContext({locScanMsg: "You can only check in " & Concat(fxMyDepts, Dept, " or ") & " equipment."}),
-                                                          Collect(colInvRetItems, {AssetId: hit.ID, Tag: hit.'Asset Tag', Desc: Coalesce(hit.'Catalog Name Snapshot', "Equipment"), CheckoutId: co.ID, Holder: co.'Recipient Name', Receipt: co.'Receipt Number', Due: co.'Due Date', Condition: "Good", Note: ""})
+                                                          Collect(colInvRetItems, {AssetId: hit.ID, Tag: hit.'Asset Tag', Desc: Coalesce(hit.'Catalog Name Snapshot', "Equipment") & If(Coalesce(hit.'Is Kit', false), " · kit (its parts are listed below)", ""), CheckoutId: co.ID, Holder: co.'Recipient Name', Receipt: co.'Receipt Number', Due: co.'Due Date', Condition: "Good", Note: "", IsKit: Coalesce(hit.'Is Kit', false)});
+                                                          With(
+                                                              {parts: Filter(gblInvOpenCheckouts, 'Parent Checkout Id' = co.ID && !('Asset Id' in colInvRetItems.AssetId))},
+                                                              ForAll(parts As pc, Collect(colInvRetItems, {AssetId: pc.'Asset Id', Tag: pc.'Asset Tag Snapshot', Desc: "↳ Kit part: " & Coalesce(LookUp(gblInvAssets, ID = pc.'Asset Id').Model, "Equipment"), CheckoutId: pc.ID, Holder: pc.'Recipient Name', Receipt: pc.'Receipt Number', Due: pc.'Due Date', Condition: "Good", Note: "", IsKit: false}))
+                                                          )
                                                       )
                                                   ))
                                                 Text: =ThisItem.'Asset Tag' & "   ·   " & Coalesce(ThisItem.'Catalog Name Snapshot', "Equipment") & "   ·   " & ThisItem.Status
@@ -1024,7 +1037,7 @@ Screens:
                                                         ={Value: ThisItem.Condition}
                                                       Height: =36
                                                       ItemDisplayText: =ThisItem.Value
-                                                      Items: =fxConditions
+                                                      Items: =fxReturnConditions
                                                       LayoutMinWidth: =0
                                                       OnChange: |-
                                                         =Patch(colInvRetItems, ThisItem, {Condition: Self.Selected.Value})
@@ -1040,7 +1053,7 @@ Screens:
                                                       LayoutMinWidth: =0
                                                       OnChange: |-
                                                         =Patch(colInvRetItems, ThisItem, {Note: Self.Text})
-                                                      Placeholder: =If(ThisItem.Condition = "Damaged", "Describe the damage (required)", "Note (optional)")
+                                                      Placeholder: =If(ThisItem.Condition = "Damaged", "Describe the damage (required)", ThisItem.IsKit, "Missing cords or adapters? List them", "Note (optional)")
                         - conInvRetFooter:
                             Control: GroupContainer
                             Variant: AutoLayout

@@ -272,8 +272,12 @@ const done = box('conInvRcDone', {
   ]),
   button('btnInvRcPdf', {
     AccessibleLabel: '="View or download the completed receipt (PDF)"', DisplayMode: '=If(locRc.PdfReady, DisplayMode.Edit, DisplayMode.Disabled)',
-    FontWeight: '=FontWeight.Bold', Icon: '="ArrowDownload"', IconStyle: '=IconStyle.Filled', OnSelect: '=Launch(locRc.PdfUrl)', Text: '=If(locRc.PdfReady, "View / Download Completed Receipt (PDF)", "Completed receipt (PDF) is being prepared…")', Width: '=Parent.Width',
+    FontWeight: '=FontWeight.Bold', Icon: '="ArrowDownload"', IconStyle: '=IconStyle.Filled', OnSelect: '=Launch(locRc.PdfUrl)', Text: '="View / Download Completed Receipt (PDF)"', Visible: '=locRc.PdfReady', Width: '=Parent.Width',
   }),
+  // While the PDF is being made: a spinner in the button's place (2026-10-19, user).
+  box('conInvRcPdfWait', { Fill: '=RGBA(240, 240, 240, 1)', FillPortions: '=0', Height: '=44', Visible: '=!locRc.PdfReady', LayoutDirection: '=LayoutDirection.Horizontal', LayoutAlignItems: '=LayoutAlignItems.Center', LayoutJustifyContent: '=LayoutJustifyContent.Center', LayoutGap: '=10', ...rad(4) }, [
+    (ind) => node('spnInvRcPdfWait', 'ModernSpinner', { AccessibleLabel: '="Preparing the completed receipt (PDF)"', Label: '="Preparing your completed receipt (PDF)…"', LayoutMinWidth: '=0', Width: '=320' }, null, ind),
+  ]),
   button('btnInvRcResend', {
     AccessibleLabel: '="Send another copy to my email"', Appearance: '=ButtonAppearance.Secondary',
     DisplayMode: '=If(locRcBusy || locRc.ResendPending, DisplayMode.Disabled, DisplayMode.Edit)', Icon: '="Mail"', OnSelect: RESEND,

@@ -57,6 +57,8 @@ App:
       // "Installed in Room": equipment that stays in its room (e.g. the NIPR laptop in a classified room); never reserved or issued.
       fxAssetKinds = ["Tracked Asset", "Loaner Pool", "Installed in Room"];
       fxConditions = ["Good", "Fair", "Damaged"];
+      // Check-in adds Missing (2026-10-19): not returned; the checkout and the asset become Lost, and a kit with a missing part is Incomplete.
+      fxReturnConditions = ["Good", "Fair", "Damaged", "Missing"];
       fxStatusColor(status: Text): Color = Switch(status, "Available", RGBA(16, 110, 16, 1), "Issued", RGBA(15, 76, 129, 1), "In Repair", RGBA(131, 82, 0, 1), "Pending Disposal", RGBA(92, 45, 145, 1), "Lost", RGBA(164, 38, 44, 1), RGBA(97, 97, 97, 1));
       fxStatusFill(status: Text): Color = Switch(status, "Available", RGBA(223, 246, 221, 1), "Issued", RGBA(230, 240, 250, 1), "In Repair", RGBA(255, 244, 206, 1), "Pending Disposal", RGBA(243, 238, 250, 1), "Lost", RGBA(253, 231, 233, 1), RGBA(237, 239, 242, 1));
       // Catalog items the Inventory app tracks (same rule as the Support Request inventory handoff).

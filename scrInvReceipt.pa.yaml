@@ -1693,8 +1693,32 @@ Screens:
                               IconStyle: =IconStyle.Filled
                               LayoutMinWidth: =0
                               OnSelect: =Launch(locRc.PdfUrl)
-                              Text: =If(locRc.PdfReady, "View / Download Completed Receipt (PDF)", "Completed receipt (PDF) is being prepared…")
+                              Text: ="View / Download Completed Receipt (PDF)"
+                              Visible: =locRc.PdfReady
                               Width: =Parent.Width
+                        - conInvRcPdfWait:
+                            Control: GroupContainer
+                            Variant: AutoLayout
+                            Properties:
+                              DropShadow: =DropShadow.None
+                              Fill: =RGBA(240, 240, 240, 1)
+                              FillPortions: =0
+                              Height: =44
+                              LayoutAlignItems: =LayoutAlignItems.Center
+                              LayoutDirection: =LayoutDirection.Horizontal
+                              LayoutGap: =10
+                              LayoutJustifyContent: =LayoutJustifyContent.Center
+                              LayoutMinHeight: =0
+                              LayoutMinWidth: =0
+                              Visible: =!locRc.PdfReady
+                            Children:
+                              - spnInvRcPdfWait:
+                                  Control: ModernSpinner
+                                  Properties:
+                                    AccessibleLabel: ="Preparing the completed receipt (PDF)"
+                                    Label: ="Preparing your completed receipt (PDF)…"
+                                    LayoutMinWidth: =0
+                                    Width: =320
                         - btnInvRcResend:
                             Control: ModernButton
                             Properties:

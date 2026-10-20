@@ -920,7 +920,7 @@ Screens:
                                                         ={Value: "Good"}
                                                       Height: =36
                                                       ItemDisplayText: =ThisItem.Value
-                                                      Items: =fxConditions
+                                                      Items: =fxReturnConditions
                                                       LayoutMinWidth: =0
                                                       Width: =Parent.Width
                                           - conInvPerFNote:
