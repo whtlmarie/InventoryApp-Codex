@@ -355,7 +355,7 @@ Screens:
                               DropShadow: =DropShadow.None
                               FillPortions: =0
                               Height: |-
-                                =With({l: (20 + 48 + 12 + 5 * (If(App.Width >= 700, 60, 128) + 12) + 96 + 12 + 40 + 24) + If(locNew, 0, 16 + (20 + 48 + 12 + If(conInvAsdFileUp.Visible, (90 + 8 + 60 + 8 + 40) + 12, 0) + Max(24, galInvAsdFiles.Height) + 24)), r: If(locNew, 0, (20 + 48 + 12 + 40 + 12 + 60 + 12 + 60 + 12 + 36 + 12 + If(conInvAsdInc.Visible, (28 + 6 + 2 * (60 + 6) + 96 + 6 + 40 + 24), If(btnInvAsdIncOpen.Visible, 36, 0)) + If(conInvAsdDisp.Visible, 12 + (28 + 6 + 4 * (60 + 6) + 40 + 24), If(btnInvAsdDispOpen.Visible, 12 + 36, 0)) + 24) + 16 + If(conInvAsdIncs.Visible, (20 + 48 + 12 + Max(24, galInvAsdIncs.Height) + 24) + 16, 0) + If(!locNew && !IsBlank(locAsset) && (locKitMode <> "none" || fxCanManage(locAsset.Department.Value)), (20 + 48 + 24 + If(locKitMode = "part", 12 + 40 + 12 + 36, 0) + If(locKitMode = "none", 12 + 24 + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0), 0) + If(locKitMode = "kit", If(locAsset.'Asset Status'.Value = "Incomplete", 12 + 40, 0) + 12 + Max(24, CountRows(locKitParts) * 44) + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0) + 12 + 20 + 12 + 120 + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0), 0)) + 16, 0) + (20 + 48 + 12 + Max(galInvAsdRes.Height, If(galInvAsdRes.AllItemsCount = 0, 24, 0)) + 24) + 16 + (20 + 48 + 12 + Max(galInvAsdHist.Height, If(galInvAsdHist.AllItemsCount = 0, 24, 0)) + 24))}, If(App.Width >= 1250, Max(l, r), l + 16 + r))
+                                =With({l: (20 + 48 + 12 + 5 * (If(App.Width >= 700, 60, 128) + 12) + 96 + 12 + 40 + 24) + If(locNew, 0, 16 + (20 + 48 + 12 + If(conInvAsdFileUp.Visible, (90 + 8 + 60 + 8 + 40) + 12, 0) + Max(24, galInvAsdFiles.Height) + 24)), r: If(locNew, 0, (20 + 48 + 12 + 40 + 12 + 60 + 12 + 60 + 12 + 36 + 12 + If(conInvAsdInc.Visible, (28 + 6 + 2 * (60 + 6) + 96 + 6 + 40 + 24), If(btnInvAsdIncOpen.Visible, 36, 0)) + If(conInvAsdDisp.Visible, 12 + (28 + 6 + 4 * (60 + 6) + 40 + 24), If(btnInvAsdDispOpen.Visible, 12 + 36, 0)) + 24) + 16 + If(conInvAsdIncs.Visible, (20 + 48 + 12 + Max(24, galInvAsdIncs.Height) + 24) + 16, 0) + If(!locNew && !IsBlank(locAsset) && (locKitMode <> "none" || fxCanManage(locAsset.Department.Value)), (20 + 48 + 24 + If(locKitMode = "part", 12 + 40 + 12 + 36, 0) + If(locKitMode = "none", 12 + 24 + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0), 0) + If(locKitMode = "kit", If(locAsset.'Asset Status'.Value = "Incomplete", 12 + 40, 0) + 12 + Max(24, CountRows(locKitParts) * 44) + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0) + 12 + 20 + 12 + 120 + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0) + If(fxCanManage(locAsset.Department.Value) && IsEmpty(locKitParts), 12 + 36, 0), 0)) + 16, 0) + (20 + 48 + 12 + Max(galInvAsdRes.Height, If(galInvAsdRes.AllItemsCount = 0, 24, 0)) + 24) + 16 + (20 + 48 + 12 + Max(galInvAsdHist.Height, If(galInvAsdHist.AllItemsCount = 0, 24, 0)) + 24))}, If(App.Width >= 1250, Max(l, r), l + 16 + r))
                               LayoutAlignItems: =If(App.Width >= 1250, LayoutAlignItems.Start, LayoutAlignItems.Stretch)
                               LayoutDirection: =If(App.Width >= 1250, LayoutDirection.Horizontal, LayoutDirection.Vertical)
                               LayoutGap: =16
@@ -1339,7 +1339,7 @@ Screens:
                                   Properties:
                                     DropShadow: =DropShadow.None
                                     FillPortions: =If(App.Width >= 1250, 2, 0)
-                                    Height: =If(locNew, 0, (20 + 48 + 12 + 40 + 12 + 60 + 12 + 60 + 12 + 36 + 12 + If(conInvAsdInc.Visible, (28 + 6 + 2 * (60 + 6) + 96 + 6 + 40 + 24), If(btnInvAsdIncOpen.Visible, 36, 0)) + If(conInvAsdDisp.Visible, 12 + (28 + 6 + 4 * (60 + 6) + 40 + 24), If(btnInvAsdDispOpen.Visible, 12 + 36, 0)) + 24) + 16 + If(conInvAsdIncs.Visible, (20 + 48 + 12 + Max(24, galInvAsdIncs.Height) + 24) + 16, 0) + If(!locNew && !IsBlank(locAsset) && (locKitMode <> "none" || fxCanManage(locAsset.Department.Value)), (20 + 48 + 24 + If(locKitMode = "part", 12 + 40 + 12 + 36, 0) + If(locKitMode = "none", 12 + 24 + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0), 0) + If(locKitMode = "kit", If(locAsset.'Asset Status'.Value = "Incomplete", 12 + 40, 0) + 12 + Max(24, CountRows(locKitParts) * 44) + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0) + 12 + 20 + 12 + 120 + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0), 0)) + 16, 0) + (20 + 48 + 12 + Max(galInvAsdRes.Height, If(galInvAsdRes.AllItemsCount = 0, 24, 0)) + 24) + 16 + (20 + 48 + 12 + Max(galInvAsdHist.Height, If(galInvAsdHist.AllItemsCount = 0, 24, 0)) + 24))
+                                    Height: =If(locNew, 0, (20 + 48 + 12 + 40 + 12 + 60 + 12 + 60 + 12 + 36 + 12 + If(conInvAsdInc.Visible, (28 + 6 + 2 * (60 + 6) + 96 + 6 + 40 + 24), If(btnInvAsdIncOpen.Visible, 36, 0)) + If(conInvAsdDisp.Visible, 12 + (28 + 6 + 4 * (60 + 6) + 40 + 24), If(btnInvAsdDispOpen.Visible, 12 + 36, 0)) + 24) + 16 + If(conInvAsdIncs.Visible, (20 + 48 + 12 + Max(24, galInvAsdIncs.Height) + 24) + 16, 0) + If(!locNew && !IsBlank(locAsset) && (locKitMode <> "none" || fxCanManage(locAsset.Department.Value)), (20 + 48 + 24 + If(locKitMode = "part", 12 + 40 + 12 + 36, 0) + If(locKitMode = "none", 12 + 24 + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0), 0) + If(locKitMode = "kit", If(locAsset.'Asset Status'.Value = "Incomplete", 12 + 40, 0) + 12 + Max(24, CountRows(locKitParts) * 44) + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0) + 12 + 20 + 12 + 120 + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0) + If(fxCanManage(locAsset.Department.Value) && IsEmpty(locKitParts), 12 + 36, 0), 0)) + 16, 0) + (20 + 48 + 12 + Max(galInvAsdRes.Height, If(galInvAsdRes.AllItemsCount = 0, 24, 0)) + 24) + 16 + (20 + 48 + 12 + Max(galInvAsdHist.Height, If(galInvAsdHist.AllItemsCount = 0, 24, 0)) + 24))
                                     LayoutAlignItems: =LayoutAlignItems.Stretch
                                     LayoutDirection: =LayoutDirection.Vertical
                                     LayoutGap: =16
@@ -2409,7 +2409,7 @@ Screens:
                                           DropShadow: =DropShadow.Semilight
                                           Fill: =RGBA(255, 255, 255, 1)
                                           FillPortions: =0
-                                          Height: =20 + 48 + 24 + If(locKitMode = "part", 12 + 40 + 12 + 36, 0) + If(locKitMode = "none", 12 + 24 + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0), 0) + If(locKitMode = "kit", If(locAsset.'Asset Status'.Value = "Incomplete", 12 + 40, 0) + 12 + Max(24, CountRows(locKitParts) * 44) + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0) + 12 + 20 + 12 + 120 + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0), 0)
+                                          Height: =20 + 48 + 24 + If(locKitMode = "part", 12 + 40 + 12 + 36, 0) + If(locKitMode = "none", 12 + 24 + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0), 0) + If(locKitMode = "kit", If(locAsset.'Asset Status'.Value = "Incomplete", 12 + 40, 0) + 12 + Max(24, CountRows(locKitParts) * 44) + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0) + 12 + 20 + 12 + 120 + If(fxCanManage(locAsset.Department.Value), 12 + 36, 0) + If(fxCanManage(locAsset.Department.Value) && IsEmpty(locKitParts), 12 + 36, 0), 0)
                                           LayoutAlignItems: =LayoutAlignItems.Stretch
                                           LayoutDirection: =LayoutDirection.Vertical
                                           LayoutGap: =12
@@ -2773,6 +2773,32 @@ Screens:
                                                 Text: ="Save contents"
                                                 Visible: =locKitMode = "kit" && fxCanManage(locAsset.Department.Value)
                                                 Width: =150
+                                          - btnInvAsdKitUnmake:
+                                              Control: ModernButton
+                                              Properties:
+                                                AccessibleLabel: ="Make this a regular asset again (not a kit)"
+                                                AlignInContainer: =AlignInContainer.Start
+                                                Appearance: =ButtonAppearance.Subtle
+                                                DisplayMode: =If(locBusy || locAsset.'Asset Status'.Value = "Issued", DisplayMode.Disabled, DisplayMode.Edit)
+                                                Height: =36
+                                                Icon: ="Dismiss"
+                                                LayoutMinWidth: =0
+                                                OnSelect: |-
+                                                  =// Only once every part is removed (the flow refuses otherwise). The cords list is cleared; Make this a kit sets it up again.
+                                                  UpdateContext({locBusy: true});
+                                                  IfError(
+                                                      With(
+                                                          {raw: ParseJSON(With({invPl: JSON({actionVersion: fxInvActionVersion, action: "KitSave", assetId: gblInvAssetId, isKit: false, contents: ""})}, Switch(fxInvFlowFor(Text(ParseJSON(invPl).action)), "Requests", 'Inventory-Requests'.Run(invPl), "Checkout", 'Inventory-Checkout'.Run(invPl), 'Inventory-Assets'.Run(invPl))).response)},
+                                                          UpdateContext({locResult: {Status: Text(raw.status), Message: Text(raw.message), Id: Value(raw.id)}})
+                                                      ),
+                                                      UpdateContext({locResult: {Status: "Failed", Message: "The inventory service could not be reached. Try again.", Id: 0}})
+                                                  );
+                                                  UpdateContext({locBusy: false});
+                                                  Notify(locResult.Message, If(locResult.Status = "Success", NotificationType.Success, NotificationType.Error));
+                                                  If(locResult.Status = "Success", Set(gblInvLoadedAt, Blank()); Select(btnInvAsdLoad))
+                                                Text: ="No longer a kit"
+                                                Visible: =locKitMode = "kit" && fxCanManage(locAsset.Department.Value) && IsEmpty(locKitParts)
+                                                Width: =170
                                     - conInvAsdRes:
                                         Control: GroupContainer
                                         Variant: AutoLayout
